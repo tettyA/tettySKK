@@ -1,6 +1,10 @@
 // dllmain.cpp : DLL アプリケーションのエントリ ポイントを定義します。
 #include "pch.h"
-#include "SKKIme.h"
+
+#include "SKKImeFactory.h"
+
+HMODULE g_hModule = NULL;
+LONG g_dllRefCount = 0;
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,

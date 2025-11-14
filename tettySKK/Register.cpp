@@ -1,6 +1,16 @@
-#include "SKKIme.h"
+#include "pch.h"
+#include "Global.h"
 #include <strsafe.h>
 #include <atlbase.h>
+
+#define CLSIDLEN 39
+
+#define _INPROCSERVER32STR L"InprocServer32"
+#define _THREADINGMODELSTR L"ThreadingModel"
+#define APARTMENTSTR L"Apartment"
+#define CLSIDSTR_ L"CLSID"
+
+#define TEXTSURVICE_LANGID MAKELANGID(LANG_JAPANESE, SUBLANG_DEFAULT)
 
 BOOL SetRegistryValue(
 	HKEY hKeyRoot,
@@ -41,7 +51,7 @@ STDAPI DllRegisterServer(void) {
 
 	//HKEY_CLASSES_ROOT/CLSID/{XXX....}にキーを作成
 	StringCchPrintf(szRegKeyPath, ARRAYSIZE(szRegKeyPath), CLSIDSTR_ L"\\%s", szClsidString);
-	if (!SetRegistryValue(HKEY_CLASSES_ROOT, szRegKeyPath, NULL, REG_SZ, (const BYTE*)tettySKK_IME_NAME, (wcslen(tettySKK_IME_NAME) + 1) * sizeof(WCHAR))) {
+	if (!SetRegistryValue(HKEY_CLASSES_ROOT, szRegKeyPath, NULL, REG_SZ, (const BYTE*)gtettySKK_IME_NAME, (wcslen(gtettySKK_IME_NAME) + 1) * sizeof(WCHAR))) {
 		return E_FAIL;
 	}
 
@@ -74,8 +84,8 @@ STDAPI DllRegisterServer(void) {
 				CLSID_tettySKK,
 				TEXTSURVICE_LANGID,
 				GUID_Profile_SKKIme,
-				tettySKK_IME_NAME,
-				(ULONG)wcslen(tettySKK_IME_NAME),
+				gtettySKK_IME_NAME,
+				(ULONG)wcslen(gtettySKK_IME_NAME),
 				NULL, 0,//TODO:アイコンを追加する。
 				NULL,
 				nullptr, 0, TRUE, 0

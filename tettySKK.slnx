@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="tettySKK/tettySKK.vcxproj" />
+  <Project Path="tettySKK/tettySKK.vcxproj" Id="05fb0109-d0ec-4770-aaf9-5be110dc467b" />
 </Solution>

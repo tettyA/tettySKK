@@ -84,6 +84,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>tettySKK.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -102,6 +103,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>tettySKK.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -118,7 +120,14 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>tettySKK.def</ModuleDefinitionFile>
     </Link>
+    <PreBuildEvent>
+      <Command>taskkill /f /im notepad.exe
+if exist "$(TargetPath)" move /Y "$(TargetPath)" "$(TargetPath).locked_old"
+notepad.exe</Command>
+      <Message>テスト用に使用するメモ帳を強制終了させ，生成されるdllの名前を変更することによってリンカーがエラーを起こさないようにし，再びメモ帳を起動させます。</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -136,22 +145,37 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>tettySKK.def</ModuleDefinitionFile>
     </Link>
+    <PreBuildEvent>
+      <Command>taskkill /f /im notepad.exe
+if exist "$(TargetPath)" move /Y "$(TargetPath)" "$(TargetPath).locked_old"
+notepad.exe</Command>
+      <Message>テスト用に使用するメモ帳を強制終了させ，生成されるdllの名前を変更することによってリンカーがエラーを起こさないようにし，再びメモ帳を起動させます。</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CSkkIme.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Global.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="SKKIme.h" />
+    <ClInclude Include="SKKImeFactory.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CSkkIme.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="KeyEventSink.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SKKIme.cpp" />
+    <ClCompile Include="Register.cpp" />
+    <ClCompile Include="SKKImeFactory.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tettySKK.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
