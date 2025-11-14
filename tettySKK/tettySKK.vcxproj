@@ -155,6 +155,7 @@ notepad.exe</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CInsertTextEditSession.h" />
     <ClInclude Include="CSkkIme.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Global.h" />
@@ -162,6 +163,8 @@ notepad.exe</Command>
     <ClInclude Include="SKKImeFactory.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CInsertTextEditSession.cpp" />
+    <ClCompile Include="Composition.cpp" />
     <ClCompile Include="CSkkIme.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="KeyEventSink.cpp" />

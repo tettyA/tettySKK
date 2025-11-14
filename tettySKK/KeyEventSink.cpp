@@ -8,9 +8,10 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 	*pfEaten = FALSE;
 
 	// 'Q'キーが押されたら入力を吃る例
-	if (wParam == 'Q')
+	if (wParam == 'R')
 	{
 		*pfEaten = TRUE;
+		_InsertText(pic, L"あ");
 		return S_OK;
 	}
 	return S_OK;
@@ -25,7 +26,7 @@ STDAPI CSkkIme::OnKeyUp(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfE
 //このキーを処理しますかどうかを問い合わせる(キーが押された瞬間)
 STDAPI CSkkIme::OnTestKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten) {
 	*pfEaten = FALSE;
-	if (wParam == 'Q')
+	if (wParam == 'R')
 	{
 		*pfEaten = TRUE;
 		return S_OK;

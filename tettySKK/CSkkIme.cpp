@@ -10,6 +10,7 @@ CSkkIme::CSkkIme()
 	_refCount = 1;
 	_pThreadMgr = nullptr;
 	_clientId = TF_CLIENTID_NULL;
+	_pComposition = nullptr;
 }
 CSkkIme::~CSkkIme()
 {
@@ -34,6 +35,10 @@ STDAPI CSkkIme::QueryInterface(REFIID riid, void** ppvObj)
 	else if (IsEqualIID(riid, IID_ITfKeyEventSink))
 	{
 		*ppvObj = static_cast<ITfKeyEventSink*>(this);
+	}
+	else if (IsEqualGUID(riid, IID_ITfCompositionSink))
+	{
+		*ppvObj = static_cast<ITfCompositionSink*>(this);
 	}
 	else
 	{
