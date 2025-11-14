@@ -4,91 +4,113 @@
 
 STDMETHODIMP CInsertTextEditSession::DoEditSession(TfEditCookie ec) {
 	
-	return _pIme->_DoInsertText(ec, _pContext, _text);
+	return _pIme->_DoInsertText(ec, _pContext, _text, _isDetermined);
 }
 
-void CSkkIme::_InsertText(ITfContext* pic, const WCHAR* text) {
-	CInsertTextEditSession* pSession = new CInsertTextEditSession(this, pic, text);
+//テキスト編集の予約
+void CSkkIme::_InsertText(ITfContext* pic, const WCHAR* text,BOOL isDetermined) {
+	CInsertTextEditSession* pSession = new CInsertTextEditSession(this, pic, text, isDetermined);
 
 	HRESULT hr;
 	pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READWRITE, &hr);
 	pSession->Release();
 }
 
+//実際にテキストの編集を行う
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/Composition.cpp#L78
-HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHAR* text) {
+HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHAR* text,BOOL isDetermined) {
 	HRESULT hr=E_FAIL;
 	
 	if (_pComposition) {
 		CComPtr<ITfRange> pRange;
 		if (SUCCEEDED(_pComposition->GetRange(&pRange))) {
 			pRange->SetText(ec, 0, text, (ULONG)wcslen(text));
+
+			//カーソルを末尾に移動
+			pRange->Collapse(ec, TF_ANCHOR_END);
+			TF_SELECTION sel = { 0 };
+			sel.range = pRange;
+			sel.style.ase = TF_AE_NONE;
+			pContext->SetSelection(ec, 1, &sel);
 		}
-		return S_OK;
-	}
 
-	CComPtr<ITfInsertAtSelection> pInsertAtSelection;
-	
-	if (FAILED(pContext->QueryInterface(IID_PPV_ARGS(&pInsertAtSelection))) || (pInsertAtSelection == nullptr))
-	{
-		return hr;
 	}
+	else {
 
-	CComPtr<ITfRange> pRange;
-	if (FAILED(pInsertAtSelection->InsertTextAtSelection(
-		ec,
-		0,
-		text,
-		(ULONG)wcslen(text),
-		&pRange
-	))|| (pRange==nullptr)) {
-		return hr;
-	}
 
-	//属性プロパティ設定
-	CComPtr<ITfProperty> pProperty;
-	if (FAILED(pContext->GetProperty(GUID_PROP_ATTRIBUTE, &pProperty)) || (pProperty == nullptr)) {
-		return hr;
-	}
+		CComPtr<ITfInsertAtSelection> pInsertAtSelection;
 
-	{
-		TfGuidAtom gatom = TF_INVALID_GUIDATOM;
-		CComPtr<ITfCategoryMgr> pCategoryMgr;
-		if (SUCCEEDED(pCategoryMgr.CoCreateInstance(CLSID_TF_CategoryMgr))) {
-			pCategoryMgr->RegisterGUID(GUID_Skk_DisplayAttirbute_Input, &gatom);
+		if (FAILED(pContext->QueryInterface(IID_PPV_ARGS(&pInsertAtSelection))) || (pInsertAtSelection == nullptr))
+		{
+			return hr;
 		}
-		if (gatom != TF_INVALID_GUIDATOM) {
-			VARIANT var;
-			var.vt = VT_I4;
-			var.lVal = (LONG)gatom;
 
-			pProperty->SetValue(ec, pRange, &var);
+		CComPtr<ITfRange> pRange;
+		if (FAILED(pInsertAtSelection->InsertTextAtSelection(
+			ec,
+			0,
+			text,
+			(ULONG)wcslen(text),
+			&pRange
+		)) || (pRange == nullptr)) {
+			return hr;
 		}
+
+		//属性プロパティ設定
+		CComPtr<ITfProperty> pProperty;
+		if (FAILED(pContext->GetProperty(GUID_PROP_ATTRIBUTE, &pProperty)) || (pProperty == nullptr)) {
+			return hr;
+		}
+
+		{
+			TfGuidAtom gatom = TF_INVALID_GUIDATOM;
+			CComPtr<ITfCategoryMgr> pCategoryMgr;
+			if (SUCCEEDED(pCategoryMgr.CoCreateInstance(CLSID_TF_CategoryMgr))) {
+				pCategoryMgr->RegisterGUID(GUID_Skk_DisplayAttirbute_Input, &gatom);
+			}
+			if (gatom != TF_INVALID_GUIDATOM) {
+				VARIANT var;
+				var.vt = VT_I4;
+				var.lVal = (LONG)gatom;
+
+				pProperty->SetValue(ec, pRange, &var);
+			}
+		}
+
+		CComPtr<ITfContextComposition> pContextComposition;
+		if (FAILED(pContext->QueryInterface(IID_PPV_ARGS(&pContextComposition))) || (pContextComposition == nullptr)) {
+			return hr;
+		}
+
+		CComPtr<ITfComposition> pComposition;
+		if (FAILED(pContextComposition->StartComposition(
+			ec,
+			pRange,
+			this,
+			&pComposition
+		)) || pComposition == nullptr) {
+			return hr;
+		}
+
+		_pComposition = pComposition;
+
+
+		pRange->Collapse(ec, TF_ANCHOR_END);
+
+		TF_SELECTION sel = { 0 };
+		sel.range = pRange;
+		sel.style.ase = TF_AE_NONE;
+		sel.style.fInterimChar = FALSE;
+
+		pContext->SetSelection(ec, 1, &sel);
 	}
 
-	CComPtr<ITfContextComposition> pContextComposition;
-	if (FAILED(pContext->QueryInterface(IID_PPV_ARGS(&pContextComposition))) || (pContextComposition == nullptr)) {
-		return hr;
+	if (isDetermined && _pComposition) {
+		_pComposition->EndComposition(ec);
+
+		_pComposition.Release();
+		_pComposition = nullptr;
 	}
-	
-	CComPtr<ITfComposition> pComposition;
-	if (FAILED(pContextComposition->StartComposition(
-		ec,
-		pRange,
-		this,
-		&pComposition
-	)) || pComposition==nullptr) {
-		return hr;
-	}
-
-	pRange->Collapse(ec, TF_ANCHOR_END);
-
-	TF_SELECTION sel = { 0 };
-	sel.range = pRange;
-	sel.style.ase = TF_AE_NONE;
-	sel.style.fInterimChar = FALSE;
-
-	pContext->SetSelection(ec, 1, &sel);
 	return S_OK;
 }
 

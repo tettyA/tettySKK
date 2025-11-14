@@ -163,6 +163,7 @@ notepad.exe</Command>
     <ClInclude Include="Global.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SKKImeFactory.h" />
+    <ClInclude Include="TranslatetRomajiToKana.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CDisplayAttributeInfo.cpp" />
@@ -187,6 +188,7 @@ notepad.exe</Command>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\開発日記.txt" />
+    <Text Include="RomajiToKanaTransTable.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

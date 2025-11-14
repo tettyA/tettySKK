@@ -7,7 +7,7 @@ class CInsertTextEditSession :
     public ITfEditSession
 {
 public:
-	CInsertTextEditSession(CSkkIme* pIme, ITfContext* pContext, const WCHAR* text);
+	CInsertTextEditSession(CSkkIme* pIme, ITfContext* pContext, const WCHAR* text, BOOL isDetermined);
 	~CInsertTextEditSession();
 	//IUnknown methods
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppvObj);
@@ -20,5 +20,8 @@ private:
 	CComPtr<CSkkIme> _pIme;
 	CComPtr<ITfContext> _pContext;
 	WCHAR* _text;
+
+	//Šm’è‚µ‚½‚©”Û‚©?
+	BOOL _isDetermined;
 };
 

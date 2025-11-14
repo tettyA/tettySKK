@@ -1,14 +1,16 @@
 #include "pch.h"
 #include "CInsertTextEditSession.h"
 
-CInsertTextEditSession::CInsertTextEditSession(CSkkIme* pIme, ITfContext* pContext, const WCHAR* text)
+CInsertTextEditSession::CInsertTextEditSession(CSkkIme* pIme, ITfContext* pContext, const WCHAR* text, BOOL isDetermined)
 {
 	_refCount = 1;
 	_pIme = pIme;//–¾Ž¦“I‚ÈAddRef‚Í•s—v (CComPtr‚ª‚â‚Á‚Ä‚­‚ê‚é)
 	_pContext = pContext;
+	_isDetermined = isDetermined;
+
 	size_t len = wcslen(text);
 	_text = new WCHAR[len + 1];
-	wcscpy_s(_text, len + 1, text);	
+	wcscpy_s(_text, len + 1, text);
 }
 
 CInsertTextEditSession::~CInsertTextEditSession()
