@@ -1,8 +1,11 @@
 20:37 2025/11/12
-tettySKK.slnxã‚’ä½œæˆã€‚(nå›žç›®)
-ãƒ¬ã‚¸ã‚¹ãƒˆãƒªã«å€¤ã‚’ç™»éŒ²ã™ã‚‹ã®ã¨ï¼ŒDllå‘¼å‡ºé–¢é€£ã®å®Ÿè£…ã‚’ã—ãŸã€‚
-ãªãŠï¼Œã“ã®æ–‡ç« ã¯SKKFEPã§è¨˜è¿°ã•ã‚Œã¦ã„ã‚‹ã€‚
+tettySKK.slnx‚ðì¬B(n‰ñ–Ú)
+ƒŒƒWƒXƒgƒŠ‚É’l‚ð“o˜^‚·‚é‚Ì‚ÆCDllŒÄoŠÖ˜A‚ÌŽÀ‘•‚ð‚µ‚½B
+‚È‚¨C‚±‚Ì•¶Í‚ÍSKKFEP‚Å‹Lq‚³‚ê‚Ä‚¢‚éB
 22:38 2025/11/13
-class CSkkImeã«ITfTextInputProcessorã‚’å®Ÿè£…ã€‚ 
-regsvr32ã§ã‚³ãƒžãƒ³ãƒ‰ã‚’å®Ÿè¡Œã—ï¼Œã‚„ã£ã¨windowsãã‚“ã«IMEã¨ã—ã¦èªè­˜ã•ã‚ŒãŸï¼ä»Šã®ã¨ã“ã‚ã¯ãƒ­ãƒ¼ãƒžå­—ã—ã‹æ‰“ã¦ãªã„ãŒä½•ã¨ã‹ã—ã¦æ—¥æœ¬èªžã‚’å…¥åŠ›ã•ã‚Œã‚‹ã‚ˆã†ã«ã—ã¦ã„ããžï½ž
-CSkkImeã«ITfKeyEventSinkã‚’ç¶™æ‰¿ã•ã›ã‚‹ã€‚
+class CSkkIme‚ÉITfTextInputProcessor‚ðŽÀ‘•B 
+regsvr32‚ÅƒRƒ}ƒ“ƒh‚ðŽÀs‚µC‚â‚Á‚Æwindows‚­‚ñ‚ÉIME‚Æ‚µ‚Ä”FŽ¯‚³‚ê‚½I¡‚Ì‚Æ‚±‚ë‚Íƒ[ƒ}Žš‚µ‚©‘Å‚Ä‚È‚¢‚ª‰½‚Æ‚©‚µ‚Ä“ú–{Œê‚ð“ü—Í‚³‚ê‚é‚æ‚¤‚É‚µ‚Ä‚¢‚­‚¼`
+CSkkIme‚ÉITfKeyEventSink‚ðŒp³‚³‚¹‚éB
+13:09 2025/11/14
+CSkkIme class‚ÉITfCompositionSink‚ðŒp³‚³‚¹ŽÀ‘•B
+–¢Šm’è•¶Žš—ñ?‚Ì•\Ž¦‚ª‚Å‚«‚é‚æ‚¤‚É‚È‚Á‚½.(‚½‚¾‚µCR‚ð‰Ÿ‚µ‚½‚çu‚ v‚Æ“ü—Í‚³‚ê‚é‚¾‚¯‚¾‚ª)

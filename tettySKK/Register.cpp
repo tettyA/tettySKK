@@ -12,6 +12,11 @@
 
 #define TEXTSURVICE_LANGID MAKELANGID(LANG_JAPANESE, SUBLANG_DEFAULT)
 
+static const GUID cGUID_Category[]{
+	GUID_TFCAT_TIP_KEYBOARD,
+	GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER
+};
+
 BOOL SetRegistryValue(
 	HKEY hKeyRoot,
 	LPCWSTR lpSubKey,
@@ -36,6 +41,7 @@ BOOL DeleteRegistryKey(HKEY hKeyRoot, LPCWSTR lpSubKey)
 {
 	return (RegDeleteKey(hKeyRoot, lpSubKey) == ERROR_SUCCESS);
 }
+
 
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/Register.cpp#L49
 STDAPI DllRegisterServer(void) {
@@ -99,11 +105,13 @@ STDAPI DllRegisterServer(void) {
 		CComPtr<ITfCategoryMgr> pCategoryMgr;
 		HRESULT hrCat = pCategoryMgr.CoCreateInstance(CLSID_TF_CategoryMgr);
 		if (SUCCEEDED(hrCat) && pCategoryMgr != nullptr) {
-			pCategoryMgr->RegisterCategory(
-				CLSID_tettySKK,
-				GUID_TFCAT_TIP_KEYBOARD,
-				CLSID_tettySKK
-			);
+			for (int i = 0; i < _countof(cGUID_Category); i++) {
+				pCategoryMgr->RegisterCategory(
+					CLSID_tettySKK,
+					cGUID_Category[i],
+					CLSID_tettySKK
+				);
+			}
 
 			//TODO:GUID_TFCAT_DISPLAYATTERBUTEPROVIDER Ç»Ç«Ç‡ìoò^Ç∑ÇÈÅI(çÌèúÇ‡ñYÇÍÇ»Ç¢ÇÊÇ§Ç…)
 		}
@@ -143,12 +151,13 @@ STDAPI DllUnregisterServer(void) {
 	{
 		CComPtr<ITfCategoryMgr> pCategoryMgr;
 		if (SUCCEEDED(pCategoryMgr.CoCreateInstance(CLSID_TF_CategoryMgr))) {
-			pCategoryMgr->UnregisterCategory(
-				CLSID_tettySKK,
-				GUID_TFCAT_TIP_KEYBOARD,
-				CLSID_tettySKK
-				//TODO:GUID_TFCAT_DISPLAYATTERBUTERPROVIDERÇ»Ç«Ç‡ìoò^ÇµÇΩèÍçáÅCÇ±ÇÍÇ‡çÌèúÇ∑ÇÈÅI
-			);
+			for (int i = 0; i < _countof(cGUID_Category); i++) {
+				pCategoryMgr->UnregisterCategory(
+					CLSID_tettySKK,
+					cGUID_Category[i],
+					CLSID_tettySKK
+				);
+			}
 		}
 	}
 

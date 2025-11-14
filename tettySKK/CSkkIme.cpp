@@ -2,6 +2,7 @@
 #include "CSkkIme.h"
 
 #include "Global.h"
+#include "CDisplayAttributeInfo.h"
 
 CSkkIme::CSkkIme()
 {
@@ -36,9 +37,13 @@ STDAPI CSkkIme::QueryInterface(REFIID riid, void** ppvObj)
 	{
 		*ppvObj = static_cast<ITfKeyEventSink*>(this);
 	}
-	else if (IsEqualGUID(riid, IID_ITfCompositionSink))
+	else if (IsEqualIID(riid, IID_ITfCompositionSink))
 	{
 		*ppvObj = static_cast<ITfCompositionSink*>(this);
+	}
+	else if (IsEqualIID(riid, IID_ITfDisplayAttributeProvider))
+	{
+		*ppvObj = static_cast<ITfDisplayAttributeProvider*>(this);
 	}
 	else
 	{
@@ -92,5 +97,10 @@ STDAPI CSkkIme::Deactivate() {
 #endif
 
 	_UninitKeyEventSink();
+
+	if (_pComposition) {
+		_pComposition.Release();
+		_pComposition = nullptr;
+	}
 	return S_OK;
 }

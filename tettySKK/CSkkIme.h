@@ -9,7 +9,8 @@
 class CSkkIme :
 	public ITfTextInputProcessor,
 	public ITfKeyEventSink,
-	public ITfCompositionSink
+	public ITfCompositionSink,
+	public ITfDisplayAttributeProvider
 {
 public:
 	CSkkIme();
@@ -35,6 +36,11 @@ public:
 	//ITfCompositionSink methods
 	STDMETHODIMP OnCompositionTerminated(TfEditCookie ecWrite, ITfComposition* pComposition);
 
+	//ITfDisplayAttributeProvider methods
+	STDMETHODIMP EnumDisplayAttributeInfo(IEnumTfDisplayAttributeInfo** ppEnum);
+	STDMETHODIMP GetDisplayAttributeInfo(REFGUID guid, ITfDisplayAttributeInfo** ppInfo);
+
+	//テキスト挿入補助
 	HRESULT _DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHAR* text);
 private:
 	LONG _refCount;

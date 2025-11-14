@@ -16,7 +16,14 @@ DEFINE_GUID(GUID_Profile_SKKIme,
 DEFINE_GUID(GUID_Category_SkkIme,
 	0xb7d48160, 0x7f03, 0x42fb, 0x82, 0x8b, 0xdd, 0xad, 0x9a, 0x49, 0x65, 0xd2);
 
+//ì¸óÕíÜÇÃï∂éöëïè¸ópGUID
+// {BC24D976-911F-49AF-9C50-82C6269EAA9E}
+DEFINE_GUID(GUID_Skk_DisplayAttirbute_Input ,
+	0xbc24d976, 0x911f, 0x49af, 0x9c, 0x50, 0x82, 0xc6, 0x26, 0x9e, 0xaa, 0x9e);
+
 #define gtettySKK_IME_NAME L"tettySKK IME"
+
+
 
 LONG DllAddRef(void);
 LONG DllRelease(void);
