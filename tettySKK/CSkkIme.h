@@ -3,6 +3,7 @@
 #include <msctf.h>
 #include <strsafe.h>
 #include <atlbase.h>
+#include "TranslatetRomajiToKana.h"
 
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.h
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.cpp
@@ -41,7 +42,7 @@ public:
 	STDMETHODIMP GetDisplayAttributeInfo(REFGUID guid, ITfDisplayAttributeInfo** ppInfo);
 
 	//テキスト挿入補助
-	HRESULT _DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHAR* text);
+	HRESULT _DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHAR* text,BOOL _isDetermined);
 private:
 	LONG _refCount;
 	//TSFとの連絡用
@@ -50,12 +51,14 @@ private:
 
 	//未確定文字列管理用
 	CComPtr<ITfComposition> _pComposition;
-	void _InsertText(ITfContext* pic, const WCHAR* text);
+	void _InsertText(ITfContext* pic, const WCHAR* text,BOOL _isDetermined);
 
 	BOOL _InitKeyEventSink();
 	void _UninitKeyEventSink();
 
+	bool _IsKeyEaten(WPARAM wParam);
 
+	TranslatetRomajiToKana m_RomajiToKanaTranslator;
 };
 
 
