@@ -16,6 +16,31 @@ void CSkkIme::_InsertText(ITfContext* pic, const WCHAR* text,BOOL isDetermined) 
 	pSession->Release();
 }
 
+HRESULT CSkkIme::_SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCookie ec, ITfRange* pRange) {
+	HRESULT hr = E_FAIL;
+	//属性プロパティ設定
+	CComPtr<ITfProperty> pProperty;
+	if (FAILED(pContext->GetProperty(GUID_PROP_ATTRIBUTE, &pProperty)) || (pProperty == nullptr)) {
+		return hr;
+	}
+
+
+	TfGuidAtom gatom = TF_INVALID_GUIDATOM;
+	CComPtr<ITfCategoryMgr> pCategoryMgr;
+	if (SUCCEEDED(pCategoryMgr.CoCreateInstance(CLSID_TF_CategoryMgr))) {
+		pCategoryMgr->RegisterGUID(GUID_Skk_DisplayAttirbute_Input, &gatom);
+	}
+	if (gatom != TF_INVALID_GUIDATOM) {
+		VARIANT var;
+		var.vt = VT_I4;
+		var.lVal = (LONG)gatom;
+
+		pProperty->SetValue(ec, pRange, &var);
+	}
+
+	return S_OK;
+}
+
 //実際にテキストの編集を行う
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/Composition.cpp#L78
 HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHAR* text,BOOL isDetermined) {
@@ -25,6 +50,8 @@ HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHA
 		CComPtr<ITfRange> pRange;
 		if (SUCCEEDED(_pComposition->GetRange(&pRange))) {
 			pRange->SetText(ec, 0, text, (ULONG)wcslen(text));
+
+			_SetInputDisplayAttributeInfo(pContext, ec, pRange);
 
 			//カーソルを末尾に移動
 			pRange->Collapse(ec, TF_ANCHOR_END);
@@ -36,8 +63,6 @@ HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHA
 
 	}
 	else {
-
-
 		CComPtr<ITfInsertAtSelection> pInsertAtSelection;
 
 		if (FAILED(pContext->QueryInterface(IID_PPV_ARGS(&pInsertAtSelection))) || (pInsertAtSelection == nullptr))
@@ -56,25 +81,8 @@ HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHA
 			return hr;
 		}
 
-		//属性プロパティ設定
-		CComPtr<ITfProperty> pProperty;
-		if (FAILED(pContext->GetProperty(GUID_PROP_ATTRIBUTE, &pProperty)) || (pProperty == nullptr)) {
+		if (FAILED(_SetInputDisplayAttributeInfo(pContext, ec, pRange))) {
 			return hr;
-		}
-
-		{
-			TfGuidAtom gatom = TF_INVALID_GUIDATOM;
-			CComPtr<ITfCategoryMgr> pCategoryMgr;
-			if (SUCCEEDED(pCategoryMgr.CoCreateInstance(CLSID_TF_CategoryMgr))) {
-				pCategoryMgr->RegisterGUID(GUID_Skk_DisplayAttirbute_Input, &gatom);
-			}
-			if (gatom != TF_INVALID_GUIDATOM) {
-				VARIANT var;
-				var.vt = VT_I4;
-				var.lVal = (LONG)gatom;
-
-				pProperty->SetValue(ec, pRange, &var);
-			}
 		}
 
 		CComPtr<ITfContextComposition> pContextComposition;
@@ -91,6 +99,9 @@ HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHA
 		)) || pComposition == nullptr) {
 			return hr;
 		}
+
+
+		
 
 		_pComposition = pComposition;
 
@@ -120,4 +131,38 @@ STDMETHODIMP CSkkIme::OnCompositionTerminated(TfEditCookie ecWrite, ITfCompositi
 		_pComposition = nullptr;
 	}
 	return S_OK;
+}
+
+BOOL CSkkIme::_GetCompositionString(std::wstring& compositionString)
+{
+	compositionString.clear();
+
+	CComPtr<ITfRange> pRange;
+	if (_pComposition == nullptr) {
+	//	MessageBox(NULL, L"Comp NULL", L"Get", MB_OK);
+		return FALSE;
+	}
+	if (FAILED(_pComposition->GetRange(&pRange)) || (pRange == nullptr)) {
+	//	MessageBox(NULL, L"GetRange Failed", L"Get", MB_OK);
+		return FALSE;
+	}
+
+
+	CGetTextEditSession* pSession = new CGetTextEditSession(pRange, &compositionString);
+
+	HRESULT hr;
+	ITfContext* pContext ;
+	if (SUCCEEDED(pRange->GetContext(&pContext)))
+	{
+		pContext->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READ, &hr);
+		pContext->Release();
+
+		//MessageBox(NULL, compositionString.c_str(), L"Get", MB_OK);
+	}
+	else {
+		//MessageBox(NULL, L"GetContext Failed", L"Get", MB_OK);
+	}
+	pSession->Release();
+
+	return !compositionString.empty();
 }

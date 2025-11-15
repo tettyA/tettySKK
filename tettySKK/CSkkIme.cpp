@@ -12,6 +12,10 @@ CSkkIme::CSkkIme()
 	_pThreadMgr = nullptr;
 	_clientId = TF_CLIENTID_NULL;
 	_pComposition = nullptr;
+
+	m_CurrentShowCandidateIndex = 0;
+
+	m_CurrentCandidates = SKKCandidates();
 }
 CSkkIme::~CSkkIme()
 {
@@ -104,3 +108,4 @@ STDAPI CSkkIme::Deactivate() {
 	}
 	return S_OK;
 }
+

@@ -162,6 +162,7 @@ notepad.exe</Command>
     <ClInclude Include="framework.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="SKKDictionaly.h" />
     <ClInclude Include="SKKImeFactory.h" />
     <ClInclude Include="TranslatetRomajiToKana.h" />
   </ItemGroup>
@@ -181,6 +182,7 @@ notepad.exe</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Register.cpp" />
+    <ClCompile Include="SKKDictionaly.cpp" />
     <ClCompile Include="SKKImeFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
