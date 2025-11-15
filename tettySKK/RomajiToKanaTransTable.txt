@@ -301,6 +301,7 @@ MAKETRANSTABLE(vyu, う゛ゅ, ヴュ),
 MAKETRANSTABLE(hye, ひぇ, ヒェ),
 
 /* 記号 */
+//FIX: このような記号も扱えるようにする
 MAKETRANSTABLE(-, ー, ー),
 MAKETRANSTABLE(., 。, 。),
 //MAKETRANSTABLE(,, ，, ，),

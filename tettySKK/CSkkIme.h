@@ -4,6 +4,7 @@
 #include <strsafe.h>
 #include <atlbase.h>
 #include "TranslatetRomajiToKana.h"
+#include "SKKDictionaly.h"
 
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.h
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.cpp
@@ -53,12 +54,23 @@ private:
 	CComPtr<ITfComposition> _pComposition;
 	void _InsertText(ITfContext* pic, const WCHAR* text,BOOL _isDetermined);
 
+
 	BOOL _InitKeyEventSink();
 	void _UninitKeyEventSink();
+
+	HRESULT _SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCookie ec, ITfRange* pRange);
 
 	bool _IsKeyEaten(WPARAM wParam);
 
 	TranslatetRomajiToKana m_RomajiToKanaTranslator;
+
+	CSKKDictionaly m_SKKDictionaly;
+	SKKCandidates m_CurrentCandidates;
+
+	size_t m_CurrentShowCandidateIndex;
+
+	BOOL _GetCompositionString(std::wstring& compositionString);
+
 };
 
 

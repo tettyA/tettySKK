@@ -27,7 +27,7 @@ public:
 		m_buffer += key;
 		auto it = m_RomajiToKana.find(m_buffer);
 		if (it != m_RomajiToKana.end()) {
-			output = (*it).second[0];
+			output = (*it).second[TrR2K_INDEX_HIRAGANA];
 			m_buffer.clear();
 			return true;
 		}
