@@ -70,13 +70,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		if (_pComposition) {
 			*pfEaten = TRUE;
 
-			_pComposition->EndComposition(TF_INVALID_EDIT_COOKIE);
-			_pComposition.Release();
-			_pComposition = nullptr;
-
-			m_CurrentCandidates.clear();
-			m_CurrentShowCandidateIndex = 0;
-			m_RomajiToKanaTranslator.Reset();
+			_CommitComposition(pic);
 
 			return S_OK;
 		}
@@ -84,24 +78,33 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 	if (_IsKeyEaten(wParam))
 	{
-		//何かのキーが押されたら候補リストのクリア
-		m_CurrentCandidates.clear();
-		m_CurrentShowCandidateIndex = 0;
-
-
 		key += L'a' - L'A';
 		*pfEaten = TRUE;
 
-		std::wstring output;
-		if (m_RomajiToKanaTranslator.Translate(key, output))
-		{
-			//FIX:Debugが終了したらTRUEに戻す!
-			_InsertText(pic, output.c_str(), FALSE);
+		// 工廠(変換中) + n(新規) => 工廠(確定) + n(変換中)
+		if (!m_CurrentCandidates.empty()) {
+			
+			_CommitComposition(pic);
 		}
-		else {
-			//ひらがなの変換に達していない場合はバッファを表示
-			_InsertText(pic, m_RomajiToKanaTranslator.GetBuffer().c_str(), FALSE);
-		}
+
+		//まず未確定変換文字列画面の文字を取得 ex: しm
+		std::wstring textonScreen=L"";
+		_GetCompositionString(textonScreen);
+		
+		//前回のローマ字変換バッファ長さを取得 ex: m = 1
+		size_t prevRomajilen = m_RomajiToKanaTranslator.GetBuffer().size();
+		
+		//新しいキーを変換  ex: m + a = ま
+		std::wstring newkana;
+		m_RomajiToKanaTranslator.Translate(key, newkana);
+
+		//今の画面[しm] - ローマ字[m] = ひらがな確定済部分[し]
+		std::wstring baseKana = textonScreen.substr(0, textonScreen.size() - prevRomajilen);
+
+		//ひらがな確定済部分[し] + 新かな[ま] + 新ローマ字バッファ[]
+		std::wstring finalText = baseKana + newkana + m_RomajiToKanaTranslator.GetBuffer();
+		
+		_InsertText(pic, finalText.c_str(), FALSE);
 
 		return S_OK;
 	}

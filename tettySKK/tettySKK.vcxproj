@@ -156,6 +156,7 @@ notepad.exe</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CDisplayAttributeInfo.h" />
+    <ClInclude Include="CEditSessionBase.h" />
     <ClInclude Include="CEnumDisplayAttributeInfo.h" />
     <ClInclude Include="CInsertTextEditSession.h" />
     <ClInclude Include="CSkkIme.h" />
@@ -168,8 +169,8 @@ notepad.exe</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CDisplayAttributeInfo.cpp" />
+    <ClCompile Include="CEditSessionBase.cpp" />
     <ClCompile Include="CEnumDisplayAttributeInfo.cpp" />
-    <ClCompile Include="CInsertTextEditSession.cpp" />
     <ClCompile Include="Composition.cpp" />
     <ClCompile Include="CSkkIme.cpp" />
     <ClCompile Include="DisplayAttributeProvider.cpp" />

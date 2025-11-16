@@ -2,11 +2,6 @@
 #include "CInsertTextEditSession.h"
 #include "Global.h"
 
-STDMETHODIMP CInsertTextEditSession::DoEditSession(TfEditCookie ec) {
-	
-	return _pIme->_DoInsertText(ec, _pContext, _text, _isDetermined);
-}
-
 //テキスト編集の予約
 void CSkkIme::_InsertText(ITfContext* pic, const WCHAR* text,BOOL isDetermined) {
 	CInsertTextEditSession* pSession = new CInsertTextEditSession(this, pic, text, isDetermined);
@@ -139,11 +134,9 @@ BOOL CSkkIme::_GetCompositionString(std::wstring& compositionString)
 
 	CComPtr<ITfRange> pRange;
 	if (_pComposition == nullptr) {
-	//	MessageBox(NULL, L"Comp NULL", L"Get", MB_OK);
 		return FALSE;
 	}
 	if (FAILED(_pComposition->GetRange(&pRange)) || (pRange == nullptr)) {
-	//	MessageBox(NULL, L"GetRange Failed", L"Get", MB_OK);
 		return FALSE;
 	}
 
@@ -157,12 +150,28 @@ BOOL CSkkIme::_GetCompositionString(std::wstring& compositionString)
 		pContext->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READ, &hr);
 		pContext->Release();
 
-		//MessageBox(NULL, compositionString.c_str(), L"Get", MB_OK);
-	}
-	else {
-		//MessageBox(NULL, L"GetContext Failed", L"Get", MB_OK);
 	}
 	pSession->Release();
 
 	return !compositionString.empty();
+}
+
+void CSkkIme::_CommitComposition(ITfContext* pic)
+{
+	if (_pComposition) {
+		CTerminateCompositionEditSession* pSession = new CTerminateCompositionEditSession(_pComposition);
+		HRESULT hr;
+		pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READWRITE, &hr);
+		pSession->Release();
+
+
+		_pComposition.Release();
+		_pComposition = nullptr;
+	}
+
+	m_CurrentCandidates.clear();
+	m_CurrentShowCandidateIndex = 0;
+	m_RomajiToKanaTranslator.Reset();
+
+	return;
 }
