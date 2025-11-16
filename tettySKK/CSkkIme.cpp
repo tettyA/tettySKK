@@ -16,6 +16,8 @@ CSkkIme::CSkkIme()
 	m_CurrentShowCandidateIndex = 0;
 
 	m_CurrentCandidates = SKKCandidates();
+
+	m_pCandidateWindow = new CCandidateWindow(g_hModule);
 }
 CSkkIme::~CSkkIme()
 {
@@ -23,6 +25,11 @@ CSkkIme::~CSkkIme()
 	{
 		_pThreadMgr.Release();
 		_pThreadMgr = nullptr;
+	}
+	if(m_pCandidateWindow)
+	{
+		delete m_pCandidateWindow;
+		m_pCandidateWindow = nullptr;
 	}
 	DllRelease();
 }

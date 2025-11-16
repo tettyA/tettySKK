@@ -1,10 +1,10 @@
 #pragma once
 #include "pch.h"
 #include <msctf.h>
-#include <strsafe.h>
 #include <atlbase.h>
 #include "TranslatetRomajiToKana.h"
 #include "SKKDictionaly.h"
+#include "CCandidateWindow.h"
 
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.h
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.cpp
@@ -73,6 +73,9 @@ private:
 	BOOL _GetCompositionString(std::wstring& compositionString);
 
 	void _CommitComposition(ITfContext* pic);
+
+	CCandidateWindow* m_pCandidateWindow;
+	void _UpDateCandidateWindowPosition(ITfContext* pic);
 };
 
 

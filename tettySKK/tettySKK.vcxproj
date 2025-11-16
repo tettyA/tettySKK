@@ -155,6 +155,7 @@ notepad.exe</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CCandidateWindow.h" />
     <ClInclude Include="CDisplayAttributeInfo.h" />
     <ClInclude Include="CEditSessionBase.h" />
     <ClInclude Include="CEnumDisplayAttributeInfo.h" />
@@ -168,6 +169,7 @@ notepad.exe</Command>
     <ClInclude Include="TranslatetRomajiToKana.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CCandidateWindow.cpp" />
     <ClCompile Include="CDisplayAttributeInfo.cpp" />
     <ClCompile Include="CEditSessionBase.cpp" />
     <ClCompile Include="CEnumDisplayAttributeInfo.cpp" />
