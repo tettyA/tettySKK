@@ -2,45 +2,93 @@
 #include <msctf.h>
 #include "CSkkIme.h"
 #include <string>
+#include "CEditSessionBase.h"
 
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/EditSession.h#L6
 //テキスト挿入のためのEditSession
 class CInsertTextEditSession :
-    public ITfEditSession
+	public  CEditSessionBase
 {
 public:
-	CInsertTextEditSession(CSkkIme* pIme, ITfContext* pContext, const WCHAR* text, BOOL isDetermined);
-	~CInsertTextEditSession();
-	//IUnknown methods
-	STDMETHODIMP QueryInterface(REFIID riid, void** ppvObj);
-	STDMETHODIMP_(ULONG) AddRef();
-	STDMETHODIMP_(ULONG) Release();
+	CInsertTextEditSession(CSkkIme* pIme, ITfContext* pContext, const WCHAR* text, BOOL isDetermined) {
+		_pIme = pIme;//明示的なAddRefは不要 (CComPtrがやってくれる)
+		_pContext = pContext;
+		_isDetermined = isDetermined;
+
+		_text = text;
+	}
+
+	~CInsertTextEditSession() {
+		_pContext.Release();
+		_pIme.Release();
+	}
+
 	//ITfEditSession methods
-	STDMETHODIMP DoEditSession(TfEditCookie ec);
+	STDMETHODIMP DoEditSession(TfEditCookie ec)override {
+		return _pIme->_DoInsertText(ec, _pContext, _text.c_str(), _isDetermined);
+	}
+
 private:	
-	LONG _refCount;
 	CComPtr<CSkkIme> _pIme;
 	CComPtr<ITfContext> _pContext;
-	WCHAR* _text;
+	std::wstring _text;
 
 	//確定したか否か?
 	BOOL _isDetermined;
 };
 
 //Compositionのテキストを取得するためのEditSession
-class CGetTextEditSession :public ITfEditSession
+class CGetTextEditSession :public CEditSessionBase
 {
 public:
-	CGetTextEditSession(ITfRange* pRange, std::wstring* pOutput);
-	~CGetTextEditSession();
-	//IUnknown methods
-	STDMETHODIMP QueryInterface(REFIID riid, void** ppvObj);
-	STDMETHODIMP_(ULONG) AddRef();
-	STDMETHODIMP_(ULONG) Release();
+	CGetTextEditSession(ITfRange* pRange, std::wstring* pOutput) {
+		_pRange = pRange;
+		_pOutput = pOutput;
+	}
+
+	~CGetTextEditSession() {
+		_pRange.Release();
+		_pOutput = nullptr;
+	}
+
 	//ITfEditSession methods
-	STDMETHODIMP DoEditSession(TfEditCookie ec);
+	STDMETHODIMP DoEditSession(TfEditCookie ec) override{
+		WCHAR buffer[512];
+		ULONG cchFetched = 0;
+
+		if (SUCCEEDED(_pRange->GetText(ec, 0, buffer, 512, &cchFetched)))
+		{
+			if (cchFetched > 0) {
+				_pOutput->assign(buffer, cchFetched);
+			}
+		}
+
+		return S_OK;
+	}
+
 private:
-	LONG _refCount;
 	CComPtr<ITfRange> _pRange;
 	std::wstring* _pOutput;
+};
+
+//Compositionを強制終了させるためのEditSession
+class CTerminateCompositionEditSession :public CEditSessionBase
+{
+public:
+	CTerminateCompositionEditSession(ITfComposition* pComposition) {
+		_pComposition = pComposition;
+	}
+	~CTerminateCompositionEditSession() {
+		_pComposition.Release();
+	}
+
+	//ITfEditSession methods
+	STDMETHODIMP DoEditSession(TfEditCookie ec) override {
+		if (_pComposition) {
+			_pComposition->EndComposition(ec);
+		}
+		return S_OK;
+	}
+private:
+	CComPtr<ITfComposition> _pComposition;
 };

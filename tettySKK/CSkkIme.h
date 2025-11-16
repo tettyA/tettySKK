@@ -69,8 +69,10 @@ private:
 
 	size_t m_CurrentShowCandidateIndex;
 
+
 	BOOL _GetCompositionString(std::wstring& compositionString);
 
+	void _CommitComposition(ITfContext* pic);
 };
 
 

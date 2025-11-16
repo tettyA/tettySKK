@@ -1,5 +1,6 @@
 #pragma once
 
+
 extern HMODULE g_hModule;
 //SKK IME –{‘Ì‚ÌCLSID
 // {C021919B-A5A1-463E-A1BF-C71F7B6313A2}

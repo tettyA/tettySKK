@@ -41,6 +41,7 @@ public:
 		return false;
 	}
 
+	//かなの変換に達していない場合のバッファを取得 2文字以下であることが証明される。(かなに変換された場合は，バッファがクリアされるため)
 	std::wstring GetBuffer() const {
 		return m_buffer;
 	}
