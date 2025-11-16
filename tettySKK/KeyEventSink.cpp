@@ -31,6 +31,8 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 	
 		if (m_CurrentCandidates.empty())
 		{
+
+
 			std::wstring compositionString;
 
 			
@@ -52,13 +54,21 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		}
 		//2‰ñ–ÚˆÈ~
 		else {
+
 			m_CurrentShowCandidateIndex++;
 			if (m_CurrentShowCandidateIndex >= m_CurrentCandidates.size()) {
 				//TODO:V‚µ‚¢Œê‚Ì“o˜^
 				m_CurrentShowCandidateIndex = 0;//‚Æ‚è‚ ‚¦‚¸Å‰‚É–ß‚·
 			}
 
+
+			//TODO:ˆÊ’u‚ð’²®
+			
+
 			_InsertText(pic, m_CurrentCandidates[m_CurrentShowCandidateIndex].c_str(), FALSE);
+
+			m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex);
+			_UpDateCandidateWindowPosition(pic);
 
 			return S_OK;
 		}

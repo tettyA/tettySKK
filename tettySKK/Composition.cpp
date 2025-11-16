@@ -167,6 +167,10 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 
 		_pComposition.Release();
 		_pComposition = nullptr;
+
+	}
+	if(m_pCandidateWindow->IsWindowExists()){
+		m_pCandidateWindow->HideWindow();
 	}
 
 	m_CurrentCandidates.clear();
@@ -174,4 +178,27 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 	m_RomajiToKanaTranslator.Reset();
 
 	return;
+}
+
+void CSkkIme::_UpDateCandidateWindowPosition(ITfContext* pic)
+{
+	if (!_pComposition || m_pCandidateWindow == nullptr || !m_pCandidateWindow->IsWindowExists()) {
+		return;
+	}
+
+	CComPtr<ITfRange> pRange;
+	if (FAILED(_pComposition->GetRange(&pRange)) || (pRange == nullptr)) {
+		return;
+	}
+
+	RECT rc = { 0 };
+	CGetCandidateWindowPosEditSession* pSession = new CGetCandidateWindowPosEditSession(pic, pRange, &rc);
+
+	HRESULT hr;
+	pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READ, &hr);
+	pSession->Release();
+
+	if (SUCCEEDED(hr)) {
+		m_pCandidateWindow->ShowWindow(rc.left, rc.bottom);
+	}
 }

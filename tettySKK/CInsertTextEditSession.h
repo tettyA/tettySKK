@@ -92,3 +92,37 @@ public:
 private:
 	CComPtr<ITfComposition> _pComposition;
 };
+
+//候補ウィンドウの座標を取得するためのEditSession
+class CGetCandidateWindowPosEditSession :public CEditSessionBase
+{
+public:
+
+	CGetCandidateWindowPosEditSession(ITfContext* pContext, ITfRange* pRange, RECT* pRECT) {
+		_pContext = pContext;
+		_pRange = pRange;
+		_pRECT = pRECT;
+	}
+
+	~CGetCandidateWindowPosEditSession() {
+		_pContext.Release();
+		_pRange.Release();
+		_pRECT = nullptr;
+	}
+
+	//ITfEditSession methods
+	STDMETHODIMP DoEditSession(TfEditCookie ec) override {
+		CComPtr<ITfContextView> pContextView;
+		if (FAILED(_pContext->GetActiveView(&pContextView)) || (pContextView == nullptr)) {
+			return E_FAIL;
+		}
+
+		BOOL fClipped = FALSE;
+		return pContextView->GetTextExt(ec, _pRange, _pRECT, &fClipped);
+	}
+
+private:
+	CComPtr<ITfContext> _pContext;
+	CComPtr<ITfRange> _pRange;
+	RECT* _pRECT;
+};
