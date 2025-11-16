@@ -11,7 +11,7 @@
 
 class TranslatetRomajiToKana {
 public:
-	TranslatetRomajiToKana() {
+	__declspec(noinline) TranslatetRomajiToKana() {
 		m_RomajiToKana = {
 #include "RomajiToKanaTransTable.txt"
 		};
@@ -21,7 +21,7 @@ public:
 	}
 
 	//true: •ÏŠ·¬Œ÷  false: •ÏŠ·‚É’B‚µ‚Ä‚¢‚È‚¢ 
-	bool Translate(WCHAR key, std::wstring& output) {
+	__declspec(noinline) bool Translate(WCHAR key, std::wstring& output) {
 		output.clear();
 
 		m_buffer += key;

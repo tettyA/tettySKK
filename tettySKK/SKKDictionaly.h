@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 
+
 using SKKCandidate = std::wstring;//ˆê‚Â‚ÌŒó•â•¶š—ñ
 using SKKCandidates = std::vector<SKKCandidate>;//Œó•â•¶š—ñŒQ
 using SKKDictionary = std::map<std::wstring, SKKCandidates>;//“Ç‚İCŒó•â•¶š—ñŒQ
