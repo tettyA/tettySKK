@@ -5,6 +5,16 @@
 #include "TranslatetRomajiToKana.h"
 #include "SKKDictionaly.h"
 #include "CCandidateWindow.h"
+/*
+#define SKKMODE_PRECHAR_CONVERSION L'Å§'
+#define SKKMODE_PRECHAR_SHOWCANDIDATE L'Å•'
+*/
+enum class SKKMode {
+	Hiragana,
+	//Katakana,
+	Henkan,
+	//Hankaku,
+};
 
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.h
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.cpp
@@ -76,6 +86,10 @@ private:
 
 	CCandidateWindow* m_pCandidateWindow;
 	void _UpDateCandidateWindowPosition(ITfContext* pic);
+
+	SKKMode m_currentMode;
+	bool _IsShiftKeyPressed();
+
 };
 
 

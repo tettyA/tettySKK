@@ -18,6 +18,8 @@ CSkkIme::CSkkIme()
 	m_CurrentCandidates = SKKCandidates();
 
 	m_pCandidateWindow = new CCandidateWindow(g_hModule);
+
+	m_currentMode = SKKMode::Hiragana;//TODO: ÅI“I‚É‚ÍHankaku‚É‚·‚é
 }
 CSkkIme::~CSkkIme()
 {

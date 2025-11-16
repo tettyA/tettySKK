@@ -176,6 +176,7 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 	m_CurrentCandidates.clear();
 	m_CurrentShowCandidateIndex = 0;
 	m_RomajiToKanaTranslator.Reset();
+	m_currentMode = SKKMode::Hiragana;
 
 	return;
 }

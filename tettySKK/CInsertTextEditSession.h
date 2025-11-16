@@ -10,7 +10,7 @@ class CInsertTextEditSession :
 	public  CEditSessionBase
 {
 public:
-	CInsertTextEditSession(CSkkIme* pIme, ITfContext* pContext, const WCHAR* text, BOOL isDetermined) {
+	__declspec(noinline) CInsertTextEditSession(CSkkIme* pIme, ITfContext* pContext, const WCHAR* text, BOOL isDetermined) {
 		_pIme = pIme;//–¾Ž¦“I‚ÈAddRef‚Í•s—v (CComPtr‚ª‚â‚Á‚Ä‚­‚ê‚é)
 		_pContext = pContext;
 		_isDetermined = isDetermined;
@@ -18,7 +18,7 @@ public:
 		_text = text;
 	}
 
-	~CInsertTextEditSession() {
+	__declspec(noinline) ~CInsertTextEditSession() {
 		_pContext.Release();
 		_pIme.Release();
 	}
@@ -52,7 +52,7 @@ public:
 	}
 
 	//ITfEditSession methods
-	STDMETHODIMP DoEditSession(TfEditCookie ec) override{
+	__declspec(noinline) STDMETHODIMP DoEditSession(TfEditCookie ec) override{
 		WCHAR buffer[512];
 		ULONG cchFetched = 0;
 
@@ -111,7 +111,7 @@ public:
 	}
 
 	//ITfEditSession methods
-	STDMETHODIMP DoEditSession(TfEditCookie ec) override {
+	__declspec(noinline) STDMETHODIMP DoEditSession(TfEditCookie ec) override {
 		CComPtr<ITfContextView> pContextView;
 		if (FAILED(_pContext->GetActiveView(&pContextView)) || (pContextView == nullptr)) {
 			return E_FAIL;
