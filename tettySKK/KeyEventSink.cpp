@@ -3,6 +3,7 @@
 
 #include "Global.h"
 #include "CInsertTextEditSession.h"
+#include "CCandidateWindow.h"
 
 bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	WCHAR key = (WCHAR)wParam;
@@ -72,6 +73,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		}
 		//2回目以降
 		else {
+			
 			std::wstring additionalStr = L"";
 			std::wstring compositionString;
 			_GetCompositionString(compositionString);
@@ -82,18 +84,31 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			}
 
 			m_CurrentShowCandidateIndex++;
-			if (m_CurrentShowCandidateIndex >= m_CurrentCandidates.size()) {
+			if (m_CurrentShowCandidateIndex >= m_CurrentCandidates.size() ||
+				(m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX &&
+					(BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX +
+						(m_CurrentShowCandidateIndex -BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX ) *
+						NUM_SHOW_CANDIDATE_MULTIPLE)
+					>= m_CurrentCandidates.size())
+				) {
 				//TODO:新しい語の登録
 				m_CurrentShowCandidateIndex = 0;//とりあえず最初に戻す
 			}
 
-			std::wstring displayStr = m_CurrentCandidates[m_CurrentShowCandidateIndex];
+			if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
 
-			_InsertText(pic, (m_CurrentCandidates[m_CurrentShowCandidateIndex] + additionalStr).c_str(), FALSE);
+				_InsertText(pic, (m_CurrentCandidates[m_CurrentShowCandidateIndex] + additionalStr).c_str(), FALSE);
 
-			m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex);
-			_UpDateCandidateWindowPosition(pic);
+				m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_SINGLE);
+				_UpDateCandidateWindowPosition(pic);
+			}
+			else {
+				//TODO: ひらがなで表示したい
+				_InsertText(pic, (m_CurrentCandidates[0] + additionalStr).c_str(), FALSE);
 
+				m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_MULTIPLE);
+				_UpDateCandidateWindowPosition(pic);
+			}
 			return S_OK;
 		}
 	
@@ -119,7 +134,12 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 		// 工廠(変換中) + n(新規) => 工廠(確定) + n(変換中)  (暗黙確定)
 		if (!m_CurrentCandidates.empty()) {
-			_CommitComposition(pic);
+			if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+			//TODO: ASDFJKL を打ち込む時に，それ以外のものが打ち込まれたらCandidates[0]で確定	
+			}
+			else {
+				_CommitComposition(pic);
+			}
 		}
 
 		bool isShift = _IsShiftKeyPressed();
@@ -130,17 +150,6 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				//_CommitComposition(pic);
 				//_CommitComposition without 確定 and m_RomajiToKanaTranslator.Reset();
 
-				/*if (_pComposition) {
-					CTerminateCompositionEditSession* pSession = new CTerminateCompositionEditSession(_pComposition);
-					HRESULT hr;
-					pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READWRITE, &hr);
-					pSession->Release();
-
-
-					_pComposition.Release();
-					_pComposition = nullptr;
-
-				}*/
 				if (m_pCandidateWindow->IsWindowExists()) {
 					m_pCandidateWindow->HideWindow();
 				}
@@ -163,9 +172,49 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		
 
 		//FIX: 書k (no shift) の場合，書 で検索する。 つまり，変換中のローマ字がシフトが押されずに確定された場合は，削除する。
-
+		_InsertText(pic, (L"[Debug2:]"), TRUE);
 		//変換中
 		if (m_currentMode == SKKMode::Henkan) {
+			//ASDFJKL で選ぶ段階
+			if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+				int cnt = 0;
+				 _InsertText(pic, (L"[Debug1:]"), TRUE);
+				switch (key)
+				{
+				case L'l':
+					cnt++;
+				case L'k':
+					cnt++;
+				case L'j':
+					cnt++;
+				case L'f':
+					cnt++;
+				case L'd':
+					cnt++;
+				case L's':
+					cnt++;
+				case L'a':
+				{
+					std::wstring baseword=m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt];
+					//送り仮名付きのとき
+					std::wstring additionalStr = L"";
+					//TODO: 変換確定処理を関数にする。(SPACEで変換や，暗黙の確定などと共通化)
+					/*if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+						//書k or 書く  -> k or く
+						additionalStr = compositionString.substr(compositionString.length() - 1);
+					}*/
+					_InsertText(pic, baseword.c_str(), FALSE);
+					_CommitComposition(pic);
+					return S_OK;
+					break;
+				}
+				default:
+					return S_OK;
+					break;
+				}
+
+				return S_OK;
+			}
 
 			//まず未確定変換文字列画面の文字を取得 ex: しm
 			std::wstring textonScreen = L"";
@@ -190,15 +239,6 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 			//送り仮名の指定
 			if (!textonScreen.empty() && (isShift = _IsShiftKeyPressed())) {
-				//送り仮名が始まる場合，textonScreenにはローマ字は存在しないと考えてよい。
-				//textonScreen[始] + newkana[] + romajiBuffer[M] で，始M になる
-				//書k[KaK] -> OK (完璧)
-				//書く[KaKU] -> OK(後で撃墜)
-				//書く[KakU] -> OK(後の箇所で対応済)
-				//書く[KAKu | kU | KU] -> NG()
-
-				// 結局どうすればいいの?
-
 				// 一回目のシフトで変換モードの開始。(ここに来る前に処理済み)
 				// ↓↓↓↓ここからここで処理する↓↓↓↓
 				// 二回目のシフトの時，かな|漢字 確定部分.length() == 0 ならば無視。

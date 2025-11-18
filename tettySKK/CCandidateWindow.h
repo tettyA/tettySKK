@@ -4,13 +4,18 @@
 #include <atlbase.h>
 #include "SKKDictionaly.h"
 
+#define CANDIDATEWINDOW_MODE_SINGLE 0
+#define CANDIDATEWINDOW_MODE_MULTIPLE 1
+
+#define BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX 5
+#define NUM_SHOW_CANDIDATE_MULTIPLE 7
 class CCandidateWindow
 {
 public:
 	CCandidateWindow(HINSTANCE hInstance);
 	~CCandidateWindow();
 
-	void SetCandidates(const SKKCandidates& candidates, size_t index);
+	void SetCandidates(const SKKCandidates& candidates, size_t index, BOOL Mode);
 	void HideWindow();
 
 	bool IsWindowExists() const {
@@ -23,7 +28,9 @@ private:
 	HINSTANCE m_hInstance;
 
 	SKKCandidates m_Candidates;
-	size_t m_CurrentIndex;
+	//size_t m_CurrentIndex;
+	size_t m_CurrentPageIndex;
+	BOOL m_Mode; // 0: single, 1: multiple
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void _OnPaint(HDC hdc);
 };

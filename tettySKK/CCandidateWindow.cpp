@@ -4,11 +4,15 @@
 #include <msctf.h>
 #include "CCandidateWindow.h"
 
+
+
 CCandidateWindow::CCandidateWindow(HINSTANCE hInstance)
 {
 	m_hInstance = hInstance;
 	m_hWnd = NULL;
 
+	m_CurrentPageIndex = CANDIDATEWINDOW_MODE_SINGLE;
+	m_Mode = 0;
 	constexpr LPCWSTR windowClsName = TEXT("SKK_Candidates_Window");
 	WNDCLASS winc;
 	winc.style = CS_HREDRAW | CS_VREDRAW;	       //ウィンドウの基本スタイル
@@ -45,14 +49,16 @@ CCandidateWindow::~CCandidateWindow()
 	}
 }
 
-void CCandidateWindow::SetCandidates(const SKKCandidates& candidates, size_t index)
+// Mode = 0 一つのみ表示 Mode = 1 複数(SDFJKL)表示
+void CCandidateWindow::SetCandidates(const SKKCandidates& candidates, size_t index, BOOL Mode)
 {
 	if (!IsWindowExists()) {
 		return;
 	}
 
 	m_Candidates = candidates;
-	m_CurrentIndex = index;
+	m_CurrentPageIndex = index;
+	m_Mode = Mode;
 }
 
 void CCandidateWindow::HideWindow()
@@ -98,6 +104,12 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hWnd, UINT message, WPARAM wPara
 #define CANDIDATES_WINDOW_BACKCOLOR_HBURUSH (HBRUSH)(GetStockObject(WHITE_BRUSH)) 
 #define CANDIDATES_WINDOW_TEXTCOLOR_RGB RGB(0, 0, 0)
 #define CANDIDATES_WINDOW_HIGHLIGHTTEXTCOLOR_RGB RGB(255, 0, 0)
+#define CANDIDATES_WINDOW_ASDFJKL_TEXTCOLOR_RGB RGB(0, 0, 255)
+
+#define CANDIDATES_WINDOW_FONT_HSIZE (46)
+
+#define WSTR_AND_WLEN(wstr) (wstr).c_str(), static_cast<int>((wstr).length())
+#define CANDIDATES_WINDOW_MAXWIDTH (900)
 
 void CCandidateWindow::_OnPaint(HDC hdc)
 {
@@ -105,24 +117,81 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 	GetClientRect(m_hWnd, &cc);
 	FillRect(hdc, &cc, CANDIDATES_WINDOW_BACKCOLOR_HBURUSH);
 
-	HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+	HFONT hFont =
+		CreateFont(
+			CANDIDATES_WINDOW_FONT_HSIZE,
+			0,
+			0,
+			0,
+			FW_REGULAR,
+			FALSE,
+			FALSE,
+			FALSE,
+			SHIFTJIS_CHARSET,
+			OUT_DEFAULT_PRECIS,
+			CLIP_DEFAULT_PRECIS,
+			PROOF_QUALITY,
+			FIXED_PITCH | FF_MODERN,
+			L"Meiryo UI"
+		);
+		
 	SelectObject(hdc, hFont);
 	SetBkMode(hdc, TRANSPARENT);
 
-	int y = 0;
-	int lineHeight = 20;
-	for (size_t i = 0; i < m_Candidates.size(); ++i) {
-		if (i == m_CurrentIndex) {
-			SetTextColor(hdc, CANDIDATES_WINDOW_HIGHLIGHTTEXTCOLOR_RGB);
-		}
-		else {
-			SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
-		}
+	int y = 0, x = 5;
+	int maxx = 0;
+	SIZE strsize ;
+	//TextOut(hdc, x, y, WSTR_AND_WLEN(L"Debug:" + std::to_wstring(m_CurrentPageIndex)));
+	//y += lineHeight;
+	//TODO: ;の後を薄くする。
+	if (m_Mode == CANDIDATEWINDOW_MODE_SINGLE) {
+		TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]));
+		GetTextExtentPoint(hdc, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex] + L"  "), &strsize);
 
-		std::wstring text = std::to_wstring(i + 1) + L"." + m_Candidates[i];
-
-		TextOut(hdc, 5, y, text.c_str(), static_cast<int>(text.length()));
-
-		y += lineHeight;
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	}
+	else if (m_Mode == CANDIDATEWINDOW_MODE_MULTIPLE) {
+		for (size_t i = 0; i < NUM_SHOW_CANDIDATE_MULTIPLE; ++i) {
+			size_t candidateIndex = BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentPageIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + i;
+			if (candidateIndex >= m_Candidates.size()) {
+				break;
+			}
+			//A S D F J K L の表示 
+			SetTextColor(hdc, CANDIDATES_WINDOW_ASDFJKL_TEXTCOLOR_RGB);
+
+			wchar_t keyChar = L"ASDFJKL"[i];
+
+			TextOut(hdc, x, y, &keyChar, 1);
+			GetTextExtentPoint32(hdc, &keyChar, 1, &strsize);
+			x += strsize.cx;
+			//候補文字列の表示
+			SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
+			std::wstring text = L":" + m_Candidates[candidateIndex] + L" ";
+			TextOut(hdc, x, y, WSTR_AND_WLEN(text));
+			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(text), &strsize);
+
+			x += strsize.cx;
+			if (x >= CANDIDATES_WINDOW_MAXWIDTH) {
+
+				maxx = max(x, maxx);
+				x = 5;
+				y += CANDIDATES_WINDOW_FONT_HSIZE + 2;
+			}
+		}
+		maxx = max(x, maxx);
+
+		//残りの候補数表示
+		size_t remainingCandidates =
+			max((int)m_Candidates.size() - (int)(BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX - 1 + (m_CurrentPageIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + 1) * NUM_SHOW_CANDIDATE_MULTIPLE) - 1, 0);
+
+		std::wstring remainingText = L"残" + std::to_wstring(remainingCandidates) + L"  ";
+		SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
+		TextOut(hdc, x, y, remainingText.c_str(), static_cast<int>(remainingText.length()));
+		GetTextExtentPoint32(hdc, WSTR_AND_WLEN(remainingText), &strsize);
+		x += strsize.cx;
+
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, maxx + 2, y + strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+	}
+
+	
 }
