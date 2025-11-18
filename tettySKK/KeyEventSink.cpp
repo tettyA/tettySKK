@@ -44,7 +44,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				m_SKKDictionaly.GetCandidates(searchStr, m_CurrentCandidates);
 
 				if (m_CurrentCandidates.size() == 0) {
-
+					//TODO: êVÇµÇ¢åÍÇÃìoò^
 				}
 				else {
 
