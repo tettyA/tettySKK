@@ -172,11 +172,14 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 	if(m_pCandidateWindow->IsWindowExists()){
 		m_pCandidateWindow->HideWindow();
 	}
-
+	
 	m_CurrentCandidates.clear();
 	m_CurrentShowCandidateIndex = 0;
 	m_RomajiToKanaTranslator.Reset();
 	m_currentMode = SKKMode::Hiragana;
+
+	m_Gokan = L"";
+	m_OkuriganaFirstChar = L'\0';
 
 	return;
 }

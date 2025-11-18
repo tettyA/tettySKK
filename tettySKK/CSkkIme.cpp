@@ -20,7 +20,11 @@ CSkkIme::CSkkIme()
 	m_pCandidateWindow = new CCandidateWindow(g_hModule);
 
 	m_currentMode = SKKMode::Hiragana;//TODO: ç≈èIìIÇ…ÇÕHankakuÇ…Ç∑ÇÈ
+
+	m_Gokan = L"";
+	m_OkuriganaFirstChar = L'\0';
 }
+
 CSkkIme::~CSkkIme()
 {
 	if(_pThreadMgr)

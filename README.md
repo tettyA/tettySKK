@@ -1,1 +1,4 @@
-Windows縺ｧ蜍輔￥SKK縺ｮ繧医≧縺ｪ蜍穂ｽ懊ｒ縺吶ｋIME繧帝幕逋ｺ縺励※縺�縺ｾ縺吶�
+Windowsで動くSKKのような動作をするIMEを開発しています。
+なお，ほぼ全てのファイルはShift_JISでエンコードされています。
+
+Almost files are encoded by Shift_JIS!
