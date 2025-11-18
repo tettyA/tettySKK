@@ -89,6 +89,7 @@ private:
 
 	CCandidateWindow* m_pCandidateWindow;
 	void _UpDateCandidateWindowPosition(ITfContext* pic);
+	void _EndCandidateWindow();
 
 	SKKMode m_currentMode;
 	bool _IsShiftKeyPressed();
