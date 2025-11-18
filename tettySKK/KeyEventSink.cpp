@@ -42,24 +42,31 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					searchStr = m_Gokan + m_OkuriganaFirstChar;
 				}
 				m_SKKDictionaly.GetCandidates(searchStr, m_CurrentCandidates);
-				std::wstring displayStr = m_CurrentCandidates[0];
 
-				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0'/* && compositionString.length() > m_Gokan.length()*/) {
-					//displayStr = 書   compositionString = 書k or 書く
-					displayStr += compositionString.substr(m_Gokan.length());
-			//		MessageBox(NULL, (displayStr+L" "+compositionString+L" "+m_Gokan+L" "+m_OkuriganaFirstChar).c_str(), L"debug", MB_OK);
-				}
+				if (m_CurrentCandidates.size() == 0) {
 
-				if (!m_CurrentCandidates.empty()) {
-					m_CurrentShowCandidateIndex = 0;
-					//確定はさせない
-					
-					_InsertText(pic, (displayStr).c_str(), FALSE);
 				}
 				else {
-					//TODO:新しい語の登録
-				}
 
+					std::wstring displayStr = m_CurrentCandidates[0];
+
+					if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0'/* && compositionString.length() > m_Gokan.length()*/) {
+						//displayStr = 書   compositionString = 書k or 書く
+						displayStr += compositionString.substr(m_Gokan.length());
+						//		MessageBox(NULL, (displayStr+L" "+compositionString+L" "+m_Gokan+L" "+m_OkuriganaFirstChar).c_str(), L"debug", MB_OK);
+					}
+
+					if (!m_CurrentCandidates.empty()) {
+						m_CurrentShowCandidateIndex = 0;
+						//確定はさせない
+
+						_InsertText(pic, (displayStr).c_str(), FALSE);
+					}
+					else {
+						//TODO:新しい語の登録
+					}
+
+				}
 				return S_OK;
 			}
 		}
@@ -207,25 +214,6 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					//_InsertText(pic, (L"[Debug2:" + m_Gokan + L", " + m_OkuriganaFirstChar + L"]").c_str(), TRUE);
 				}
 
-				/*if (m_Gokan.empty() && m_OkuriganaFirstChar == L'\0') {//撃墜 KaKU  (設定済みのため)
-					if (key == 'a' || key == 'i' || key == 'u' || key == 'e' || key == 'o') {//対応 KakU
-						//KAKu | kU | KU の場合もここに来る(語幹などが設定されていないため)
-						//↑この場合は，一番最後-1-1がローマ字 or length=1 であるのでそこで区別をする
-						//例えば，KAsuMu , KasumU などを考える。
-						//処す[shO]
-						_InsertText(pic, (L"[Debug1: tOs:" + textonScreen + L" " + textonScreen[textonScreen.length() - 2] + L"]").c_str(), TRUE);
-						if (textonScreen.length() >= 2 && (!iswalpha(textonScreen[textonScreen.length() - 2]))) {//撃墜 KAKu | kU | KU
-							_InsertText(pic, (L"[Debug2]"), TRUE);
-							m_Gokan = textonScreen.substr(0, textonScreen.length() - m_RomajiToKanaTranslator.GetBuffer().length());
-							m_OkuriganaFirstChar = m_RomajiToKanaTranslator.GetBuffer()[0];
-							//TODO:もしも，送り仮名が ~しゃ だとかの場合はこの処理(0文字目だけ考慮する)のではまずいので何とかする.いや，何とかなるかも。
-						}
-					}
-					else {
-						m_Gokan = textonScreen;
-						m_OkuriganaFirstChar = key;
-					}
-				}*/
 			}
 		}
 

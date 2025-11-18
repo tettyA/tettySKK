@@ -104,21 +104,37 @@ STDAPI CSkkIme::Activate(ITfThreadMgr* ptim, TfClientId tid) {
 }
 
 STDAPI CSkkIme::Deactivate() {
+	if (_pThreadMgr == nullptr)
+	{
+		return S_OK;
+	}
+
+	_EndCandidateWindow();
+	_UninitKeyEventSink();
+
+	if (_pComposition) {
+		_pComposition.Release();
+		//_pComposition = nullptr;
+	}
+
+
 	if (_pThreadMgr) {
 		_pThreadMgr.Release();
-		_pThreadMgr = nullptr;
+		//_pThreadMgr = nullptr;
 	}
 	_clientId = TF_CLIENTID_NULL;
 #ifdef _DEBUG
 	OutputDebugString(L"CSkkIme::Deactivate Called!");
 #endif
 
-	_UninitKeyEventSink();
+	_clientId = TF_CLIENTID_NULL;
 
-	if (_pComposition) {
-		_pComposition.Release();
-		_pComposition = nullptr;
-	}
 	return S_OK;
 }
 
+void CSkkIme::_EndCandidateWindow()
+{
+	if (m_pCandidateWindow) {
+		m_pCandidateWindow->HideWindow();
+	}
+}
