@@ -31,3 +31,83 @@ EditSessionクラスのリファクタリング
 
 20:07 2025/11/16
 ひらがなモードで打ちこむと最初から確定され，Shiftを打ちながらやると変換モードにするようにした。▼や▽は別に実装しない。不要なので。
+
+11:58 2025/11/17
+送り仮名を変換したいが，なかなか上手くいかない。場合分けが複雑すぎる...?
+メモ:
+KaKu KakU KaKU KAKu KAkU KAKU
+書く   [Debug1][Debug2]書く 書く [Debug1][Debug2]角 [Debug1][Debug2]角 [Debug1][Debug2]角
+
+書く  [Debug1: tOs:かk][Debug2]書く 書く [Debug1: tOs:k][Debug2]角 [Debug1: tOs:k][Debug2]角 [Debug1: tOs:k][Debug2]角
+
+書く 角 書く 書く 角 書く
+
+書く    [Debug1: tOs:かk]角    書く    [Debug1: tOs:k]書く     [Debug1: tOs:k][Debug1: tOs:かk]角      [Debug1: tOs:k]書く
+書く    [Debug1: tOs:かk][Debug2]書く   書く    [Debug1: tOs:k]書く   [Debug1: tOs:k][Debug1: tOs:かk][Debug2]書く   [Debug1: tOs:k]書くs
+書く [Debug1: tOs:かk][Debug2]書く 書く [Debug1: tOs:k]書く [Debug1: tOs:k][Debug1: tOs:かk][Debug2]書く [Debug1: tOs:k]書く
+
+処す
+ShoSu  --  処す
+ShosU  --  [Debug1: tOs:しょs]しょす   [Debug1: tOs:しょs し]しょす
+ShoSU  --  処す
+sHoSu  --   しょす
+sHosU  --   しょす
+sHoSU  --   しょす
+shOSu  --   [Debug1: tOs:sh][Debug2]しょす
+shOsU  --   [Debug1: tOs:sh][Debug2]しょす
+shOSU --   しょす
+SHoSu --   しょす
+SHosU --   しょす
+SHoSU --   しょす
+ShOSu  --   [Debug1: tOs:sh][Debug2]しょす
+ShOsU --   [Debug1: tOs:sh][Debug2]しょす
+ShOSU --   [Debug1: tOs:sh][Debug2]しょす
+sHOSu --   しょす
+sHOsU  --   しょす
+sHOSU  --   しょす
+SHOSu  --   しょす
+SHOsU --   しょす
+SHOSU  --   しょす
+
+12:00 2025/11/18
+送り仮名の処理を実装完了。難しく考えすぎていた。
+コメントメモ:
+ 一回目のシフトで変換モードの開始。(ここに来る前に処理済み)
+ ↓↓↓↓ここからここで処理する↓↓↓↓
+ 二回目のシフトの時，かな|漢字 確定部分.length() == 0 ならば無視。
+ かな|漢字 確定部分.length() >= 1 ならば，送り仮名開始し，語幹を設定。
+ もし，既に語幹が設定されていたら無視。
+
+メモ:
+
+KaKu KakU KaKU KAKu KAkU KAKU
+書く   かく   書く    書く    かく    書く
+[Debug1:か か]書 [Debug1:か かk] [Debug1:か か]く [Debug1:k k]く [Debug1: k][Debug1: k] [Debug1: k][Debug1: k] 
+[Debug1:]書  [Debug1:] [Debug1:か]く  [Debug1:]く [Debug1:][Debug1:] [Debug1:][Debug1:] 
+[Debug2:か, k]書 [Debug2:か, u] かく [Debug2:か, k]書 [Debug2:か, u] [Debug2:か, u] かく
+書く 書く 書く 書く 書く 書く
+書く 書く 書く 書く 書く 書く
+書く  書く 書く 書く 書く 書く
+
+処す
+ShoSu  --  処す  処す  処す
+ShosU  --  処す  処す  処す
+ShoSU  --  処す  処す  処す
+sHoSu  --   sほす  s処す  処す
+sHosU  --   sほす s処す  処す
+sHoSU  --   sほす s処す  処す
+shOSu  --   shおす sh処す 処す
+shOsU  --   shおす sh処す 処す
+shOSU --   shおす  sh処す  処す
+SHoSu --   処す  処す  処す
+SHosU --   処す  処す  処す
+SHoSU --   処す 処す 処す
+ShOSu  --   処す 処す 処す
+ShOsU --   処す  処す 処す
+ShOSU --   処す 処す 処す
+sHOSu --   sほす  s処す 処す
+sHOsU  --   sほす s処す 処す
+sHOSU  --   sほす s処す 処す
+SHOSu  --   処す 処す 処す
+SHOsU --   処す 処す 処す
+SHOSU  --   処す 処す 処す

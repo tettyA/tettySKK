@@ -9,6 +9,16 @@ CSKKDictionaly::CSKKDictionaly()
 	m_dictionary[L"‚³‚¢"] = { L"Ù", L"×", L"Ë", L"·ˆÙ" };
 	m_dictionary[L"‚·‚¢"] = { L"…",L"ˆ",L"",L"",L"†",L"„",L"‰",};
 	m_dictionary[L"‚±‚¤‚µ‚å‚¤"] = { L"ŒğÂ",L"ŒöÌ",L"‚®",L"H±" };
+	m_dictionary[L"‚©k"] = { L"‘",L"Œ‡",L"Š|",L"‹ì" };//Š|‚­C‹ì‚¯‚éC‘‚­CŒ‡‚­...
+	m_dictionary[L"‚©‚©"] = { L"›m",L"‰Ô‰º",L"‰¼‰Ê" };
+	m_dictionary[L"‚©‚«"] = { L"Š`",L"‰º‹L",L"‰Ä‹G",L"‰²åy" };
+	m_dictionary[L"‚©‚­"] = { L"Šp",L"Še",L"Ši",L"Šj",L"Št",L"z‚­"};
+	m_dictionary[L"‚½b"] = { L"H" };
+	m_dictionary[L"‚©‚¯"] = { L"“q‚¯" ,L"‰¿‹C"};
+	m_dictionary[L"‚©‚±"] = { L"‰ß‹",L"‰ÁŒÃ",L"‰ÕŒÎ" };
+	m_dictionary[L"‚¢r"] = { L"“ü",L"Ë",L"—v",L"‹",L"àu",L"’’",L"Ÿ¹" };
+	m_dictionary[L"‚µ‚ås"] = { L"ˆ",L"‘",L"" };
+	
 }
 
 CSKKDictionaly::~CSKKDictionaly()

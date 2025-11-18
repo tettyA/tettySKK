@@ -81,6 +81,9 @@ private:
 
 
 	BOOL _GetCompositionString(std::wstring& compositionString);
+	std::wstring m_Gokan;//ŒêŠ²•”•ª ‚È‚¯‚ê‚Î–¢Šm’è•¶Žš—ñ‘S‘Ì             ’ú‚ß(‚é) -> ’ú
+	WCHAR m_OkuriganaFirstChar;//‘—‚è‰¼–¼‚ÌÅ‰‚Ìˆê•¶Žš ‚È‚¢ê‡‚ÍL'\0'  ’ú‚ß(‚é) -> m  
+
 
 	void _CommitComposition(ITfContext* pic);
 
