@@ -1,23 +1,11 @@
 #include "pch.h"
 #include "SKKDictionaly.h"
+#include <sstream>
+
 
 
 CSKKDictionaly::CSKKDictionaly()
 {
-	m_dictionary[L"‚ "] = { L"ˆŸ", L"ˆ¢",L"Œá" };
-	m_dictionary[L"‚©"] = {  L"‰Á", L"‰á" ,L"‰Â",L"‰¿" };
-	m_dictionary[L"‚³‚¢"] = { L"Ù", L"×", L"Ë", L"·ˆÙ" };
-	m_dictionary[L"‚·‚¢"] = { L"…",L"ˆ",L"",L"",L"†",L"„",L"‰",};
-	m_dictionary[L"‚±‚¤‚µ‚å‚¤"] = { L"ŒğÂ",L"ŒöÌ",L"‚®",L"H±" };
-	m_dictionary[L"‚©k"] = { L"‘",L"Œ‡",L"Š|",L"‹ì" };//Š|‚­C‹ì‚¯‚éC‘‚­CŒ‡‚­...
-	m_dictionary[L"‚©‚©"] = { L"›m",L"‰Ô‰º",L"‰¼‰Ê" };
-	m_dictionary[L"‚©‚«"] = { L"Š`",L"‰º‹L",L"‰Ä‹G",L"‰²åy" };
-	m_dictionary[L"‚©‚­"] = { L"Šp",L"Še",L"Ši",L"Šj",L"Št",L"z‚­"};
-	m_dictionary[L"‚½b"] = { L"H" };
-	m_dictionary[L"‚©‚¯"] = { L"“q‚¯" ,L"‰¿‹C"};
-	m_dictionary[L"‚©‚±"] = { L"‰ß‹",L"‰ÁŒÃ",L"‰ÕŒÎ" };
-	m_dictionary[L"‚¢r"] = { L"“ü",L"Ë",L"—v",L"‹",L"àu",L"’’",L"Ÿ¹" };
-	m_dictionary[L"‚µ‚ås"] = { L"ˆ",L"‘",L"" };
 	
 }
 
@@ -31,5 +19,66 @@ void CSKKDictionaly::GetCandidates(const std::wstring& key, SKKCandidates& candi
 	if (it != m_dictionary.end()) {
 		candidates = it->second;
 	}
+}
+
+BOOL CSKKDictionaly::LoadDictionaryFromFile(const std::wstring& filepath)
+{
+	m_dictionary.clear();
+
+	std::ifstream file(filepath, std::ios::binary);
+	if (!file.is_open()) {
+		return FALSE;
+	}
+
+	std::string line;
+	while (std::getline(file, line)) {
+		if (line.empty() || line[0] == ';') {
+			continue; 
+		}
+
+		//•¶šƒR[ƒh‚Ì•ÏŠ·
+		std::wstring linew;
+		int len = MultiByteToWideChar(EUC_JP_CODEPAGE, 0, line.c_str(), line.length(), nullptr, 0);
+		if (len > 0) {
+			linew.resize(len);
+			MultiByteToWideChar(EUC_JP_CODEPAGE, 0, line.c_str(), line.length(), &linew[0], len);
+		}
+
+
+		//«‘‰ğÍ
+		/*
+		* \•¶
+		* 
+		* [‚Ğ‚ç‚ª‚È] /Œó•â1/Œó•â2/Œó•â3/...
+		* Œó•â‚Ì’†‚É;‚ª‚ ‚éê‡C‚»‚ÌŒã‚Í‰ğà“I‚È‚à‚Ì
+		*/
+		
+
+		size_t spacePos = linew.find(L' ');
+		if (spacePos == std::wstring::npos) {
+			continue; 
+		}
+
+		std::wstring key = linew.substr(0, spacePos);
+		std::wstring candidateStr = linew.substr(spacePos + 1);
+		SKKCandidates candidateslist;
+
+		std::wstringstream ss(candidateStr);
+		SKKCandidate candidate;
+		while (std::getline(ss, candidate, L'/')) {
+			if (candidate.empty()) continue;
+
+			//; ‚Íˆê’U–³‹ 
+			//TODO: –³‹‚µ‚È‚¢
+
+			candidateslist.push_back(candidate);
+		}
+		if (!candidateslist.empty()) {
+			m_dictionary[key] = candidateslist;
+		}
+	
+
+	}
+	return TRUE;
 }
 
