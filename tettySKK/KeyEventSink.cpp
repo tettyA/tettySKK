@@ -172,42 +172,44 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		
 
 		//FIX: 書k (no shift) の場合，書 で検索する。 つまり，変換中のローマ字がシフトが押されずに確定された場合は，削除する。
-		_InsertText(pic, (L"[Debug2:]"), TRUE);
+		//_InsertText(pic, (L"[Debug2:]"), TRUE);
 		//変換中
 		if (m_currentMode == SKKMode::Henkan) {
 			//ASDFJKL で選ぶ段階
 			if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
 				int cnt = 0;
-				 _InsertText(pic, (L"[Debug1:]"), TRUE);
 				switch (key)
 				{
 				case L'l':
 					cnt++;
+					[[fallthrough]];
 				case L'k':
 					cnt++;
+					[[fallthrough]];
 				case L'j':
 					cnt++;
+					[[fallthrough]];
 				case L'f':
 					cnt++;
+					[[fallthrough]];
 				case L'd':
 					cnt++;
+					[[fallthrough]];
 				case L's':
 					cnt++;
+					[[fallthrough]];
 				case L'a':
 				{
-					std::wstring baseword=m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt];
-					//送り仮名付きのとき
+					std::wstring baseword = m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt];
 					std::wstring additionalStr = L"";
-					//TODO: 変換確定処理を関数にする。(SPACEで変換や，暗黙の確定などと共通化)
-					/*if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
-						//書k or 書く  -> k or く
-						additionalStr = compositionString.substr(compositionString.length() - 1);
-					}*/
 					_InsertText(pic, baseword.c_str(), FALSE);
 					_CommitComposition(pic);
 					return S_OK;
 					break;
 				}
+				case L'x':
+					//TODO: 一個まえのページに戻る。処理の共通化
+					break;
 				default:
 					return S_OK;
 					break;
