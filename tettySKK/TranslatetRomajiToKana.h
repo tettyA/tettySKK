@@ -24,6 +24,28 @@ public:
 	__declspec(noinline) bool Translate(WCHAR key, std::wstring& output) {
 		output.clear();
 
+		if (m_buffer.size() == 1) {
+			//‘£‰¹ && ›‰¹‚Ìˆ—
+			if (key == m_buffer[0]) {
+				if (key != L'n') {
+					output = L'‚Á';
+					return true;
+				}
+				/*else /*if (key == L'n')* {
+					output = L'‚ñ';
+					m_buffer.clear();
+					return true;
+				}*/
+			}
+			//›‰¹‚Ìˆ—
+			if (m_buffer[0] == L'n' && (key != L'n' && key != L'a' && key != 'i' && key != 'u' && key != 'e' && key != 'o' && key != 'y')) {
+				output = L'‚ñ';
+				m_buffer.clear();
+				m_buffer += key;
+				return true;
+			}
+		}
+
 		m_buffer += key;
 		auto it = m_RomajiToKana.find(m_buffer);
 		if (it != m_RomajiToKana.end()) {
@@ -31,6 +53,8 @@ public:
 			m_buffer.clear();
 			return true;
 		}
+		
+		
 		
 		//sha‚È‚Ç‚Í‚±‚Ì‘O‚Ì‚Åo‚é‚Ì‚ÅOK
 		if (m_buffer.size() >= 3) {
