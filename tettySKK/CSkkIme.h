@@ -90,7 +90,7 @@ private:
 	SKKMode m_currentMode;
 	KanaMode m_CurrentKanaMode;
 	bool _IsShiftKeyPressed();
-
+	bool _IsCtrlKeyPressed();
 };
 
 

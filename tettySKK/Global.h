@@ -36,7 +36,7 @@ void _ConvertToHiragana(std::wstring& str);
 enum class SKKMode {
 	Kakutei,
 	Henkan,
-	//Hankaku,
+	Hankaku,
 };
 
 enum class KanaMode {
