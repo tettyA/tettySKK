@@ -7,7 +7,16 @@
 
 bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	WCHAR key = (WCHAR)wParam;
-	if ((key >= L'A' && key <= L'Z') || key == VK_SPACE || key == VK_RETURN)
+	if (m_currentMode == SKKMode::Hankaku) {
+		if (_IsCtrlKeyPressed() && key == L'J') {
+			m_currentMode = SKKMode::Kakutei;
+		}
+		return false;
+	}
+	if (_IsCtrlKeyPressed()) {
+		return false;
+	}
+	if ((key >= L'A' && key <= L'Z') || (m_currentMode == SKKMode::Henkan && (key == VK_SPACE || key == VK_RETURN)))
 	{
 		return true;
 	}
@@ -129,8 +138,22 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 	{
 		key += L'a' - L'A';
 		*pfEaten = TRUE;
-		if (key == 'q') {
+		if (key == L'q') {
 		 m_CurrentKanaMode = KanaMode::Katakana;
+			return S_OK;
+		}
+		else if (key == L'l') {
+			//TODO: ˆ—‚Ì‹¤’Ê‰»
+			if (m_pCandidateWindow->IsWindowExists()) {
+				m_pCandidateWindow->HideWindow();
+			}
+
+			m_CurrentCandidates.clear();
+			m_CurrentShowCandidateIndex = 0;
+
+			m_Gokan = L"";
+			m_OkuriganaFirstChar = L'\0';
+			m_currentMode = SKKMode::Hankaku;
 			return S_OK;
 		}
 
@@ -257,7 +280,6 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					if (prevRomajilen >= 1) {
 						m_OkuriganaFirstChar = prevRomaji[0];
 					}
-					//_InsertText(pic, (L"[Debug2:" + m_Gokan + L", " + m_OkuriganaFirstChar + L"]").c_str(), TRUE);
 				}
 
 			}
@@ -352,4 +374,9 @@ void CSkkIme::_UninitKeyEventSink() {
 bool CSkkIme::_IsShiftKeyPressed()
 {
 	return ((GetKeyState(VK_SHIFT) & 0x8000) != 0);
+}
+
+bool CSkkIme::_IsCtrlKeyPressed()
+{
+	return ((GetKeyState(VK_CONTROL) & 0x8000) != 0);
 }

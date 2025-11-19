@@ -19,7 +19,7 @@ CSkkIme::CSkkIme()
 
 	m_pCandidateWindow = new CCandidateWindow(g_hModule);
 
-	m_currentMode = SKKMode::Kakutei;//TODO: 最終的にはHankakuにする
+	m_currentMode = SKKMode::Hankaku;//TODO: 最終的にはHankakuにする
 	m_CurrentKanaMode = KanaMode::Hiragana;
 
 	m_Gokan = L"";
