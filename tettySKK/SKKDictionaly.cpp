@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "SKKDictionaly.h"
+#include "Global.h"
+
 #include <sstream>
 
 
@@ -13,8 +15,9 @@ CSKKDictionaly::~CSKKDictionaly()
 {
 }
 
-void CSKKDictionaly::GetCandidates(const std::wstring& key, SKKCandidates& candidates) const
+void CSKKDictionaly::GetCandidates(std::wstring& key, SKKCandidates& candidates) const
 {
+	_ConvertToHiragana(key);
 	auto it = m_dictionary.find(key);
 	if (it != m_dictionary.end()) {
 		candidates = it->second;
@@ -24,7 +27,7 @@ void CSKKDictionaly::GetCandidates(const std::wstring& key, SKKCandidates& candi
 BOOL CSKKDictionaly::LoadDictionaryFromFile(const std::wstring& filepath)
 {
 	m_dictionary.clear();
-	m_dictionary[L"‚ ‚Ì‚ß"] = SKKCandidates{ L"test1",L"test2", L"test3",L"test4", L"test5",L"test6", L"test7",L"test8", L"test9",L"test10", L"test11",L"test12",L"text13"};
+	
 	std::ifstream file(filepath, std::ios::binary);
 	if (!file.is_open()) {
 		return FALSE;

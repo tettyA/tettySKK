@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #include <windows.h>
+#include "Global.h"
 
 #define TrR2K_INDEX_HIRAGANA 0
 #define TrR2K_INDEX_KATAKANA 1
@@ -14,6 +15,7 @@ public:
 	__declspec(noinline) TranslatetRomajiToKana() {
 		m_RomajiToKana = {
 #include "RomajiToKanaTransTable.txt"
+
 		};
 
 	}
@@ -21,25 +23,20 @@ public:
 	}
 
 	//true: 変換成功  false: 変換に達していない 
-	__declspec(noinline) bool Translate(WCHAR key, std::wstring& output) {
+	__declspec(noinline) bool Translate(WCHAR key, std::wstring& output, KanaMode mode) {
 		output.clear();
 
 		if (m_buffer.size() == 1) {
-			//促音 && 撥音の処理
+			//促音処理
 			if (key == m_buffer[0]) {
 				if (key != L'n') {
-					output = L'っ';
+					output = (mode == KanaMode::Hiragana ? L'っ' : L'ッ');
 					return true;
 				}
-				/*else /*if (key == L'n')* {
-					output = L'ん';
-					m_buffer.clear();
-					return true;
-				}*/
 			}
 			//撥音の処理
 			if (m_buffer[0] == L'n' && (key != L'n' && key != L'a' && key != 'i' && key != 'u' && key != 'e' && key != 'o' && key != 'y')) {
-				output = L'ん';
+				output = (mode == KanaMode::Hiragana ? L'ん' : L'ン');
 				m_buffer.clear();
 				m_buffer += key;
 				return true;
@@ -49,13 +46,13 @@ public:
 		m_buffer += key;
 		auto it = m_RomajiToKana.find(m_buffer);
 		if (it != m_RomajiToKana.end()) {
-			output = (*it).second[TrR2K_INDEX_HIRAGANA];
+			output = (*it).second[mode == KanaMode::Hiragana ? TrR2K_INDEX_HIRAGANA : TrR2K_INDEX_KATAKANA];
 			m_buffer.clear();
 			return true;
 		}
-		
-		
-		
+
+
+
 		//shaなどはこの前ので出るのでOK
 		if (m_buffer.size() >= 3) {
 			output = m_buffer;

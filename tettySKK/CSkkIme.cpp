@@ -19,7 +19,8 @@ CSkkIme::CSkkIme()
 
 	m_pCandidateWindow = new CCandidateWindow(g_hModule);
 
-	m_currentMode = SKKMode::Hiragana;//TODO: 最終的にはHankakuにする
+	m_currentMode = SKKMode::Kakutei;//TODO: 最終的にはHankakuにする
+	m_CurrentKanaMode = KanaMode::Hiragana;
 
 	m_Gokan = L"";
 	m_OkuriganaFirstChar = L'\0';
@@ -138,5 +139,23 @@ void CSkkIme::_EndCandidateWindow()
 {
 	if (m_pCandidateWindow) {
 		m_pCandidateWindow->HideWindow();
+	}
+}
+
+void _ConvertToKatakana(std::wstring& str)
+{
+	for (size_t i = 0; i < str.length(); i++) {
+		if (str[i] >= L'ぁ' && str[i] <= L'ん') {
+			str[i] = str[i] - L'ぁ' + L'ァ';
+		}
+	}
+}
+
+void _ConvertToHiragana(std::wstring& str)
+{
+	for (size_t i = 0; i < str.length(); i++) {
+		if (str[i] >= L'ァ' && str[i] <= L'ン') {
+			str[i] = str[i] + L'ぁ' - L'ァ';
+		}
 	}
 }

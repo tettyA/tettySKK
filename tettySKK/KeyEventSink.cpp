@@ -36,14 +36,14 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			std::wstring compositionString;
 	
 			if (_GetCompositionString(compositionString)) {
-
-				std::wstring searchStr = compositionString;
-				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
-					//送り仮名付きのとき
-					searchStr = m_Gokan + m_OkuriganaFirstChar;
+				{
+					std::wstring searchStr = compositionString;
+					if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+						//送り仮名付きのとき
+						searchStr = m_Gokan + m_OkuriganaFirstChar;
+					}
+					m_SKKDictionaly.GetCandidates(searchStr, m_CurrentCandidates);
 				}
-				m_SKKDictionaly.GetCandidates(searchStr, m_CurrentCandidates);
-
 				if (m_CurrentCandidates.size() == 0) {
 					//TODO: 新しい語の登録
 				}
@@ -127,10 +127,12 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 	if (_IsKeyEaten(wParam))
 	{
-		//_InsertText(pic, (L"[Debug2: buf: " + m_RomajiToKanaTranslator.GetBuffer() + L"]").c_str(), TRUE);
 		key += L'a' - L'A';
 		*pfEaten = TRUE;
-
+		if (key == 'q') {
+		 m_CurrentKanaMode = KanaMode::Katakana;
+			return S_OK;
+		}
 
 		// 工廠(変換中) + n(新規) => 工廠(確定) + n(変換中)  (暗黙確定)
 		if (!m_CurrentCandidates.empty()) {
@@ -144,7 +146,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 		bool isShift = _IsShiftKeyPressed();
 		//変換の開始
-		if (isShift && m_currentMode == SKKMode::Hiragana) {
+		if (isShift && m_currentMode == SKKMode::Kakutei) {
 
 			if (_pComposition) {
 				//_CommitComposition(pic);
@@ -157,7 +159,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				m_CurrentCandidates.clear();
 				m_CurrentShowCandidateIndex = 0;
 			//	m_RomajiToKanaTranslator.Reset();
-				m_currentMode = SKKMode::Hiragana;
+			//	m_currentMode = SKKMode::Henkan;
 
 				m_Gokan = L"";
 				m_OkuriganaFirstChar = L'\0';
@@ -175,8 +177,10 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		//_InsertText(pic, (L"[Debug2:]"), TRUE);
 		//変換中
 		if (m_currentMode == SKKMode::Henkan) {
+	
 			//ASDFJKL で選ぶ段階
 			if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+				
 				int cnt = 0;
 				switch (key)
 				{
@@ -208,7 +212,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					break;
 				}
 				case L'x':
-					//TODO: 一個まえのページに戻る。処理の共通化
+					//TODO: 一個まえのページに戻る。処理の共通化。BeGINSHOWよりも小さくてもやる
 					break;
 				default:
 					return S_OK;
@@ -228,7 +232,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 			//新しいキーを変換  ex: m + a = ま
 			std::wstring newkana;
-			m_RomajiToKanaTranslator.Translate(key, newkana);
+			m_RomajiToKanaTranslator.Translate(key, newkana, m_CurrentKanaMode);
 
 			//今の画面[しm] - ローマ字[m] = ひらがな確定済部分[し]
 			std::wstring baseKana = textonScreen.substr(0, textonScreen.length() - prevRomajilen);
@@ -259,10 +263,10 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			}
 		}
 
-		if (m_currentMode == SKKMode::Hiragana) {
+		if (m_currentMode == SKKMode::Kakutei) {
 			std::wstring newkana;
-			if (m_RomajiToKanaTranslator.Translate(key, newkana)) {
-				_InsertText(pic, newkana.c_str(),TRUE);
+			if (m_RomajiToKanaTranslator.Translate(key, newkana, m_CurrentKanaMode)) {
+				_InsertText(pic, newkana.c_str(), TRUE);
 			}
 			else {
 				//変換に達していない場合は，バッファをそのまま表示

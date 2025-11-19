@@ -18,7 +18,8 @@ public:
 	CSKKDictionaly();
 	~CSKKDictionaly();
 
-	void GetCandidates(const std::wstring& key, SKKCandidates& candidates) const;
+	//副作用:keyがカタカナの場合ひらがなに変更されます。
+	void GetCandidates(std::wstring& key, SKKCandidates& candidates) const;
 
 	BOOL LoadDictionaryFromFile(const std::wstring& filepath);
 
