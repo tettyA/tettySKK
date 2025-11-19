@@ -4,7 +4,15 @@
 
 //テキスト編集の予約
 void CSkkIme::_InsertText(ITfContext* pic, const WCHAR* text,BOOL isDetermined) {
-	CInsertTextEditSession* pSession = new CInsertTextEditSession(this, pic, text, isDetermined);
+	CInsertTextEditSession* pSession/*;
+	if (m_currentMode == SKKMode::Katakana) {
+		std::wstring strText = text;
+		_ConvertToKatakana(strText);
+
+		pSession = new CInsertTextEditSession(this, pic, text, isDetermined);
+	}
+	else
+	pSession */= new CInsertTextEditSession(this, pic, text, isDetermined);
 
 	HRESULT hr;
 	pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READWRITE, &hr);
@@ -176,7 +184,7 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 	m_CurrentCandidates.clear();
 	m_CurrentShowCandidateIndex = 0;
 	m_RomajiToKanaTranslator.Reset();
-	m_currentMode = SKKMode::Hiragana;
+	m_currentMode = SKKMode::Kakutei;
 
 	m_Gokan = L"";
 	m_OkuriganaFirstChar = L'\0';

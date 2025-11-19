@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 
 extern HMODULE g_hModule;
 //SKK IME –{‘Ì‚ÌCLSID
@@ -28,3 +29,17 @@ DEFINE_GUID(GUID_Skk_DisplayAttirbute_Input ,
 
 LONG DllAddRef(void);
 LONG DllRelease(void);
+
+void _ConvertToKatakana(std::wstring& str);
+void _ConvertToHiragana(std::wstring& str);
+
+enum class SKKMode {
+	Kakutei,
+	Henkan,
+	//Hankaku,
+};
+
+enum class KanaMode {
+	Hiragana,
+	Katakana
+};

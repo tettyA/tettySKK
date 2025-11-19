@@ -5,16 +5,12 @@
 #include "TranslatetRomajiToKana.h"
 #include "SKKDictionaly.h"
 #include "CCandidateWindow.h"
+#include "Global.h"
 /*
 #define SKKMODE_PRECHAR_CONVERSION L'Å§'
 #define SKKMODE_PRECHAR_SHOWCANDIDATE L'Å•'
 */
-enum class SKKMode {
-	Hiragana,
-	//Katakana,
-	Henkan,
-	//Hankaku,
-};
+
 
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.h
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.cpp
@@ -92,6 +88,7 @@ private:
 	void _EndCandidateWindow();
 
 	SKKMode m_currentMode;
+	KanaMode m_CurrentKanaMode;
 	bool _IsShiftKeyPressed();
 
 };
