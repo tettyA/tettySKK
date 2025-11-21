@@ -10,11 +10,16 @@
 #define APARTMENTSTR L"Apartment"
 #define CLSIDSTR_ L"CLSID"
 
+#define IME_ICON_IDX 0
+
 #define TEXTSURVICE_LANGID MAKELANGID(LANG_JAPANESE, SUBLANG_DEFAULT)
 
 static const GUID cGUID_Category[]{
 	GUID_TFCAT_TIP_KEYBOARD,
-	GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER
+	GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER,
+	GUID_TFCAT_TIPCAP_INPUTMODECOMPARTMENT,
+	GUID_TFCAT_TIPCAP_IMMERSIVESUPPORT,
+	GUID_TFCAT_TIPCAP_SYSTRAYSUPPORT
 };
 
 BOOL SetRegistryValue(
@@ -84,7 +89,8 @@ STDAPI DllRegisterServer(void) {
 	{
 		CComPtr<ITfInputProcessorProfileMgr> pProfileMgr;
 		hr = pProfileMgr.CoCreateInstance(CLSID_TF_InputProcessorProfiles);
-
+		WCHAR szDllPath2[MAX_PATH];
+		GetModuleFileName(g_hModule, szDllPath2, ARRAYSIZE(szDllPath2));
 		if (SUCCEEDED(hr) && pProfileMgr != nullptr) {
 			hr = pProfileMgr->RegisterProfile(
 				CLSID_tettySKK,
@@ -92,8 +98,9 @@ STDAPI DllRegisterServer(void) {
 				GUID_Profile_SKKIme,
 				gtettySKK_IME_NAME,
 				(ULONG)wcslen(gtettySKK_IME_NAME),
-				NULL, 0,//TODO:アイコンを追加する。
-				NULL,
+				szDllPath2,
+				(ULONG)wcslen(szDllPath2),
+				IME_ICON_IDX,
 				nullptr, 0, TRUE, 0
 			);
 		}

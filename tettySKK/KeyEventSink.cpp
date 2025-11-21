@@ -9,7 +9,8 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	WCHAR key = (WCHAR)wParam;
 	if (m_currentMode == SKKMode::Hankaku) {
 		if (_IsCtrlKeyPressed() && key == L'J') {
-			m_currentMode = SKKMode::Kakutei;
+			_ChangeCurrentMode(SKKMode::Kakutei);
+			m_pLangBarItemButton->_UpdateIcon();
 		}
 		return false;
 	}
@@ -139,7 +140,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		key += L'a' - L'A';
 		*pfEaten = TRUE;
 		if (key == L'q') {
-		 m_CurrentKanaMode = KanaMode::Katakana;
+		 _ChangeCurrenKanaMode(KanaMode::Katakana);
 			return S_OK;
 		}
 		else if (key == L'l') {
@@ -153,7 +154,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 			m_Gokan = L"";
 			m_OkuriganaFirstChar = L'\0';
-			m_currentMode = SKKMode::Hankaku;
+			_ChangeCurrentMode(SKKMode::Hankaku);
 			return S_OK;
 		}
 
@@ -188,7 +189,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				m_OkuriganaFirstChar = L'\0';
 			}
 
-			m_currentMode = SKKMode::Henkan;
+			_ChangeCurrentMode(SKKMode::Henkan);
 
 			// Å™Å™ à»è„Ç≈_CommitComposition Ç™èIóπ Å™Å™
 
