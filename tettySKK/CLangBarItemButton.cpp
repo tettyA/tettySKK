@@ -126,22 +126,22 @@ STDAPI CLangBarItemButton::GetIcon(HICON* phIcon)
 	SKKMode mode;
 	KanaMode kanaMode;
 	_pSkkIme->_GetCurrentMode(mode, kanaMode);
-	int iconnum = 0;
+	int iconnum = IMELICON16;
 
 	if (mode == SKKMode::Kakutei) {
-		iconnum = IMELICON;
+		iconnum = IMELICON16;
 	}
 	else {
 		if (kanaMode == KanaMode::Hiragana) {
-			iconnum = IMEJICON;
+			iconnum = IMEJICON16;
 		}
 		else if (kanaMode == KanaMode::Katakana) {
-			iconnum = IMEQICON;
+			iconnum = IMEQICON16;
 		}
 	}
-	//*phIcon = (HICON)LoadImage(g_hModule, MAKEINTRESOURCE(iconnum),IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	*phIcon = (HICON)LoadImage(g_hModule, MAKEINTRESOURCE(iconnum),IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
-	*phIcon = LoadIcon(0, IDI_EXCLAMATION);
+	//*phIcon = LoadIcon(0, IDI_EXCLAMATION);
 	return S_OK;
 }
 

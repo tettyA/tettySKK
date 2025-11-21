@@ -55,7 +55,7 @@ public:
 	void _GetThreadMgr(ITfThreadMgr** ppThreadMgr) {
 		if (ppThreadMgr == nullptr)return;
 		*ppThreadMgr = _pThreadMgr;
-
+		(*ppThreadMgr)->AddRef();
 	}
 private:
 	LONG _refCount;

@@ -17,7 +17,17 @@ void CSkkIme::_SetCompartment(REFGUID guid, const VARIANT& var)
 		return;
 	}
 
-	pCompartment->SetValue(_clientId, &var);
+	HRESULT hr = pCompartment->SetValue(_clientId, &var);
+	if (FAILED(hr)) {
+		// もしここに来るなら、Windowsが「変更を受け付けない」状態です
+		// デバッグ出力ウィンドウで確認できます
+		wchar_t msg[64];
+		swprintf_s(msg, L"SetValue Failed! HR=0x%08X\n", hr);
+		OutputDebugString(msg);
+		
+		// 念のためメッセージボックスでも
+		MessageBox(NULL, msg, L"Error", MB_OK); 
+	}
 }
 
 void CSkkIme::__UpdateInputMode()

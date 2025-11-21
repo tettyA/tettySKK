@@ -134,5 +134,17 @@
     <Image Include="tettySKKIMEICON\imeqicon.ico">
       <Filter>リソース ファイル</Filter>
     </Image>
+    <Image Include="tettySKKIMEICON\imejicon16.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="tettySKKIMEICON\imelicon16.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="tettySKKIMEICON\imeqicon16.ico">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="tettySKKIMEICON\imejicon16.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 #include "Global.h"
 #include <strsafe.h>
 #include <atlbase.h>
+#include <msctf.h>
 
 #define CLSIDLEN 39
 
