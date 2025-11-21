@@ -205,8 +205,12 @@ notepad.exe</Command>
   <ItemGroup>
     <Image Include="tettySKKIMEICON\imeicon32x32.ico" />
     <Image Include="tettySKKIMEICON\imejicon.ico" />
+    <Image Include="tettySKKIMEICON\imejicon16.ico" />
+    <Image Include="tettySKKIMEICON\imejicon16.png" />
     <Image Include="tettySKKIMEICON\imelicon.ico" />
+    <Image Include="tettySKKIMEICON\imelicon16.ico" />
     <Image Include="tettySKKIMEICON\imeqicon.ico" />
+    <Image Include="tettySKKIMEICON\imeqicon16.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

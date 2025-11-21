@@ -60,6 +60,12 @@ IMELICON                ICON                    "tettySKKIMEICON\\imelicon.ico"
 
 IMEQICON                ICON                    "tettySKKIMEICON\\imeqicon.ico"
 
+IMEJICON16              ICON                    "tettySKKIMEICON\\imejicon16.ico"
+
+IMELICON16              ICON                    "tettySKKIMEICON\\imelicon16.ico"
+
+IMEQICON16              ICON                    "tettySKKIMEICON\\imeqicon16.ico"
+
 #endif    // “ú–{Œê (“ú–{) resources
 /////////////////////////////////////////////////////////////////////////////
 

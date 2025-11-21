@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "CInsertTextEditSession.h"
 #include "Global.h"
 

@@ -4,6 +4,12 @@
 #include "Global.h"
 #include "CDisplayAttributeInfo.h"
 
+#include "initguid.h"
+#include "ctfutb.h"
+#include "msctf.h"
+#include "TextStor.h"
+#include "ctffunc.h"
+
 CSkkIme::CSkkIme()
 {
 	DllAddRef();
@@ -24,7 +30,10 @@ CSkkIme::CSkkIme()
 
 	m_Gokan = L"";
 	m_OkuriganaFirstChar = L'\0';
-	m_pLangBarItemButton = new CLangBarItemButton(this, GUID_LangBarItem_SkkIme);
+
+
+	
+	m_pLangBarItemButton = new CLangBarItemButton(this, GUID_LBI_INPUTMODE);
 }
 
 CSkkIme::~CSkkIme()
@@ -113,6 +122,8 @@ STDAPI CSkkIme::Activate(ITfThreadMgr* ptim, TfClientId tid) {
 	if (m_pLangBarItemButton) {
 		m_pLangBarItemButton->_Init();
 	}
+
+	__UpdateInputMode();
 	return S_OK;
 }
 

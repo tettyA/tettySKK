@@ -127,3 +127,11 @@ qモードに対応した。片仮名で変換も出きるように。
 lモードの実装。CTRL+J,l,qでそれぞれのモードに移行出来るように。
 
 IMEのアイコンを取り敢えず表示させた。しかし，モードのアイコンは表示できない
+↑
+ようやく，モードのアイコンを表示できるようにした。
+どうやら，CLangBarItemButtonの_LangBarItemInfo.guidItemは，GUID_LBI_INPUTMODEの値でないといけない。
+しかしながら，その値を使用すると定義されていないと怒られるため，Geminiが言っていても嘘つけ，としか思わなかった。
+しかし，MSのドキュメントを見てみると，GUID_LBI_INPUTMODEを使用しろとしきりに言っているので，やはりGeminiは正しかった。
+cmdで，
+findstr /S /I /C:"GUID_LBI_INPUTMODE" "C:\Program Files (x86)\Windows Kits\10\Include\*.*"
+を実行すると，定義されているファイルが見つかった(ctffunc.h)ので，includeしたら，無事にコンパイルが通り，IMEのモードアイコンが表示された。
