@@ -5,11 +5,8 @@
 #include "TranslatetRomajiToKana.h"
 #include "SKKDictionaly.h"
 #include "CCandidateWindow.h"
+#include "CLangBarItemButton.h"
 #include "Global.h"
-/*
-#define SKKMODE_PRECHAR_CONVERSION L'▽'
-#define SKKMODE_PRECHAR_SHOWCANDIDATE L'▼'
-*/
 
 
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.h
@@ -50,6 +47,16 @@ public:
 
 	//テキスト挿入補助
 	HRESULT _DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHAR* text,BOOL _isDetermined);
+
+	void _GetCurrentMode(SKKMode& mode, KanaMode& kanaMode) {
+		mode = m_currentMode;
+		kanaMode = m_CurrentKanaMode;
+	}
+	void _GetThreadMgr(ITfThreadMgr** ppThreadMgr) {
+		if (ppThreadMgr == nullptr)return;
+		*ppThreadMgr = _pThreadMgr;
+
+	}
 private:
 	LONG _refCount;
 	//TSFとの連絡用
@@ -87,10 +94,26 @@ private:
 	void _UpDateCandidateWindowPosition(ITfContext* pic);
 	void _EndCandidateWindow();
 
-	SKKMode m_currentMode;
-	KanaMode m_CurrentKanaMode;
+	 SKKMode m_currentMode;
+	 KanaMode m_CurrentKanaMode;
+	void _ChangeCurrentMode(const SKKMode mode) {
+		m_currentMode = mode;
+		__UpdateInputMode();
+	}
+	void _ChangeCurrenKanaMode(const KanaMode mode) {
+		m_CurrentKanaMode = mode;
+		__UpdateInputMode();
+	}
+
+	void __UpdateInputMode();
+
 	bool _IsShiftKeyPressed();
 	bool _IsCtrlKeyPressed();
+
+	CComPtr<CLangBarItemButton> m_pLangBarItemButton;
+
+	void _SetCompartment(REFGUID guid, const VARIANT& var);
+	
 };
 
 

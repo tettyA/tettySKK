@@ -23,7 +23,13 @@ DEFINE_GUID(GUID_Category_SkkIme,
 DEFINE_GUID(GUID_Skk_DisplayAttirbute_Input ,
 	0xbc24d976, 0x911f, 0x49af, 0x9c, 0x50, 0x82, 0xc6, 0x26, 0x9e, 0xaa, 0x9e);
 
-#define gtettySKK_IME_NAME L"tettySKK IME"
+//言語バーアイテム識別用GUID
+// {F1F04704-463D-4E47-94DD-721D7649E256}
+DEFINE_GUID(GUID_LangBarItem_SkkIme ,
+	0xf1f04704, 0x463d, 0x4e47, 0x94, 0xdd, 0x72, 0x1d, 0x76, 0x49, 0xe2, 0x56);
+
+
+#define gtettySKK_IME_NAME L"Hyper Great tettySKK IME"
 
 
 

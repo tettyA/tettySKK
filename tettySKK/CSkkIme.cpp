@@ -19,15 +19,21 @@ CSkkIme::CSkkIme()
 
 	m_pCandidateWindow = new CCandidateWindow(g_hModule);
 
-	m_currentMode = SKKMode::Hankaku;//TODO: ÅI“I‚É‚ÍHankaku‚É‚·‚é
+	m_currentMode = SKKMode::Hankaku;
 	m_CurrentKanaMode = KanaMode::Hiragana;
 
 	m_Gokan = L"";
 	m_OkuriganaFirstChar = L'\0';
+	m_pLangBarItemButton = new CLangBarItemButton(this, GUID_LangBarItem_SkkIme);
 }
 
 CSkkIme::~CSkkIme()
 {
+	if(m_pLangBarItemButton)
+	{
+		m_pLangBarItemButton.Release();
+		m_pLangBarItemButton = nullptr;
+	}
 	if(_pThreadMgr)
 	{
 		_pThreadMgr.Release();
@@ -103,6 +109,10 @@ STDAPI CSkkIme::Activate(ITfThreadMgr* ptim, TfClientId tid) {
 	}
 
 	m_SKKDictionaly.LoadDictionaryFromFile(SKK_DICTIONARY_FILEPATH);
+
+	if (m_pLangBarItemButton) {
+		m_pLangBarItemButton->_Init();
+	}
 	return S_OK;
 }
 
@@ -115,11 +125,16 @@ STDAPI CSkkIme::Deactivate() {
 	_EndCandidateWindow();
 	_UninitKeyEventSink();
 
+
+
 	if (_pComposition) {
 		_pComposition.Release();
 		//_pComposition = nullptr;
 	}
 
+	if (m_pLangBarItemButton) {
+		m_pLangBarItemButton->_Uninit();
+	}
 
 	if (_pThreadMgr) {
 		_pThreadMgr.Release();
@@ -131,6 +146,8 @@ STDAPI CSkkIme::Deactivate() {
 #endif
 
 	_clientId = TF_CLIENTID_NULL;
+	
+	__UpdateInputMode();
 
 	return S_OK;
 }

@@ -160,10 +160,12 @@ notepad.exe</Command>
     <ClInclude Include="CEditSessionBase.h" />
     <ClInclude Include="CEnumDisplayAttributeInfo.h" />
     <ClInclude Include="CInsertTextEditSession.h" />
+    <ClInclude Include="CLangBarItemButton.h" />
     <ClInclude Include="CSkkIme.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SKKDictionaly.h" />
     <ClInclude Include="SKKImeFactory.h" />
     <ClInclude Include="TranslatetRomajiToKana.h" />
@@ -173,6 +175,8 @@ notepad.exe</Command>
     <ClCompile Include="CDisplayAttributeInfo.cpp" />
     <ClCompile Include="CEditSessionBase.cpp" />
     <ClCompile Include="CEnumDisplayAttributeInfo.cpp" />
+    <ClCompile Include="CLangBarItemButton.cpp" />
+    <ClCompile Include="Compartment.cpp" />
     <ClCompile Include="Composition.cpp" />
     <ClCompile Include="CSkkIme.cpp" />
     <ClCompile Include="DisplayAttributeProvider.cpp" />
@@ -194,6 +198,15 @@ notepad.exe</Command>
   <ItemGroup>
     <Text Include="..\開発日記.txt" />
     <Text Include="RomajiToKanaTransTable.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="tettySKKIMEICON\imeicon32x32.ico" />
+    <Image Include="tettySKKIMEICON\imejicon.ico" />
+    <Image Include="tettySKKIMEICON\imelicon.ico" />
+    <Image Include="tettySKKIMEICON\imeqicon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
