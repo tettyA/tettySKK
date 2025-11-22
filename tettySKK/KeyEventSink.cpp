@@ -7,11 +7,13 @@
 
 bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	WCHAR key = (WCHAR)wParam;
+	if (_IsCtrlKeyPressed() && key == L'J') {
+		_ChangeCurrentMode(SKKMode::Kakutei);
+		_ChangeCurrenKanaMode(KanaMode::Hiragana);
+		return false;
+	}
 	if (m_currentMode == SKKMode::Hankaku) {
-		if (_IsCtrlKeyPressed() && key == L'J') {
-			_ChangeCurrentMode(SKKMode::Kakutei);
-			m_pLangBarItemButton->_UpdateIcon();
-		}
+		
 		return false;
 	}
 	if (_IsCtrlKeyPressed()) {
