@@ -128,7 +128,7 @@ STDAPI CLangBarItemButton::GetIcon(HICON* phIcon)
 	_pSkkIme->_GetCurrentMode(mode, kanaMode);
 	int iconnum = IMELICON16;
 
-	if (mode == SKKMode::Kakutei) {
+	if (mode == SKKMode::Hankaku) {
 		iconnum = IMELICON16;
 	}
 	else {

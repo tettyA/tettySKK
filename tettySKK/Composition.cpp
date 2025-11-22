@@ -185,7 +185,7 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 	m_CurrentCandidates.clear();
 	m_CurrentShowCandidateIndex = 0;
 	m_RomajiToKanaTranslator.Reset();
-	m_currentMode = SKKMode::Kakutei;
+	_ChangeCurrentMode(SKKMode::Kakutei);
 
 	m_Gokan = L"";
 	m_OkuriganaFirstChar = L'\0';
