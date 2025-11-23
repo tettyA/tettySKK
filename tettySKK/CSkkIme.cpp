@@ -4,10 +4,8 @@
 #include "Global.h"
 #include "CDisplayAttributeInfo.h"
 
-#include "initguid.h"
-#include "ctfutb.h"
+
 #include "msctf.h"
-#include "TextStor.h"
 #include "ctffunc.h"
 
 CSkkIme::CSkkIme()
@@ -34,6 +32,7 @@ CSkkIme::CSkkIme()
 
 	
 	m_pLangBarItemButton = new CLangBarItemButton(this, GUID_LBI_INPUTMODE);
+	m_isRegiteringNewWord = FALSE;
 }
 
 CSkkIme::~CSkkIme()

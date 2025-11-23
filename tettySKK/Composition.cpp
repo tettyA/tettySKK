@@ -16,6 +16,7 @@ void CSkkIme::_InsertText(ITfContext* pic, const WCHAR* text,BOOL isDetermined) 
 	pSession */= new CInsertTextEditSession(this, pic, text, isDetermined);
 
 	HRESULT hr;
+
 	pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READWRITE, &hr);
 	pSession->Release();
 }
@@ -49,7 +50,6 @@ HRESULT CSkkIme::_SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCooki
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/Composition.cpp#L78
 HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHAR* text,BOOL isDetermined) {
 	HRESULT hr=E_FAIL;
-	
 	if (_pComposition) {
 		CComPtr<ITfRange> pRange;
 		if (SUCCEEDED(_pComposition->GetRange(&pRange))) {
