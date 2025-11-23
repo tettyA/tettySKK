@@ -6,6 +6,7 @@
 
 #define CANDIDATEWINDOW_MODE_SINGLE 0
 #define CANDIDATEWINDOW_MODE_MULTIPLE 1
+#define CANDIDATEWINDOW_MODE_REGWORD 2
 
 #define BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX 5
 #define NUM_SHOW_CANDIDATE_MULTIPLE 7
@@ -15,7 +16,10 @@ public:
 	CCandidateWindow(HINSTANCE hInstance);
 	~CCandidateWindow();
 
-	void SetCandidates(const SKKCandidates& candidates, size_t index, BOOL Mode);
+	void SetCandidates(SKKCandidates candidates, size_t index, int Mode);
+	void GetCandidates(SKKCandidates& candidates) const {
+		candidates = m_Candidates;
+	}
 	void HideWindow();
 
 	bool IsWindowExists() const {

@@ -67,14 +67,20 @@ BOOL CSKKDictionaly::LoadDictionaryFromFile(const std::wstring& filepath)
 		SKKCandidates candidateslist;
 
 		std::wstringstream ss(candidateStr);
-		SKKCandidate candidate;
-		while (std::getline(ss, candidate, L'/')) {
-			if (candidate.empty()) continue;
+		std::wstring tmpcandidate;
+		while (std::getline(ss, tmpcandidate, L'/')) {
+			if (tmpcandidate.empty()) continue;
 
-			//; ‚Íˆê’U–³Ž‹ 
-			//TODO: –³Ž‹‚µ‚È‚¢
+			if (tmpcandidate.find(SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_CHAR) != std::wstring::npos) {
+				size_t sepPos = tmpcandidate.find(SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_CHAR);
+				std::wstring candidate = tmpcandidate.substr(0, sepPos);
+				std::wstring annotation = tmpcandidate.substr(sepPos + 1);
+				candidateslist.push_back(std::make_pair(candidate, annotation));
+			}
+			else {
+				candidateslist.push_back(std::make_pair(tmpcandidate, L""));
+			}
 
-			candidateslist.push_back(candidate);
 		}
 		if (!candidateslist.empty()) {
 			m_dictionary[key] = candidateslist;

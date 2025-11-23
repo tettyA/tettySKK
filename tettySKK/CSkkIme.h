@@ -87,7 +87,7 @@ private:
 	std::wstring m_Gokan;//ŒêŠ²•”•ª ‚È‚¯‚ê‚Î–¢Šm’è•¶Žš—ñ‘S‘Ì             ’ú‚ß(‚é) -> ’ú
 	WCHAR m_OkuriganaFirstChar;//‘—‚è‰¼–¼‚ÌÅ‰‚Ìˆê•¶Žš ‚È‚¢ê‡‚ÍL'\0'  ’ú‚ß(‚é) -> m  
 
-
+	
 	void _CommitComposition(ITfContext* pic);
 
 	CCandidateWindow* m_pCandidateWindow;
@@ -114,6 +114,14 @@ private:
 
 	void _SetCompartment(REFGUID guid, const VARIANT& var);
 	
+	BOOL m_isRegiteringNewWord;
+	void _BgnRegiterNewWord(ITfContext* pic,std::wstring regKey);
+	std::wstring m_RegKey;
+	std::wstring m_RegInput;
+
+	void _TreatNewRegWord(WCHAR key, ITfContext* pic);
+
+	void _EndRegiterNewWord();
 };
 
 
