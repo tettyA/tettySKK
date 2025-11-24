@@ -119,9 +119,12 @@ private:
 	std::wstring m_RegKey;
 	std::wstring m_RegInput;
 
+	std::wstring m_currentInputKana;
 	void _TreatNewRegWord(WCHAR key, ITfContext* pic);
 
 	void _EndRegiterNewWord();
+
+	
 };
 
 

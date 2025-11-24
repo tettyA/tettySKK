@@ -29,7 +29,46 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 
 void CSkkIme::_TreatNewRegWord(WCHAR key, ITfContext* pic)
 {
+	//TODO: 片仮名語は検索が出来ないので，改善(辞書から検索出来ない。ひらがなに強制変換されるので)
 	if (key == VK_RETURN) {
+		if (m_RegInput.empty()) {
+			
+			if (m_CurrentCandidates.empty()) {
+				_EndRegiterNewWord();
+			}
+			else {
+				m_CurrentShowCandidateIndex--;
+
+				m_isRegiteringNewWord = FALSE;
+				m_RegInput = L"";
+				m_RegKey = L"";
+
+				std::wstring additionalStr = L"";
+				//TODO: 処理の共通化
+				
+				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+
+					additionalStr = m_currentInputKana.substr(m_Gokan.length());
+				}
+			
+				if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+
+					_InsertText(pic, (m_CurrentCandidates[m_CurrentShowCandidateIndex]_Candidate + additionalStr).c_str(), FALSE);
+
+					m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_SINGLE);
+					_UpDateCandidateWindowPosition(pic);
+				}
+				else {
+					//TODO: ひらがなで表示したい
+					_InsertText(pic, (m_currentInputKana).c_str(), FALSE);
+
+					m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_MULTIPLE);
+					_UpDateCandidateWindowPosition(pic);
+				}
+			}
+			return;
+		}
+
 		//TODO: ファイルにも保存されるようにする
 		_InsertText(pic, m_RegInput.c_str(), TRUE);
 		m_SKKDictionaly.AddCandidate(m_RegKey, m_RegInput);
@@ -47,7 +86,7 @@ void CSkkIme::_TreatNewRegWord(WCHAR key, ITfContext* pic)
 			m_RegInput += key;
 		}
 		else {
-			//まず未確定変換文字列画面の文字を取得 ex: しm
+			//TODO: 処理共通化
 			std::wstring textonScreen = L"";
 			SKKCandidates textonCandidates;
 			m_pCandidateWindow->GetCandidates(textonCandidates);
@@ -108,7 +147,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				}
 				if (m_CurrentCandidates.size() == 0) {
 					//TODO: 新しい語の登録
-					_BgnRegiterNewWord(pic, compositionString);
+					_BgnRegiterNewWord(pic, m_currentInputKana);
 				}
 				else {
 
@@ -131,7 +170,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					}
 					else {
 						//TODO:新しい語の登録
-						_BgnRegiterNewWord(pic,displayStr);
+						_BgnRegiterNewWord(pic,m_currentInputKana);
 					}
 
 				}
@@ -161,7 +200,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				//TODO:新しい語の登録
 			//	m_CurrentShowCandidateIndex = 0;//とりあえず最初に戻す
 				//TODO: ひらがなにしたい
-				_BgnRegiterNewWord(pic, m_CurrentCandidates[0]_Candidate + additionalStr);
+				_BgnRegiterNewWord(pic, m_currentInputKana);
 				return S_OK;
 			}
 
@@ -174,7 +213,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			}
 			else {
 				//TODO: ひらがなで表示したい
-				_InsertText(pic, (m_CurrentCandidates[0]_Candidate + additionalStr).c_str(), FALSE);
+				_InsertText(pic, (m_currentInputKana).c_str(), FALSE);
 
 				m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_MULTIPLE);
 				_UpDateCandidateWindowPosition(pic);
@@ -215,6 +254,39 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			m_Gokan = L"";
 			m_OkuriganaFirstChar = L'\0';
 			_ChangeCurrentMode(SKKMode::Hankaku);
+			return S_OK;
+		}
+		else if (key == L'x' && m_currentMode==SKKMode::Henkan) {
+
+			//前の候補
+			//TODO:  処理の共通化
+			//_InsertText(pic, (L"X pressed"), TRUE);
+			std::wstring additionalStr = L"";
+			std::wstring compositionString;
+			_GetCompositionString(compositionString);
+			//送り仮名付きのとき
+			if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+				//書k or 書く  -> k or く
+				additionalStr = compositionString.substr(compositionString.length() - 1);
+			}
+			m_CurrentShowCandidateIndex = max(0, (int)m_CurrentShowCandidateIndex - 1);
+
+			if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+
+				_InsertText(pic, (m_CurrentCandidates[m_CurrentShowCandidateIndex]_Candidate + additionalStr).c_str(), FALSE);
+
+				m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_SINGLE);
+				_UpDateCandidateWindowPosition(pic);
+			}
+			else {
+				//TODO: ひらがなで表示したい
+				_InsertText(pic, (m_currentInputKana).c_str(), FALSE);
+
+				m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_MULTIPLE);
+				_UpDateCandidateWindowPosition(pic);
+			}
+
+
 			return S_OK;
 		}
 
@@ -262,41 +334,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		//変換中
 		if (m_currentMode == SKKMode::Henkan) {
 	
-			if (key == L'x') {
-				/*
-				//前の候補
-				//TODO: 実装
-				//なぜか，(m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX)になると上手くいかない
-				//TODO: 処理の共通化
-				//_InsertText(pic, (L"X pressed"), TRUE);
-				std::wstring additionalStr = L"";
-				std::wstring compositionString;
-				_GetCompositionString(compositionString);
-				//送り仮名付きのとき
-				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
-					//書k or 書く  -> k or く
-					additionalStr = compositionString.substr(compositionString.length() - 1);
-				}
-				m_CurrentShowCandidateIndex = max(0, (int)m_CurrentShowCandidateIndex - 1);
-
-				if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
-
-					_InsertText(pic, (m_CurrentCandidates[m_CurrentShowCandidateIndex]_Candidate + additionalStr).c_str(), FALSE);
-
-					m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_SINGLE);
-					_UpDateCandidateWindowPosition(pic);
-				}
-				else {
-					//TODO: ひらがなで表示したい
-					_InsertText(pic, (m_CurrentCandidates[0]_Candidate + additionalStr).c_str(), FALSE);
-
-					m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_MULTIPLE);
-					_UpDateCandidateWindowPosition(pic);
-				}
-
-				*/
-				return S_OK;
-			}
+		
 			//ASDFJKL で選ぶ段階
 			if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
 				
@@ -325,7 +363,11 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				{
 					std::wstring baseword = m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
 					std::wstring additionalStr = L"";
-					_InsertText(pic, baseword.c_str(), FALSE);
+
+					if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+						additionalStr = m_currentInputKana.substr(m_Gokan.length());
+					}
+					_InsertText(pic, (baseword+additionalStr).c_str(), FALSE);
 					_CommitComposition(pic);
 					return S_OK;
 					break;
@@ -356,6 +398,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			//ひらがな確定済部分[し] + 新かな[ま] + 新ローマ字バッファ[]
 			std::wstring finalText = baseKana + newkana + m_RomajiToKanaTranslator.GetBuffer();
 
+			m_currentInputKana = baseKana + newkana;
 
 			_InsertText(pic, finalText.c_str(), FALSE);
 
@@ -479,6 +522,7 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic,std::wstring regKey)
 	m_isRegiteringNewWord = TRUE;
 	m_RegInput = L"";
 	m_RegKey = regKey;
+	
 
 	m_pCandidateWindow->SetCandidates(SKKCandidates{ {L"",L""}}, 0, CANDIDATEWINDOW_MODE_REGWORD);
 	_UpDateCandidateWindowPosition(pic);

@@ -147,8 +147,8 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 	int y = 0, x = 5;
 	int maxx = 0;
 	SIZE strsize ;
-	TextOut(hdc, x, y, WSTR_AND_WLEN(L"Debug:" + std::to_wstring(m_Mode)));
-	y += 12;
+	//TextOut(hdc, x, y, WSTR_AND_WLEN(L"Debug:" + std::to_wstring(m_Mode)));
+///	y += 12;
 	if (m_Mode == CANDIDATEWINDOW_MODE_SINGLE) {
 		TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate));
 		GetTextExtentPoint(hdc, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate + L"  "), &strsize);
@@ -212,12 +212,12 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 		TextOut(hdc, x, y, remainingText.c_str(), static_cast<int>(remainingText.length()));
 		GetTextExtentPoint32(hdc, WSTR_AND_WLEN(remainingText), &strsize);
 		x += strsize.cx;
-
+		maxx = max(x, maxx);
 		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, maxx + 2, y + strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	} 
 	else if (m_Mode == CANDIDATEWINDOW_MODE_REGWORD) {
 		//ìoò^åÍÉÇÅ[Éh
-		
+
 		SetTextColor(hdc, CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB);
 		TextOut(hdc, x, y, WSTR_AND_WLEN(std::wstring(L"ìoò^:   ")));
 		GetTextExtentPoint32(hdc, WSTR_AND_WLEN(std::wstring(L"ìoò^:   ")), &strsize);
@@ -239,8 +239,8 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 		}
 
 
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, 500, 500, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
-		
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, x + 2, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+
 	}
 	
 }
