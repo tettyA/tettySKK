@@ -181,6 +181,7 @@ notepad.exe</Command>
     <ClCompile Include="CSkkIme.cpp" />
     <ClCompile Include="DisplayAttributeProvider.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="HandleInputKey.cpp" />
     <ClCompile Include="KeyEventSink.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
