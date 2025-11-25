@@ -75,6 +75,9 @@ private:
 
 	bool _IsKeyEaten(WPARAM wParam);
 
+	HRESULT _HandleSpaceKey(ITfContext* pic, WCHAR key);
+	HRESULT _HandleCharKey(ITfContext* pic, WCHAR key);
+
 	TranslatetRomajiToKana m_RomajiToKanaTranslator;
 
 	CSKKDictionaly m_SKKDictionaly;
@@ -120,6 +123,9 @@ private:
 	std::wstring m_RegInput;
 
 	std::wstring m_currentInputKana;
+	void __InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _multiIntsertText,const WCHAR* _singleInsertText);
+
+
 	void _TreatNewRegWord(WCHAR key, ITfContext* pic);
 
 	void _EndRegiterNewWord();

@@ -146,3 +146,7 @@ findstr /S /I /C:"GUID_LBI_INPUTMODE" "C:\Program Files (x86)\Windows Kits\10\In
 23:49 2025/11/24
 辞書登録からエンターで戻れるようにした。また，ASDFJKL変換中には，未確定中の文字列はひらがなで表示するようにした。
 辞書登録時の候補ウィンドウのサイズを正常にした。
+
+12:00 2025/11/25
+__InsertTextMakeCandidateWindowで処理の共通化
+OnKeyDownの処理の委譲
