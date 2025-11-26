@@ -4,21 +4,42 @@
 #include "Global.h"
 
 //テキスト編集の予約
-void CSkkIme::_InsertText(ITfContext* pic, const WCHAR* text,BOOL isDetermined) {
-	CInsertTextEditSession* pSession/*;
-	if (m_currentMode == SKKMode::Katakana) {
-		std::wstring strText = text;
-		_ConvertToKatakana(strText);
-
-		pSession = new CInsertTextEditSession(this, pic, text, isDetermined);
-	}
-	else
-	pSession */= new CInsertTextEditSession(this, pic, text, isDetermined);
+void CSkkIme::__InsertText(ITfContext* pic, const WCHAR* text,BOOL isDetermined) {
+	CInsertTextEditSession* pSession = new CInsertTextEditSession(this, pic, text, isDetermined);
 
 	HRESULT hr;
 
 	pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READWRITE, &hr);
 	pSession->Release();
+}
+
+void CSkkIme::__InsertNewRegWord(ITfContext* pic, const std::wstring& text, BOOL _isDetermined)
+{
+	if (m_currentMode == SKKMode::Hankaku) {
+		m_RegInput += text;
+	}
+	else if (m_currentMode == SKKMode::Kakutei) {
+		if (_isDetermined) {
+			m_RegInput += text;
+		}
+	}
+	else if (m_currentMode == SKKMode::Henkan) {
+		m_RegInput = text;
+	}
+	if (m_pCandidateWindow->IsWindowExists()) {
+		m_pCandidateWindow->SetCandidates(SKKCandidates{ {_isDetermined?m_RegInput: m_RegInput+text ,m_RegKey} }, 0, CANDIDATEWINDOW_MODE_REGWORD);
+		_UpDateCandidateWindowPosition(pic);
+	}
+}
+ 
+void CSkkIme::_Output(ITfContext* pic, const std::wstring& text, BOOL _isDetermined)
+{
+	if (m_isRegiteringNewWord) {
+		__InsertNewRegWord(pic, text, _isDetermined);
+	}
+	else {
+		__InsertText(pic, text.c_str(), _isDetermined);
+	}
 }
 
 HRESULT CSkkIme::_SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCookie ec, ITfRange* pRange) {
@@ -141,6 +162,11 @@ BOOL CSkkIme::_GetCompositionString(std::wstring& compositionString)
 {
 	compositionString.clear();
 
+	if(m_isRegiteringNewWord){
+		compositionString = m_RegInput;
+		return TRUE;
+	}
+
 	CComPtr<ITfRange> pRange;
 	if (_pComposition == nullptr) {
 		return FALSE;
@@ -178,10 +204,10 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 		_pComposition = nullptr;
 
 	}
-	if(m_pCandidateWindow->IsWindowExists()){
+	if (m_pCandidateWindow->IsWindowExists() ) {
 		m_pCandidateWindow->HideWindow();
 	}
-	
+
 	m_CurrentCandidates.clear();
 	m_CurrentShowCandidateIndex = 0;
 	m_RomajiToKanaTranslator.Reset();

@@ -35,11 +35,11 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 	WCHAR key = (WCHAR)wParam;
 	//新しい語の登録処理
-	if (m_isRegiteringNewWord) {
+	/*if (m_isRegiteringNewWord) {
 		_TreatNewRegWord(key, pic);
 		*pfEaten = TRUE;
 		return S_OK;
-	}
+	}*/
 	//変換の処理
 	if (key == VK_SPACE) {
 		//未入力もしくは変換モードでないならば，そのまま返す
@@ -55,11 +55,17 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 	//確定処理
 	if (key == VK_RETURN) {
+		if (m_isRegiteringNewWord) {
+			//TODO: 実装
+			*pfEaten = TRUE;
+			_EndRegiterNewWord();
+		}
 		if (_pComposition) {
 			*pfEaten = TRUE;
-
-			_CommitComposition(pic);
-
+	
+	//		else {
+				_CommitComposition(pic);
+			//}
 			return S_OK;
 		}
 	}
@@ -154,14 +160,19 @@ bool CSkkIme::_IsCtrlKeyPressed()
 	return ((GetKeyState(VK_CONTROL) & 0x8000) != 0);
 }
 
-void CSkkIme::_BgnRegiterNewWord(ITfContext* pic,std::wstring regKey)
+void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 {
+	if (m_isRegiteringNewWord)return;
+
 	m_isRegiteringNewWord = TRUE;
 	m_RegInput = L"";
 	m_RegKey = regKey;
-	
 
-	m_pCandidateWindow->SetCandidates(SKKCandidates{ {L"",L""}}, 0, CANDIDATEWINDOW_MODE_REGWORD);
+	m_currentMode = SKKMode::Kakutei;
+
+	__InsertText(pic, L"", FALSE);
+
+	m_pCandidateWindow->SetCandidates(SKKCandidates{ {L"",regKey}}, 0, CANDIDATEWINDOW_MODE_REGWORD);
 	_UpDateCandidateWindowPosition(pic);
 }
 
@@ -171,7 +182,7 @@ void CSkkIme::_EndRegiterNewWord()
 	m_isRegiteringNewWord = FALSE;
 	m_RegInput = L"";
 	m_RegKey = L"";
-	m_pCandidateWindow->HideWindow();
+	m_pCandidateWindow->MustHideWindow();
 }
 
 
@@ -179,14 +190,14 @@ void CSkkIme::__InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _mult
 {
 	if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
 
-		_InsertText(pic, _multiIntsertText, FALSE);
+		_Output(pic, _multiIntsertText, FALSE);
 
 		m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_SINGLE);
 		_UpDateCandidateWindowPosition(pic);
 	}
 	else {
 		//TODO: ひらがなで表示したい
-		_InsertText(pic, _singleInsertText, FALSE);
+		_Output(pic, _singleInsertText, FALSE);
 
 		m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_MULTIPLE);
 		_UpDateCandidateWindowPosition(pic);

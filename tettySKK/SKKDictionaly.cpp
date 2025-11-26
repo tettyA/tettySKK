@@ -8,7 +8,8 @@
 
 CSKKDictionaly::CSKKDictionaly()
 {
-	
+	m_dictionary = SKKDictionary();
+
 }
 
 CSKKDictionaly::~CSKKDictionaly()
@@ -26,6 +27,8 @@ void CSKKDictionaly::GetCandidates(std::wstring& key, SKKCandidates& candidates)
 
 BOOL CSKKDictionaly::LoadDictionaryFromFile(const std::wstring& filepath)
 {
+	if (m_dictionary.size() > 0)return TRUE;
+
 	m_dictionary.clear();
 	
 	std::ifstream file(filepath, std::ios::binary);

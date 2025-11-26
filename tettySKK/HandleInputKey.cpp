@@ -41,7 +41,7 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 						//TODO: 何かする
 					}
 					else {
-						_InsertText(pic, (displayStr).c_str(), FALSE);
+						_Output(pic, (displayStr), FALSE);
 					}
 				}
 				else {
@@ -58,6 +58,7 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 
 		std::wstring additionalStr = L"";
 		std::wstring compositionString;
+
 		_GetCompositionString(compositionString);
 		//送り仮名付きのとき
 		if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
@@ -211,7 +212,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
 					additionalStr = m_currentInputKana.substr(m_Gokan.length());
 				}
-				_InsertText(pic, (baseword + additionalStr).c_str(), FALSE);
+				_Output(pic, (baseword + additionalStr), FALSE);
 				_CommitComposition(pic);
 				return S_OK;
 				break;
@@ -245,7 +246,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 
 		m_currentInputKana = baseKana + newkana;
 
-		_InsertText(pic, finalText.c_str(), FALSE);
+		_Output(pic, finalText, FALSE);
 
 		//送り仮名の指定
 		if (!textonScreen.empty() && (isShift = _IsShiftKeyPressed())) {
@@ -269,21 +270,21 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 	if (m_currentMode == SKKMode::Kakutei) {
 		std::wstring newkana;
 		if (m_RomajiToKanaTranslator.Translate(key, newkana, m_CurrentKanaMode)) {
-			_InsertText(pic, newkana.c_str(), TRUE);
+			_Output(pic, newkana, TRUE);
 		}
 		else {
 			//変換に達していない場合は，バッファをそのまま表示
-			_InsertText(pic, m_RomajiToKanaTranslator.GetBuffer().c_str(), FALSE);
+			_Output(pic, m_RomajiToKanaTranslator.GetBuffer(), FALSE);
 		}
 	}
 
 	return S_OK;
 }
 
+/*
 
 
-
-void CSkkIme::_TreatNewRegWord(WCHAR key, ITfContext* pic)
+void CSkkIme::__TreatNewRegWord(WCHAR key, ITfContext* pic)
 {
 	//TODO: 片仮名語は検索が出来ないので，改善(辞書から検索出来ない。ひらがなに強制変換されるので)
 	if (key == VK_RETURN) {
@@ -317,7 +318,7 @@ void CSkkIme::_TreatNewRegWord(WCHAR key, ITfContext* pic)
 		}
 
 		//TODO: ファイルにも保存されるようにする
-		_InsertText(pic, m_RegInput.c_str(), TRUE);
+		_Output(pic, m_RegInput.c_str(), TRUE);
 		m_SKKDictionaly.AddCandidate(m_RegKey, m_RegInput);
 		_EndRegiterNewWord();
 		return;
@@ -355,4 +356,4 @@ void CSkkIme::_TreatNewRegWord(WCHAR key, ITfContext* pic)
 		m_pCandidateWindow->SetCandidates(SKKCandidates{ {m_RegInput,L""} }, 0, CANDIDATEWINDOW_MODE_REGWORD);
 		_UpDateCandidateWindowPosition(pic);
 	}
-}
+}*/

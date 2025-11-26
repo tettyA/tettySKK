@@ -65,6 +65,18 @@ void CCandidateWindow::SetCandidates(SKKCandidates candidates, size_t index, int
 
 void CCandidateWindow::HideWindow()
 {
+	if ((m_Mode & CANDIDATEWINDOW_MODE_REGWORD) != 0) {
+		return;
+	}
+	if (!IsWindowExists()) {
+		return;
+	}
+	::ShowWindow(m_hWnd, SW_HIDE);
+}
+
+
+void CCandidateWindow::MustHideWindow()
+{
 	if (!IsWindowExists()) {
 		return;
 	}
@@ -123,7 +135,7 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 	GetClientRect(m_hWnd, &cc);
 	FillRect(hdc, &cc, CANDIDATES_WINDOW_BACKCOLOR_HBURUSH);
 
-	HFONT hFont =
+	static HFONT hFont =
 		CreateFont(
 			CANDIDATES_WINDOW_FONT_HSIZE,
 			0,
@@ -239,7 +251,7 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 		}
 
 
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, x + 2, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, x + 200, strsize.cy + 200, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 
 	}
 	

@@ -65,8 +65,10 @@ private:
 
 	//ñ¢ämíËï∂éöóÒä«óùóp
 	CComPtr<ITfComposition> _pComposition;
-	void _InsertText(ITfContext* pic, const WCHAR* text,BOOL _isDetermined);
+	void __InsertText(ITfContext* pic, const WCHAR* text,BOOL _isDetermined);
+	void __InsertNewRegWord(ITfContext* pic, const std::wstring& text, BOOL _isDetermined);
 
+	void _Output(ITfContext* pic, const std::wstring& text, BOOL _isDetermined);
 
 	BOOL _InitKeyEventSink();
 	void _UninitKeyEventSink();
@@ -126,7 +128,7 @@ private:
 	void __InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _multiIntsertText,const WCHAR* _singleInsertText);
 
 
-	void _TreatNewRegWord(WCHAR key, ITfContext* pic);
+
 
 	void _EndRegiterNewWord();
 
