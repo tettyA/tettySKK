@@ -115,7 +115,8 @@ STDAPI CSkkIme::Activate(ITfThreadMgr* ptim, TfClientId tid) {
 	{
 		return E_FAIL;
 	}
-
+	
+	
 	m_SKKDictionaly.LoadDictionaryFromFile(SKK_DICTIONARY_FILEPATH);
 
 	if (m_pLangBarItemButton) {
