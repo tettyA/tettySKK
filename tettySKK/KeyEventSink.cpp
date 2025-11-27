@@ -72,6 +72,38 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				_CommitRegComposition(pic);
 			}
 			else {
+				if (m_RegInputDetermined.empty()) {
+					//何も登録されていないときは何もしない
+					
+					m_CurrentShowCandidateIndex--;
+
+					m_isRegiteringNewWord = FALSE;
+					m_RegInputDetermined = L"";
+					m_RegInputUndetermined = L"";
+					m_RegKey = L"";
+
+					std::wstring additionalStr = L"";
+					//TODO: 処理の共通化
+
+					if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+
+						additionalStr = m_currentInputKana.substr(m_Gokan.length());
+					}
+
+					_ChangeCurrentMode(SKKMode::Henkan);
+
+					__InsertTextMakeCandidateWindow(pic,
+						(m_CurrentCandidates[m_CurrentShowCandidateIndex]_Candidate + additionalStr).c_str(),
+						(m_currentInputKana).c_str()
+					);
+
+
+					return S_OK;
+				}
+				//TODO: ファイルにも保存されるようにする
+				m_isRegiteringNewWord = FALSE;
+				_Output(pic, m_RegInputDetermined.c_str(), TRUE);
+				m_SKKDictionaly.AddCandidate(m_RegKey, m_RegInputDetermined);
 				_EndRegiterNewWord();
 			}
 			return S_OK;
@@ -93,13 +125,40 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 	}
 
 
-	if (m_isRegiteringNewWord && m_currentMode == SKKMode::Hankaku) {
-		if ((key >= L'A' && key <= L'Z') || (key == VK_SPACE))
-		{
-			key += L'a' - L'A';
-			*pfEaten = TRUE;
-			_Output(pic, std::wstring(1, key), FALSE);
+	if (m_isRegiteringNewWord ) {
+		if (m_currentMode == SKKMode::Hankaku) {
+			if ((key >= L'A' && key <= L'Z') || (key == VK_SPACE))
+			{
+				key += L'a' - L'A';
+				*pfEaten = TRUE;
+				_Output(pic, std::wstring(1, key), FALSE);
 
+				return S_OK;
+			}
+		}
+		if (key == VK_BACK) {
+			*pfEaten = TRUE;
+			if (m_currentMode == SKKMode::Henkan) {
+				//変換中のとき
+				if (m_RegInputUndetermined.length() > 0) {
+					m_RegInputUndetermined.pop_back();
+					__InsertNewRegWord(pic, m_RegInputUndetermined, FALSE);
+				}
+				else {
+					//未確定文字列が空なら確定文字列を削る
+					if (m_RegInputDetermined.length() > 0) {
+						m_RegInputDetermined.pop_back();
+						__InsertNewRegWord(pic, L"", FALSE);
+					}
+				}
+			}
+			else {
+				//確定中のとき
+				if (m_RegInputDetermined.length() > 0) {
+					m_RegInputDetermined.pop_back();
+					__InsertNewRegWord(pic, L"", FALSE);
+				}
+			}
 			return S_OK;
 		}
 	}
@@ -202,7 +261,8 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 
 	__InsertText(pic, L"", FALSE);
 
-	m_pCandidateWindow->SetCandidates(SKKCandidates{ {L"",regKey}}, 0, CANDIDATEWINDOW_MODE_REGWORD);
+	SKKCandidates regKeyCandidate = { {L"",regKey} };
+	m_pCandidateWindow->SetCandidates(regKeyCandidate, 0, CANDIDATEWINDOW_MODE_REGWORD);
 	_UpDateCandidateWindowPosition(pic);
 }
 
@@ -220,17 +280,18 @@ void CSkkIme::_EndRegiterNewWord()
 void CSkkIme::__InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _multiIntsertText,const WCHAR* _singleInsertText)
 {
 	if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
-
+		//FIX: 名前が実情に沿っていない!
 		_Output(pic, _multiIntsertText, FALSE);
-
-		m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_SINGLE );
-		_UpDateCandidateWindowPosition(pic);
+		if (!m_isRegiteringNewWord) {
+			m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_SINGLE);
+			_UpDateCandidateWindowPosition(pic);
+		}
 	}
 	else {
-		//TODO: ひらがなで表示したい
 		_Output(pic, _singleInsertText, FALSE);
-
-		m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_MULTIPLE );
-		_UpDateCandidateWindowPosition(pic);
+		if (!m_isRegiteringNewWord) {
+			m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_MULTIPLE);
+			_UpDateCandidateWindowPosition(pic);
+		}
 	}
 }

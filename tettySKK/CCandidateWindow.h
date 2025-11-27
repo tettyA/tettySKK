@@ -16,7 +16,7 @@ public:
 	CCandidateWindow(HINSTANCE hInstance);
 	~CCandidateWindow();
 
-	void SetCandidates(SKKCandidates candidates, size_t index, int Mode);
+	void SetCandidates(SKKCandidates& candidates, size_t index, int Mode);
 	void GetCandidates(SKKCandidates& candidates) const {
 		candidates = m_Candidates;
 	}
@@ -38,5 +38,7 @@ private:
 	BOOL m_Mode; // 0: single, 1: multiple
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void _OnPaint(HDC hdc);
+	void __PaintSingleMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize);
+	void __PaintMultipleMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize);
 };
 
