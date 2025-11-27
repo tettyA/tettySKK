@@ -5,6 +5,89 @@
 #include "CCandidateWindow.h"
 
 
+HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
+{
+	if (m_currentMode == SKKMode::Hankaku) {
+		//”¼Špƒ‚[ƒh‚Ì‚Æ‚«‚ÍƒXƒy[ƒX‚ð‚»‚Ì‚Ü‚Üo—Í‚·
+		_Output(pic, std::wstring(1, key), FALSE);
+		return S_OK;
+	}
+	if (m_RegCurrentCandidates.empty())
+	{
+		std::wstring compositionString;
+
+		if (_GetCompositionString(compositionString)) {
+			{
+				std::wstring searchStr = compositionString;
+				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+					//‘—‚è‰¼–¼•t‚«‚Ì‚Æ‚«
+					searchStr = m_Gokan + m_OkuriganaFirstChar;
+				}
+				m_SKKDictionaly.GetCandidates(searchStr, m_RegCurrentCandidates);
+			}
+			if (m_RegCurrentCandidates.size() == 0) {
+				//TODO: V‚µ‚¢Œê‚Ì“o˜^
+				//_BgnRegiterNewWord(pic, m_currentInputKana);
+			}
+			else {
+
+				std::wstring displayStr = m_RegCurrentCandidates[0]_Candidate;
+
+				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0'/* && compositionString.length() > m_Gokan.length()*/) {
+					//displayStr = ‘   compositionString = ‘k or ‘‚­
+					displayStr += compositionString.substr(m_Gokan.length());
+				}
+
+				if (!m_RegCurrentCandidates.empty()) {
+					m_RegCurrentShowCandidateIndex = 0;
+					//Šm’è‚Í‚³‚¹‚È‚¢
+					_Output(pic, (displayStr), FALSE);
+					
+				}
+				else {
+					//TODO:V‚µ‚¢Œê‚Ì“o˜^
+				//	_BgnRegiterNewWord(pic, m_currentInputKana);
+				}
+
+			}
+			return S_OK;
+		}
+	}
+	//2‰ñ–ÚˆÈ~
+	else {
+
+		std::wstring additionalStr = L"";
+		std::wstring compositionString;
+
+		_GetCompositionString(compositionString);
+		//‘—‚è‰¼–¼•t‚«‚Ì‚Æ‚«
+		if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+			//‘k or ‘‚­  -> k or ‚­
+			additionalStr = compositionString.substr(compositionString.length() - 1);
+		}
+
+		m_RegCurrentShowCandidateIndex++;
+		if (m_RegCurrentShowCandidateIndex >= m_RegCurrentCandidates.size() ||
+			(m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX &&
+				(BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX +
+					(m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) *
+					NUM_SHOW_CANDIDATE_MULTIPLE)
+				>= m_RegCurrentCandidates.size())
+			) {
+			m_RegCurrentShowCandidateIndex = 0;//‚Æ‚è‚ ‚¦‚¸Å‰‚É–ß‚·
+			return S_OK;
+		}
+
+		__InsertTextMakeCandidateWindow(pic,
+			(m_RegCurrentCandidates[m_RegCurrentShowCandidateIndex]_Candidate + additionalStr).c_str(),
+			(m_RegInputDetermined).c_str()
+		);
+		//TODO: m_RegInput‚Å‚Í‚È‚¢‚æ‚¤‚É‚·‚éB
+
+		return S_OK;
+	}
+}
+
 HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 {
 
@@ -100,15 +183,34 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 	}
 	else if (key == L'l') {
 		//TODO: ˆ—‚Ì‹¤’Ê‰»
-		if (m_pCandidateWindow->IsWindowExists()) {
-			m_pCandidateWindow->HideWindow();
+		if (m_isRegiteringNewWord) {
+			m_RegCurrentCandidates.clear();
+			m_RegCurrentShowCandidateIndex = 0;
+			m_RegInputDetermined += m_RegInputUndetermined;
+			m_RegInputUndetermined = L"";
+
+
+			m_RomajiToKanaTranslator.Reset();
+
+			m_Gokan = L"";
+			m_OkuriganaFirstChar = L'\0';
+
+			m_pCandidateWindow->SetCandidates(SKKCandidates{ {m_RegInputDetermined,m_RegKey},{L"",L""} }, 0, CANDIDATEWINDOW_MODE_REGWORD);
+			_UpDateCandidateWindowPosition(pic);
+		}
+		else
+		{
+			if (m_pCandidateWindow->IsWindowExists()) {
+				m_pCandidateWindow->HideWindow();
+			}
+
+			m_CurrentCandidates.clear();
+			m_CurrentShowCandidateIndex = 0;
+
+			m_Gokan = L"";
+			m_OkuriganaFirstChar = L'\0';
 		}
 
-		m_CurrentCandidates.clear();
-		m_CurrentShowCandidateIndex = 0;
-
-		m_Gokan = L"";
-		m_OkuriganaFirstChar = L'\0';
 		_ChangeCurrentMode(SKKMode::Hankaku);
 		return S_OK;
 	}
@@ -178,8 +280,6 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 	//_InsertText(pic, (L"[Debug2:]"), TRUE);
 	//•ÏŠ·’†
 	if (m_currentMode == SKKMode::Henkan) {
-
-
 		//ASDFJKL ‚Å‘I‚Ô’iŠK
 		if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
 

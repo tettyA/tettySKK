@@ -11,10 +11,9 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	if (_IsCtrlKeyPressed() && key == L'J') {
 		_ChangeCurrentMode(SKKMode::Kakutei);
 		_ChangeCurrenKanaMode(KanaMode::Hiragana);
-		return false;
+		return true;
 	}
-	if (m_currentMode == SKKMode::Hankaku) {
-		
+	if (m_currentMode == SKKMode::Hankaku ) {
 		return false;
 	}
 	if (_IsCtrlKeyPressed()) {
@@ -41,31 +40,46 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		return S_OK;
 	}*/
 	//変換の処理
-	if (key == VK_SPACE) {
+	if (_IsCtrlKeyPressed() && key == L'J') {
+		_ChangeCurrentMode(SKKMode::Kakutei);
+		_ChangeCurrenKanaMode(KanaMode::Hiragana);
+		*pfEaten = TRUE;
+		return S_OK;
+	}
+	else if (key == VK_SPACE) {
 		//未入力もしくは変換モードでないならば，そのまま返す
-		if ((!_pComposition) || m_currentMode != SKKMode::Henkan)
+		if (((!_pComposition) || m_currentMode != SKKMode::Henkan))
 		{
-			return S_OK;
+			if (m_isRegiteringNewWord == FALSE)
+				return S_OK;
 		}
 
 		*pfEaten = TRUE;
-	
-		return _HandleSpaceKey(pic, key);	
+		if (m_isRegiteringNewWord) {
+			return _HandleRegSpaceKey(pic, key);
+		}
+		else {
+			return _HandleSpaceKey(pic, key);
+		}
 	}
 
 	//確定処理
-	if (key == VK_RETURN) {
+	else if (key == VK_RETURN) {
 		if (m_isRegiteringNewWord) {
 			//TODO: 実装
 			*pfEaten = TRUE;
-			_EndRegiterNewWord();
+			if (m_currentMode == SKKMode::Henkan) {
+				_CommitRegComposition(pic);
+			}
+			else {
+				_EndRegiterNewWord();
+			}
+			return S_OK;
 		}
 		if (_pComposition) {
 			*pfEaten = TRUE;
 	
-	//		else {
-				_CommitComposition(pic);
-			//}
+			_CommitComposition(pic);
 			return S_OK;
 		}
 	}
@@ -76,6 +90,18 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		*pfEaten = TRUE;
 		
 		return _HandleCharKey(pic, key);
+	}
+
+
+	if (m_isRegiteringNewWord && m_currentMode == SKKMode::Hankaku) {
+		if ((key >= L'A' && key <= L'Z') || (key == VK_SPACE))
+		{
+			key += L'a' - L'A';
+			*pfEaten = TRUE;
+			_Output(pic, std::wstring(1, key), FALSE);
+
+			return S_OK;
+		}
 	}
 
 	if (key != VK_SHIFT) {
@@ -165,10 +191,14 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 	if (m_isRegiteringNewWord)return;
 
 	m_isRegiteringNewWord = TRUE;
-	m_RegInput = L"";
+	m_RegInputDetermined = L"";
+	m_RegInputUndetermined = L"";
 	m_RegKey = regKey;
 
 	m_currentMode = SKKMode::Kakutei;
+
+	m_RegCurrentShowCandidateIndex = 0;
+	m_RegCurrentCandidates.clear();
 
 	__InsertText(pic, L"", FALSE);
 
@@ -178,10 +208,11 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 
 void CSkkIme::_EndRegiterNewWord()
 {
-	
 	m_isRegiteringNewWord = FALSE;
-	m_RegInput = L"";
+	m_RegInputDetermined = L"";
+	m_RegInputUndetermined = L"";
 	m_RegKey = L"";
+	m_RegCurrentCandidates.clear();
 	m_pCandidateWindow->MustHideWindow();
 }
 
@@ -192,14 +223,14 @@ void CSkkIme::__InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _mult
 
 		_Output(pic, _multiIntsertText, FALSE);
 
-		m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_SINGLE);
+		m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_SINGLE );
 		_UpDateCandidateWindowPosition(pic);
 	}
 	else {
 		//TODO: ひらがなで表示したい
 		_Output(pic, _singleInsertText, FALSE);
 
-		m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_MULTIPLE);
+		m_pCandidateWindow->SetCandidates(m_CurrentCandidates, m_CurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_MULTIPLE );
 		_UpDateCandidateWindowPosition(pic);
 	}
 }

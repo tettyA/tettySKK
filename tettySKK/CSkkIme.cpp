@@ -17,9 +17,11 @@ CSkkIme::CSkkIme()
 	_clientId = TF_CLIENTID_NULL;
 	_pComposition = nullptr;
 
+	m_RegCurrentShowCandidateIndex = 0;
 	m_CurrentShowCandidateIndex = 0;
 
 	m_CurrentCandidates = SKKCandidates();
+	m_RegCurrentCandidates = SKKCandidates();
 
 	m_pCandidateWindow = new CCandidateWindow(g_hModule);
 
