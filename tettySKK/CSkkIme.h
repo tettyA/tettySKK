@@ -77,16 +77,19 @@ private:
 
 	bool _IsKeyEaten(WPARAM wParam);
 
+	HRESULT _HandleRegSpaceKey(ITfContext* pic, WCHAR key);
 	HRESULT _HandleSpaceKey(ITfContext* pic, WCHAR key);
 	HRESULT _HandleCharKey(ITfContext* pic, WCHAR key);
+	
 
 	TranslatetRomajiToKana m_RomajiToKanaTranslator;
 
 	CSKKDictionaly m_SKKDictionaly;
 	SKKCandidates m_CurrentCandidates;
+	SKKCandidates m_RegCurrentCandidates;
 
 	size_t m_CurrentShowCandidateIndex;
-
+	size_t m_RegCurrentShowCandidateIndex;
 
 	BOOL _GetCompositionString(std::wstring& compositionString);
 	std::wstring m_Gokan;//ŒêŠ²•”•ª ‚È‚¯‚ê‚Î–¢Šm’è•¶Žš—ñ‘S‘Ì             ’ú‚ß(‚é) -> ’ú
@@ -94,6 +97,7 @@ private:
 
 	
 	void _CommitComposition(ITfContext* pic);
+	void _CommitRegComposition(ITfContext* pic);
 
 	CCandidateWindow* m_pCandidateWindow;
 	void _UpDateCandidateWindowPosition(ITfContext* pic);
@@ -121,8 +125,10 @@ private:
 	
 	BOOL m_isRegiteringNewWord;
 	void _BgnRegiterNewWord(ITfContext* pic,std::wstring regKey);
+
 	std::wstring m_RegKey;
-	std::wstring m_RegInput;
+	std::wstring m_RegInputDetermined;
+	std::wstring m_RegInputUndetermined;
 
 	std::wstring m_currentInputKana;
 	void __InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _multiIntsertText,const WCHAR* _singleInsertText);

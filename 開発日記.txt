@@ -150,3 +150,13 @@ findstr /S /I /C:"GUID_LBI_INPUTMODE" "C:\Program Files (x86)\Windows Kits\10\In
 12:00 2025/11/25
 __InsertTextMakeCandidateWindowで処理の共通化
 OnKeyDownの処理の委譲
+
+23:32 2025/11/26
+辞書登録時，既存の_Insertextを流用するように変更。まだ漢字は入力できない。
+
+次やることメモ:
+ 辞書登録時に漢字を入力できるようにする
+ SKKMode::Henkan時に，変換候補ウィンドウを表示する(Modeフラグを | で和にする)
+
+ 21:53 2025/11/27
+辞書登録時に漢字を入力できるようにした。変換候補ウィンドウはまだ。

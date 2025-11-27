@@ -51,7 +51,7 @@ CCandidateWindow::~CCandidateWindow()
 
 // Mode = 0 : àÍÇ¬ÇÃÇ›ï\é¶
 // Mode = 1 : ï°êî(ASDFJKL)ï\é¶
-// Mode = 2 : ìoò^åÍ(candidates[0]Ç…ìoò^ÇµÇΩÇ¢åÍÅCindexÇÕñ≥éã)
+// Mode = 2 : ìoò^åÍ(candidates[0]Ç…ämíËï∂éöóÒÅCcandidates[1]Ç…ñ¢ämíËï∂éöóÒÅCindexÇÕñ≥éã)
 void CCandidateWindow::SetCandidates(SKKCandidates candidates, size_t index, int Mode)
 {
 	if (!IsWindowExists()) {
@@ -121,6 +121,7 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hWnd, UINT message, WPARAM wPara
 #define CANDIDATES_WINDOW_ASDFJKL_TEXTCOLOR_RGB RGB(0, 0, 255)
 
 #define CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB RGB(128, 128, 128)
+#define CANDIDATES_WINDOW_UNDETERMINEDTEXTCOLOR_RGB RGB(0, 128, 0)
 
 #define CANDIDATES_WINDOW_FONT_HSIZE (46)
 
@@ -227,7 +228,7 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 		maxx = max(x, maxx);
 		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, maxx + 2, y + strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	} 
-	else if (m_Mode == CANDIDATEWINDOW_MODE_REGWORD) {
+	else if ((m_Mode & CANDIDATEWINDOW_MODE_REGWORD) > 0) {
 		//ìoò^åÍÉÇÅ[Éh
 
 		SetTextColor(hdc, CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB);
@@ -242,6 +243,13 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 			x += strsize.cx;
 		}
 
+		if (!m_Candidates[1]_Candidate.empty()) {
+			SetTextColor(hdc, CANDIDATES_WINDOW_UNDETERMINEDTEXTCOLOR_RGB);
+			TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[1]_Candidate));
+			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(m_Candidates[1]_Candidate), &strsize);
+			x += strsize.cx;
+		}
+
 		if (!m_Candidates[0]_Annotation.empty()) {
 			SetTextColor(hdc, CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB);
 			std::wstring annotationText = SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR + m_Candidates[0]_Annotation;
@@ -251,8 +259,27 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 		}
 
 
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, x + 200, strsize.cy + 200, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+		if ((m_Mode & CANDIDATEWINDOW_MODE_SINGLE) > 0) {
+			//ìoò^åÍÅ{àÍÇ¬ÇÃÇ›ï\é¶ÉÇÅ[Éh
+			//ñ¢é¿ëï
+			std::wstring annotationText = L"REG | SINGLE";
+			TextOut(hdc, x, y, WSTR_AND_WLEN(annotationText));
+			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(annotationText), &strsize);
+			x += strsize.cx;
+		}
+		else if ((m_Mode & CANDIDATEWINDOW_MODE_MULTIPLE) > 0) {
+			//ìoò^åÍÅ{ï°êîåÛï‚ÉÇÅ[Éh
+			//ñ¢é¿ëï
+			std::wstring annotationText = L"REG | MULTI";
+			TextOut(hdc, x, y, WSTR_AND_WLEN(annotationText));
+			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(annotationText), &strsize);
+			x += strsize.cx;
+		}
 
+
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, x + 2, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	}
+	
+
 	
 }

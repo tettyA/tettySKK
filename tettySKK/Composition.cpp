@@ -16,18 +16,23 @@ void CSkkIme::__InsertText(ITfContext* pic, const WCHAR* text,BOOL isDetermined)
 void CSkkIme::__InsertNewRegWord(ITfContext* pic, const std::wstring& text, BOOL _isDetermined)
 {
 	if (m_currentMode == SKKMode::Hankaku) {
-		m_RegInput += text;
+		m_RegInputDetermined += text;
+		m_RegInputUndetermined = L"";
 	}
 	else if (m_currentMode == SKKMode::Kakutei) {
-		if (_isDetermined) {
-			m_RegInput += text;
-		}
+		m_RegInputUndetermined = text;
 	}
 	else if (m_currentMode == SKKMode::Henkan) {
-		m_RegInput = text;
+		m_RegInputUndetermined = text;
 	}
+
+	if(_isDetermined){
+		m_RegInputDetermined += m_RegInputUndetermined;
+		m_RegInputUndetermined = L"";
+	}
+
 	if (m_pCandidateWindow->IsWindowExists()) {
-		m_pCandidateWindow->SetCandidates(SKKCandidates{ {_isDetermined?m_RegInput: m_RegInput+text ,m_RegKey} }, 0, CANDIDATEWINDOW_MODE_REGWORD);
+		m_pCandidateWindow->SetCandidates(SKKCandidates{ {m_RegInputDetermined ,m_RegKey},{m_RegInputUndetermined,L""} }, 0, CANDIDATEWINDOW_MODE_REGWORD | ((m_RegCurrentCandidates.empty() ? 0 : (m_RegCurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX ? CANDIDATEWINDOW_MODE_SINGLE : CANDIDATEWINDOW_MODE_MULTIPLE))));
 		_UpDateCandidateWindowPosition(pic);
 	}
 }
@@ -163,7 +168,7 @@ BOOL CSkkIme::_GetCompositionString(std::wstring& compositionString)
 	compositionString.clear();
 
 	if(m_isRegiteringNewWord){
-		compositionString = m_RegInput;
+		compositionString = m_RegInputUndetermined;
 		return TRUE;
 	}
 
@@ -193,6 +198,11 @@ BOOL CSkkIme::_GetCompositionString(std::wstring& compositionString)
 
 void CSkkIme::_CommitComposition(ITfContext* pic)
 {
+	if (m_isRegiteringNewWord) {
+		_CommitRegComposition(pic);
+		return;
+
+	}
 	if (_pComposition) {
 		CTerminateCompositionEditSession* pSession = new CTerminateCompositionEditSession(_pComposition);
 		HRESULT hr;
@@ -208,6 +218,10 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 		m_pCandidateWindow->HideWindow();
 	}
 
+	if (m_isRegiteringNewWord) {
+		m_RegCurrentCandidates.clear();
+		m_RegCurrentShowCandidateIndex = 0;
+		}
 	m_CurrentCandidates.clear();
 	m_CurrentShowCandidateIndex = 0;
 	m_RomajiToKanaTranslator.Reset();
@@ -217,6 +231,24 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 	m_OkuriganaFirstChar = L'\0';
 
 	return;
+}
+
+void CSkkIme::_CommitRegComposition(ITfContext* pic)
+{
+	m_RegCurrentCandidates.clear();
+	m_RegCurrentShowCandidateIndex = 0;
+	m_RegInputDetermined += m_RegInputUndetermined;
+	m_RegInputUndetermined = L"";
+
+
+	m_RomajiToKanaTranslator.Reset();
+	_ChangeCurrentMode(SKKMode::Kakutei);
+
+	m_Gokan = L"";
+	m_OkuriganaFirstChar = L'\0';
+
+	m_pCandidateWindow->SetCandidates(SKKCandidates{ {m_RegInputDetermined,m_RegKey},{L"",L""}}, 0, CANDIDATEWINDOW_MODE_REGWORD);
+	_UpDateCandidateWindowPosition(pic);
 }
 
 void CSkkIme::_UpDateCandidateWindowPosition(ITfContext* pic)
