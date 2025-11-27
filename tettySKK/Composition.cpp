@@ -32,7 +32,15 @@ void CSkkIme::__InsertNewRegWord(ITfContext* pic, const std::wstring& text, BOOL
 	}
 
 	if (m_pCandidateWindow->IsWindowExists()) {
-		m_pCandidateWindow->SetCandidates(SKKCandidates{ {m_RegInputDetermined ,m_RegKey},{m_RegInputUndetermined,L""} }, 0, CANDIDATEWINDOW_MODE_REGWORD | ((m_RegCurrentCandidates.empty() ? 0 : (m_RegCurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX ? CANDIDATEWINDOW_MODE_SINGLE : CANDIDATEWINDOW_MODE_MULTIPLE))));
+		//TODO: d‚»‚¤‚â‚¯‚ÇC‚Ç‚¤‚·‚é?
+		SKKCandidates tempCandidate = { {m_RegInputDetermined ,m_RegKey},{m_RegInputUndetermined,L""} };
+		if (m_RegCurrentCandidates.size() > 0) {
+			tempCandidate.insert(tempCandidate.begin(), m_RegCurrentCandidates.begin(), m_RegCurrentCandidates.end());
+			if (m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+				//tempCandidate[tempCandidate.size()-2]={}
+			}
+		}
+		m_pCandidateWindow->SetCandidates(tempCandidate, m_RegCurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_REGWORD | ((m_RegCurrentCandidates.empty() ? 0 : (m_RegCurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX ? CANDIDATEWINDOW_MODE_SINGLE : CANDIDATEWINDOW_MODE_MULTIPLE))));
 		_UpDateCandidateWindowPosition(pic);
 	}
 }
@@ -246,8 +254,8 @@ void CSkkIme::_CommitRegComposition(ITfContext* pic)
 
 	m_Gokan = L"";
 	m_OkuriganaFirstChar = L'\0';
-
-	m_pCandidateWindow->SetCandidates(SKKCandidates{ {m_RegInputDetermined,m_RegKey},{L"",L""}}, 0, CANDIDATEWINDOW_MODE_REGWORD);
+	SKKCandidates tempCandidates = SKKCandidates{ {m_RegInputDetermined,m_RegKey},{L"",L""} };
+	m_pCandidateWindow->SetCandidates(tempCandidates, 0, CANDIDATEWINDOW_MODE_REGWORD);
 	_UpDateCandidateWindowPosition(pic);
 }
 

@@ -7,9 +7,8 @@
 
 HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 {
-	if (m_currentMode == SKKMode::Hankaku) {
-		//半角モードのときはスペースをそのまま出力す
-		_Output(pic, std::wstring(1, key), FALSE);
+	if (m_currentMode != SKKMode::Henkan) {
+		_Output(pic, std::wstring(1, L' '), TRUE);
 		return S_OK;
 	}
 	if (m_RegCurrentCandidates.empty())
@@ -44,10 +43,6 @@ HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 					_Output(pic, (displayStr), FALSE);
 					
 				}
-				else {
-					//TODO:新しい語の登録
-				//	_BgnRegiterNewWord(pic, m_currentInputKana);
-				}
 
 			}
 			return S_OK;
@@ -67,15 +62,15 @@ HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 		}
 
 		m_RegCurrentShowCandidateIndex++;
-		if (m_RegCurrentShowCandidateIndex >= m_RegCurrentCandidates.size() ||
+		if (m_RegCurrentShowCandidateIndex >= m_RegCurrentCandidates.size() - 2 ||
 			(m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX &&
 				(BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX +
 					(m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) *
 					NUM_SHOW_CANDIDATE_MULTIPLE)
-				>= m_RegCurrentCandidates.size())
+				>= m_RegCurrentCandidates.size() - 2)
 			) {
 			m_RegCurrentShowCandidateIndex = 0;//とりあえず最初に戻す
-			return S_OK;
+			//return S_OK;
 		}
 
 		__InsertTextMakeCandidateWindow(pic,
@@ -117,21 +112,10 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 					displayStr += compositionString.substr(m_Gokan.length());
 				}
 
-				if (!m_CurrentCandidates.empty()) {
-					m_CurrentShowCandidateIndex = 0;
-					//確定はさせない
-					if (m_isRegiteringNewWord) {
-						//TODO: 何かする
-					}
-					else {
-						_Output(pic, (displayStr), FALSE);
-					}
-				}
-				else {
-					//TODO:新しい語の登録
-					_BgnRegiterNewWord(pic, m_currentInputKana);
-				}
-
+				__InsertTextMakeCandidateWindow(pic,
+					(displayStr).c_str(),
+					(displayStr).c_str()
+				);
 			}
 			return S_OK;
 		}
@@ -194,8 +178,8 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 
 			m_Gokan = L"";
 			m_OkuriganaFirstChar = L'\0';
-
-			m_pCandidateWindow->SetCandidates(SKKCandidates{ {m_RegInputDetermined,m_RegKey},{L"",L""} }, 0, CANDIDATEWINDOW_MODE_REGWORD);
+			SKKCandidates tempCanddates = {{ m_RegInputDetermined,m_RegKey }, { L"",L"" }};
+			m_pCandidateWindow->SetCandidates(tempCanddates, 0, CANDIDATEWINDOW_MODE_REGWORD);
 			_UpDateCandidateWindowPosition(pic);
 		}
 		else
@@ -219,27 +203,54 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		//前の候補
 		//TODO:  処理の共通化
 
-		std::wstring additionalStr = L"";
-		std::wstring compositionString;
-		_GetCompositionString(compositionString);
-		//送り仮名付きのとき
-		if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
-			//書k or 書く  -> k or く
-			additionalStr = compositionString.substr(compositionString.length() - 1);
+		if (m_isRegiteringNewWord) {
+			//std::wstring additionalStr = L"";
+			std::wstring compositionString;
+			_GetCompositionString(compositionString);
+			//送り仮名付きのとき
+			//TODO Reg語幹を追加した時，書き直す。
+		//	if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+			//	//書k or 書く  -> k or く
+				//additionalStr = compositionString.substr(compositionString.length() - 1);
+		//	}
+			m_RegCurrentShowCandidateIndex = max(0, (int)m_RegCurrentShowCandidateIndex - 1);
+
+			__InsertTextMakeCandidateWindow(pic,
+				(m_RegCurrentCandidates[m_RegCurrentShowCandidateIndex]_Candidate ).c_str(),
+				(m_RegKey).c_str()
+			);
 		}
-		m_CurrentShowCandidateIndex = max(0, (int)m_CurrentShowCandidateIndex - 1);
+		else {
+			std::wstring additionalStr = L"";
+			std::wstring compositionString;
+			_GetCompositionString(compositionString);
+			//送り仮名付きのとき
+			if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+				//書k or 書く  -> k or く
+				additionalStr = compositionString.substr(compositionString.length() - 1);
+			}
+			m_CurrentShowCandidateIndex = max(0, (int)m_CurrentShowCandidateIndex - 1);
 
-		__InsertTextMakeCandidateWindow(pic,
-			(m_CurrentCandidates[m_CurrentShowCandidateIndex]_Candidate + additionalStr).c_str(),
-			(m_currentInputKana).c_str()
-		);
-
+			__InsertTextMakeCandidateWindow(pic,
+				(m_CurrentCandidates[m_CurrentShowCandidateIndex]_Candidate + additionalStr).c_str(),
+				(m_currentInputKana).c_str()
+			);
+		}
 		return S_OK;
 	}
 
 	// 工廠(変換中) + n(新規) => 工廠(確定) + n(変換中)  (暗黙確定)
 	if (!m_CurrentCandidates.empty()) {
 		if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+			//TODO: ASDFJKL を打ち込む時に，それ以外のものが打ち込まれたらCandidates[0]で確定	
+		}
+		else {
+			_CommitComposition(pic);
+		}
+	}
+
+	if (m_isRegiteringNewWord && !m_RegCurrentCandidates.empty()) {
+		if (m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
 			//TODO: ASDFJKL を打ち込む時に，それ以外のものが打ち込まれたらCandidates[0]で確定	
 		}
 		else {
@@ -312,6 +323,13 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
 					additionalStr = m_currentInputKana.substr(m_Gokan.length());
 				}
+
+				__InsertText(pic, (L"[debug]"), FALSE);
+				if (m_isRegiteringNewWord) {
+					baseword = m_RegCurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
+					additionalStr = L"";
+				}
+
 				_Output(pic, (baseword + additionalStr), FALSE);
 				_CommitComposition(pic);
 				return S_OK;
@@ -324,7 +342,52 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 
 			return S_OK;
 		}
+		if (m_isRegiteringNewWord && m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
 
+			int cnt = 0;
+			switch (key)
+			{
+			case SKK_CHOOSE_CANDIDATES_SMLSTR[6]:
+				cnt++;
+				[[fallthrough]];
+			case SKK_CHOOSE_CANDIDATES_SMLSTR[5]:
+				cnt++;
+				[[fallthrough]];
+			case SKK_CHOOSE_CANDIDATES_SMLSTR[4]:
+				cnt++;
+				[[fallthrough]];
+			case SKK_CHOOSE_CANDIDATES_SMLSTR[3]:
+				cnt++;
+				[[fallthrough]];
+			case SKK_CHOOSE_CANDIDATES_SMLSTR[2]:
+				cnt++;
+				[[fallthrough]];
+			case  SKK_CHOOSE_CANDIDATES_SMLSTR[1]:
+				cnt++;
+				[[fallthrough]];
+			case  SKK_CHOOSE_CANDIDATES_SMLSTR[0]:
+			{
+				std::wstring baseword = m_RegCurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
+				std::wstring additionalStr = L"";
+
+				//TODO: Reg語幹を追加した時，書き直す。
+				//if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+			//		additionalStr = m_currentInputKana.substr(m_Gokan.length());
+			//	}
+
+			
+				_Output(pic, (baseword + additionalStr), FALSE);
+				_CommitComposition(pic);
+				return S_OK;
+				break;
+			}
+			default:
+				return S_OK;
+				break;
+			}
+
+			return S_OK;
+		}
 		//TODO: 処理共通化。一方を変更したら，もう一方も変更
 		//まず未確定変換文字列画面の文字を取得 ex: しm
 		std::wstring textonScreen = L"";

@@ -51,8 +51,8 @@ CCandidateWindow::~CCandidateWindow()
 
 // Mode = 0 : 一つのみ表示
 // Mode = 1 : 複数(ASDFJKL)表示
-// Mode = 2 : 登録語(candidates[0]に確定文字列，candidates[1]に未確定文字列，indexは無視)
-void CCandidateWindow::SetCandidates(SKKCandidates candidates, size_t index, int Mode)
+// Mode = 2 : 登録語(candidates[-2]に確定文字列，candidates[-1]に未確定文字列，candidates[2...]に候補。indexは無視)
+void CCandidateWindow::SetCandidates(SKKCandidates& candidates, size_t index, int Mode)
 {
 	if (!IsWindowExists()) {
 		return;
@@ -153,81 +153,23 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 			FIXED_PITCH | FF_MODERN,
 			L"Meiryo UI"
 		);
-		
+
 	SelectObject(hdc, hFont);
 	SetBkMode(hdc, TRANSPARENT);
 
 	int y = 0, x = 5;
 	int maxx = 0;
-	SIZE strsize ;
+	SIZE strsize;
 	//TextOut(hdc, x, y, WSTR_AND_WLEN(L"Debug:" + std::to_wstring(m_Mode)));
 ///	y += 12;
 	if (m_Mode == CANDIDATEWINDOW_MODE_SINGLE) {
-		TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate));
-		GetTextExtentPoint(hdc, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate + L"  "), &strsize);
-
-		if (m_Candidates[m_CurrentPageIndex]_Annotation.length() > 0) {
-			x += strsize.cx;
-			//註釈表示
-			SetTextColor(hdc, CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB);
-			std::wstring annotationText = SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR + m_Candidates[m_CurrentPageIndex]_Annotation;
-			TextOut(hdc, x, y, WSTR_AND_WLEN(annotationText));
-			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(annotationText), &strsize);
-		}
-
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+		__PaintSingleMode(hdc, x, y, strsize);
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2+5, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	}
 	else if (m_Mode == CANDIDATEWINDOW_MODE_MULTIPLE) {
-		for (size_t i = 0; i < NUM_SHOW_CANDIDATE_MULTIPLE; ++i) {
-			size_t candidateIndex = BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentPageIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + i;
-			if (candidateIndex >= m_Candidates.size()) {
-				break;
-			}
-			//A S D F J K L の表示 
-			SetTextColor(hdc, CANDIDATES_WINDOW_ASDFJKL_TEXTCOLOR_RGB);
-
-			wchar_t keyChar = SKK_CHOOSE_CANDIDATES_BIGSTR[i];
-
-			TextOut(hdc, x, y, &keyChar, 1);
-			GetTextExtentPoint32(hdc, &keyChar, 1, &strsize);
-			x += strsize.cx;
-			//候補文字列の表示
-			SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
-			std::wstring text = L":" + m_Candidates[candidateIndex]_Candidate + L" ";
-			TextOut(hdc, x, y, WSTR_AND_WLEN(text));
-			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(text), &strsize);
-
-			x += strsize.cx;
-			if (m_Candidates[candidateIndex]_Annotation.length() > 0) {
-				//註釈表示
-				SetTextColor(hdc, CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB);
-				std::wstring annotationText = SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR + m_Candidates[candidateIndex]_Annotation + L" ";
-				TextOut(hdc, x, y, WSTR_AND_WLEN(annotationText));
-				GetTextExtentPoint32(hdc, WSTR_AND_WLEN(annotationText), &strsize);
-				x += strsize.cx;
-			}
-
-			if (x >= CANDIDATES_WINDOW_MAXWIDTH) {
-
-				maxx = max(x, maxx);
-				x = 5;
-				y += CANDIDATES_WINDOW_FONT_HSIZE + 2;
-			}
-		}
-		maxx = max(x, maxx);
-
-		//残りの候補数表示
-		size_t remainingCandidates =
-			max((int)m_Candidates.size() - (int)(BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX - 1 + (m_CurrentPageIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + 1) * NUM_SHOW_CANDIDATE_MULTIPLE) - 1, 0);
-
-		std::wstring remainingText = L"残" + std::to_wstring(remainingCandidates) + L"  ";
-		SetTextColor(hdc, CANDIDATES_WINDOW_HIGHLIGHTTEXTCOLOR_RGB);
-		TextOut(hdc, x, y, remainingText.c_str(), static_cast<int>(remainingText.length()));
-		GetTextExtentPoint32(hdc, WSTR_AND_WLEN(remainingText), &strsize);
-		x += strsize.cx;
-		maxx = max(x, maxx);
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, maxx + 2, y + strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
-	} 
+		__PaintMultipleMode(hdc, x, y, strsize);
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2+5, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+	}
 	else if ((m_Mode & CANDIDATEWINDOW_MODE_REGWORD) > 0) {
 		//登録語モード
 
@@ -236,50 +178,134 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 		GetTextExtentPoint32(hdc, WSTR_AND_WLEN(std::wstring(L"登録:   ")), &strsize);
 		x += strsize.cx;
 
-		if (!m_Candidates[0]_Candidate.empty()) {
+		size_t clen = m_Candidates.size();
+
+		if (!m_Candidates[clen - 2]_Candidate.empty()) {
 			SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
-			TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[0]_Candidate));
-			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(m_Candidates[0]_Candidate), &strsize);
+			TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[clen - 2]_Candidate));
+			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(m_Candidates[clen - 2]_Candidate), &strsize);
 			x += strsize.cx;
 		}
 
-		if (!m_Candidates[1]_Candidate.empty()) {
+		if (!m_Candidates[clen - 1]_Candidate.empty()) {
 			SetTextColor(hdc, CANDIDATES_WINDOW_UNDETERMINEDTEXTCOLOR_RGB);
-			TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[1]_Candidate));
-			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(m_Candidates[1]_Candidate), &strsize);
+			TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[clen - 1]_Candidate));
+			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(m_Candidates[clen - 1]_Candidate), &strsize);
 			x += strsize.cx;
 		}
 
-		if (!m_Candidates[0]_Annotation.empty()) {
+		if (!m_Candidates[clen - 2]_Annotation.empty()) {
 			SetTextColor(hdc, CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB);
-			std::wstring annotationText = SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR + m_Candidates[0]_Annotation;
+			std::wstring annotationText = SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR + m_Candidates[clen - 2]_Annotation;
 			TextOut(hdc, x, y, WSTR_AND_WLEN(annotationText));
 			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(annotationText), &strsize);
 			x += strsize.cx;
 		}
+		y += strsize.cy;
 
-
+		SetBkMode(hdc, OPAQUE);
+		SetBkColor(hdc, RGB(255, 80, 120));
 		if ((m_Mode & CANDIDATEWINDOW_MODE_SINGLE) > 0) {
 			//登録語＋一つのみ表示モード
 			//未実装
-			std::wstring annotationText = L"REG | SINGLE";
-			TextOut(hdc, x, y, WSTR_AND_WLEN(annotationText));
-			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(annotationText), &strsize);
-			x += strsize.cx;
+			__PaintSingleMode(hdc, 0, y, strsize);
+			x = max(strsize.cx, x);
+			y += strsize.cy;
 		}
 		else if ((m_Mode & CANDIDATEWINDOW_MODE_MULTIPLE) > 0) {
 			//登録語＋複数候補モード
 			//未実装
-			std::wstring annotationText = L"REG | MULTI";
+			__PaintMultipleMode(hdc, 0, y, strsize);
+			x = max(strsize.cx, x);
+			y += strsize.cy;
+		}
+
+
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, x + 2, y + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+	}
+	
+
+	
+}
+
+void CCandidateWindow::__PaintSingleMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize)
+{
+	int x = _bgnx;
+	int y = _bgny;
+	SIZE strsize;
+	TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate));
+	GetTextExtentPoint(hdc, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate + L" "), &strsize);
+	x += strsize.cx;
+
+	if (m_Candidates[m_CurrentPageIndex]_Annotation.length() > 0) {
+		//註釈表示
+		SetTextColor(hdc, CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB);
+		std::wstring annotationText = SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR  + m_Candidates[m_CurrentPageIndex]_Annotation + L" ";
+		TextOut(hdc, x, y, WSTR_AND_WLEN(annotationText));
+		GetTextExtentPoint32(hdc, WSTR_AND_WLEN(annotationText), &strsize);
+		x += strsize.cx;
+	}
+
+	_rectsize.cx = x;
+	_rectsize.cy = strsize.cy;
+}
+
+void CCandidateWindow::__PaintMultipleMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize)
+{
+	int x = _bgnx;
+	int y = _bgny;
+	int maxx = 0;
+	SIZE strsize;
+	for (size_t i = 0; i < NUM_SHOW_CANDIDATE_MULTIPLE; ++i) {
+		size_t candidateIndex = BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentPageIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + i;
+		if (candidateIndex >= m_Candidates.size()- (m_Mode & CANDIDATEWINDOW_MODE_REGWORD ? 2 : 0)) {
+			break;
+		}
+		//A S D F J K L の表示 
+		SetTextColor(hdc, CANDIDATES_WINDOW_ASDFJKL_TEXTCOLOR_RGB);
+
+		wchar_t keyChar = SKK_CHOOSE_CANDIDATES_BIGSTR[i];
+
+		TextOut(hdc, x, y, &keyChar, 1);
+		GetTextExtentPoint32(hdc, &keyChar, 1, &strsize);
+		x += strsize.cx;
+		//候補文字列の表示
+		SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
+		std::wstring text = L":" + m_Candidates[candidateIndex]_Candidate + L" ";
+		TextOut(hdc, x, y, WSTR_AND_WLEN(text));
+		GetTextExtentPoint32(hdc, WSTR_AND_WLEN(text), &strsize);
+
+		x += strsize.cx;
+		if (m_Candidates[candidateIndex]_Annotation.length() > 0) {
+			//註釈表示
+			SetTextColor(hdc, CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB);
+			std::wstring annotationText = SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR + m_Candidates[candidateIndex]_Annotation + L" ";
 			TextOut(hdc, x, y, WSTR_AND_WLEN(annotationText));
 			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(annotationText), &strsize);
 			x += strsize.cx;
 		}
 
+		if (x >= CANDIDATES_WINDOW_MAXWIDTH) {
 
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, x + 2, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+			maxx = max(x, maxx);
+			x = 5;
+			y += CANDIDATES_WINDOW_FONT_HSIZE + 2;
+		}
 	}
-	
+	maxx = max(x, maxx);
 
-	
+	//残りの候補数表示
+	size_t remainingCandidates =
+		max((int)m_Candidates.size() - (int)(BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX - 1 + (m_CurrentPageIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + 1) * NUM_SHOW_CANDIDATE_MULTIPLE) - 1 - (m_Mode & CANDIDATEWINDOW_MODE_REGWORD ? 2 : 0), 0);
+
+	std::wstring remainingText = L"残" + std::to_wstring(remainingCandidates) + L"  ";
+	SetTextColor(hdc, CANDIDATES_WINDOW_HIGHLIGHTTEXTCOLOR_RGB);
+	TextOut(hdc, x, y, remainingText.c_str(), static_cast<int>(remainingText.length()));
+	GetTextExtentPoint32(hdc, WSTR_AND_WLEN(remainingText), &strsize);
+	x += strsize.cx;
+	maxx = max(x, maxx);
+
+	_rectsize.cx = maxx;
+	_rectsize.cy = y + strsize.cy;
+	//FIX: 何かバグりそう。
 }
