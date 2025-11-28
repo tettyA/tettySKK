@@ -142,8 +142,6 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 				>= m_CurrentCandidates.size())
 			) {
 			//TODO:新しい語の登録
-		//	m_CurrentShowCandidateIndex = 0;//とりあえず最初に戻す
-			//TODO: ひらがなにしたい
 			_BgnRegiterNewWord(pic, m_currentInputKana);
 			return S_OK;
 		}
@@ -443,80 +441,3 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 
 	return S_OK;
 }
-
-/*
-
-
-void CSkkIme::__TreatNewRegWord(WCHAR key, ITfContext* pic)
-{
-	//TODO: 片仮名語は検索が出来ないので，改善(辞書から検索出来ない。ひらがなに強制変換されるので)
-	if (key == VK_RETURN) {
-		if (m_RegInput.empty()) {
-
-			if (m_CurrentCandidates.empty()) {
-				_EndRegiterNewWord();
-			}
-			else {
-				m_CurrentShowCandidateIndex--;
-
-				m_isRegiteringNewWord = FALSE;
-				m_RegInput = L"";
-				m_RegKey = L"";
-
-				std::wstring additionalStr = L"";
-				//TODO: 処理の共通化
-
-				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
-
-					additionalStr = m_currentInputKana.substr(m_Gokan.length());
-				}
-
-				__InsertTextMakeCandidateWindow(pic,
-					(m_CurrentCandidates[m_CurrentShowCandidateIndex]_Candidate + additionalStr).c_str(),
-					(m_currentInputKana).c_str()
-				);
-
-			}
-			return;
-		}
-
-		//TODO: ファイルにも保存されるようにする
-		_Output(pic, m_RegInput.c_str(), TRUE);
-		m_SKKDictionaly.AddCandidate(m_RegKey, m_RegInput);
-		_EndRegiterNewWord();
-		return;
-	}
-	else if (key == VK_BACK && m_RegInput.length() >= 1) {
-		m_RegInput.pop_back();
-	}
-	else if (_IsKeyEaten(key))
-	{
-		key += L'a' - L'A';
-		if (m_currentMode == SKKMode::Hankaku)
-		{
-			m_RegInput += key;
-		}
-		else {
-			//TODO: 処理共通化。一方を変更したら，もう一方も変更
-			std::wstring textonScreen = L"";
-			SKKCandidates textonCandidates;
-			m_pCandidateWindow->GetCandidates(textonCandidates);
-
-			textonScreen = textonCandidates[0]_Candidate;
-
-			size_t prevRomajilen = m_RomajiToKanaTranslator.GetBuffer().length();
-			std::wstring newkana;
-			m_RomajiToKanaTranslator.Translate(key, newkana, m_CurrentKanaMode);
-
-			std::wstring baseKana = textonScreen.substr(0, textonScreen.length() - prevRomajilen);
-
-			std::wstring finalText = baseKana + newkana + m_RomajiToKanaTranslator.GetBuffer();
-			m_RegInput = finalText;
-		}
-	}
-
-	if (m_pCandidateWindow->IsWindowExists()) {
-		m_pCandidateWindow->SetCandidates(SKKCandidates{ {m_RegInput,L""} }, 0, CANDIDATEWINDOW_MODE_REGWORD);
-		_UpDateCandidateWindowPosition(pic);
-	}
-}*/

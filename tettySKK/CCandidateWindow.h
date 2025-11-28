@@ -16,6 +16,9 @@ public:
 	CCandidateWindow(HINSTANCE hInstance);
 	~CCandidateWindow();
 
+	// Mode = 0 : 一つのみ表示
+    // Mode = 1 : 複数(ASDFJKL)表示
+    // Mode = 2 : 登録語(candidates[-2]に確定文字列，candidates[-1]に未確定文字列，candidates[2...]に候補。indexは無視)
 	void SetCandidates(SKKCandidates& candidates, size_t index, int Mode);
 	void GetCandidates(SKKCandidates& candidates) const {
 		candidates = m_Candidates;
