@@ -10,6 +10,7 @@
 #define _Annotation .second
 
 #define SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR L";"
+#define SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_ASTR ";"
 #define SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_CHAR L';'
 
 constexpr std::wstring SKK_CHOOSE_CANDIDATES_BIGSTR = L"ASDFJKL";
@@ -21,6 +22,8 @@ using SKKDictionary = std::map<std::wstring, SKKCandidates>;//読み，候補文字列群
 
 //TODO: 辞書ファイルパスの設定方法を考える
 #define SKK_DICTIONARY_FILEPATH LR"(D:\SKK-JISYO.L)"
+#define SKK_USER_DICTIONARY_FILEPATH LR"(D:\SKK-JISYO.USER.L)"
+
 #define EUC_JP_CODEPAGE 20932
 
 class CSKKDictionaly
@@ -32,14 +35,16 @@ public:
 	//副作用:keyがカタカナの場合ひらがなに変更されます。
 	void GetCandidates(std::wstring& key, SKKCandidates& candidates) const;
 
-	void AddCandidate(const std::wstring& key, const std::wstring& candidate) {
-		m_dictionary[key].push_back(std::make_pair( candidate, L"" ));
-		//TODO: 重複チェック & 辞書に書き込み & ;確認
-	}
+	//辞書の書き込みは行いません。メモリ上のみ追加されます。
+	void AddCandidate(const std::wstring& key, const std::wstring& candidate);
 
 	BOOL LoadDictionaryFromFile(const std::wstring& filepath);
+	BOOL LoadUserDictionaryFromFile(const std::wstring& filepath);
+	BOOL SaveDictionaryToUserFile(const std::wstring& filepath) const;
 
 private:
 	SKKDictionary m_dictionary;
+	SKKDictionary m_userdictionary;
+	BOOL _LoadDictionaryFromFile(const std::wstring& filepath, SKKDictionary& _dict);
 };
 

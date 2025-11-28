@@ -23,6 +23,10 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	{
 		return true;
 	}
+	//新しい語の登録中は，+(=JIS配列で;)キーも食う
+	if (key == VK_OEM_PLUS || key == L';') {
+		return true;
+	}
 	return false;
 }
 
@@ -109,8 +113,10 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				_CommitComposition(pic);
 				//TODO: ファイルにも保存されるようにする
 				m_isRegiteringNewWord = FALSE;
-				_Output(pic, m_RegInputDetermined.c_str(), TRUE);
+				_Output(pic, m_RegInputDetermined.substr(0,  m_RegInputDetermined.find(SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_CHAR)).c_str(), TRUE);
 				m_SKKDictionaly.AddCandidate(m_RegKey, m_RegInputDetermined);
+				m_SKKDictionaly.SaveDictionaryToUserFile(SKK_USER_DICTIONARY_FILEPATH);
+
 				_EndRegiterNewWord();
 
 				return S_OK;
@@ -168,6 +174,8 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					__InsertNewRegWord(pic, L"", FALSE);
 				}
 			}
+			
+			m_RomajiToKanaTranslator.Reset();
 			return S_OK;
 		}
 	}
