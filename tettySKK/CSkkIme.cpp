@@ -120,6 +120,7 @@ STDAPI CSkkIme::Activate(ITfThreadMgr* ptim, TfClientId tid) {
 	
 	
 	m_SKKDictionaly.LoadDictionaryFromFile(SKK_DICTIONARY_FILEPATH);
+	m_SKKDictionaly.LoadUserDictionaryFromFile(SKK_USER_DICTIONARY_FILEPATH);
 
 	if (m_pLangBarItemButton) {
 		m_pLangBarItemButton->_Init();

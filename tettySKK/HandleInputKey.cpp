@@ -236,6 +236,10 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		}
 		return S_OK;
 	}
+	else if (key == VK_OEM_PLUS + L'a' - L'A') {
+		_Output(pic, SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR, TRUE);
+		return S_OK;
+	}
 
 	// çHè±(ïœä∑íÜ) + n(êVãK) => çHè±(ämíË) + n(ïœä∑íÜ)  (à√ñŸämíË)
 	if (!m_CurrentCandidates.empty()) {
@@ -322,7 +326,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 					additionalStr = m_currentInputKana.substr(m_Gokan.length());
 				}
 
-				__InsertText(pic, (L"[debug]"), FALSE);
+				//__InsertText(pic, (L"[debug]"), FALSE);
 				if (m_isRegiteringNewWord) {
 					baseword = m_RegCurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
 					additionalStr = L"";
