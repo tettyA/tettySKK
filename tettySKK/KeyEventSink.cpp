@@ -68,20 +68,19 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		if (m_isRegiteringNewWord) {
 			//TODO: 実装
 			*pfEaten = TRUE;
-			if (m_currentMode == SKKMode::Henkan) {
+			if (!m_RegInputUndetermined.empty()) {
 				_CommitRegComposition(pic);
 			}
-			else {
-				if (m_RegInputDetermined.empty()) {
-					//何も登録されていないときは何もしない
-					
+			else if (m_RegInputDetermined.empty()) {
+				//文字列がないときは，キャンセル扱いにする
+				//候補がある時は，最後の候補ウィンドウを，なければ表示しない
+				if (m_CurrentCandidates.size() > 0) {
 					m_CurrentShowCandidateIndex--;
 
 					m_isRegiteringNewWord = FALSE;
 					m_RegInputDetermined = L"";
 					m_RegInputUndetermined = L"";
 					m_RegKey = L"";
-
 					std::wstring additionalStr = L"";
 					//TODO: 処理の共通化
 
@@ -97,14 +96,24 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 						(m_currentInputKana).c_str()
 					);
 
-
-					return S_OK;
 				}
+				else {
+					_EndRegiterNewWord();
+					_ChangeCurrentMode(SKKMode::Henkan);
+					_Output(pic, m_currentInputKana.c_str(), FALSE);
+				}
+
+				return S_OK;
+			}
+			else {
+				_CommitComposition(pic);
 				//TODO: ファイルにも保存されるようにする
 				m_isRegiteringNewWord = FALSE;
 				_Output(pic, m_RegInputDetermined.c_str(), TRUE);
 				m_SKKDictionaly.AddCandidate(m_RegKey, m_RegInputDetermined);
 				_EndRegiterNewWord();
+
+				return S_OK;
 			}
 			return S_OK;
 		}
@@ -261,7 +270,7 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 
 	__InsertText(pic, L"", FALSE);
 
-	SKKCandidates regKeyCandidate = { {L"",regKey} };
+	SKKCandidates regKeyCandidate = { {L"",regKey},{L"",L""}};
 	m_pCandidateWindow->SetCandidates(regKeyCandidate, 0, CANDIDATEWINDOW_MODE_REGWORD);
 	_UpDateCandidateWindowPosition(pic);
 }
