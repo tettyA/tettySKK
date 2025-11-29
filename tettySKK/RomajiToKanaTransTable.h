@@ -302,7 +302,8 @@ MAKETRANSTABLE(hye, ひぇ, ヒェ),
 
 /* 記号 */
 //FIX: このような記号も扱えるようにする
-MAKETRANSTABLE(-, ー, ー),
-MAKETRANSTABLE(., 。, 。),
-//MAKETRANSTABLE(,, ，, ，),
-{L",", {L"，", L"，"}},
+
+
+{ std::wstring(1,(wchar_t)VK_OEM_COMMA), {L"，", L"，"} },
+{ std::wstring(1,(wchar_t)VK_OEM_PERIOD), {L"。", L"。"} },
+{ std::wstring(1,(wchar_t)VK_OEM_MINUS), {L"ー", L"ー"} },

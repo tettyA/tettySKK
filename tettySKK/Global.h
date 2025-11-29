@@ -31,7 +31,7 @@ DEFINE_GUID(GUID_LangBarItem_SkkIme ,
 
 #define gtettySKK_IME_NAME L"Hyper Great tettySKK IME"
 
-
+#define ToSmallAlphabet (L'a' - L'A')
 
 LONG DllAddRef(void);
 LONG DllRelease(void);

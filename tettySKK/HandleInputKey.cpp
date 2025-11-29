@@ -236,11 +236,10 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		}
 		return S_OK;
 	}
-	else if (key == VK_OEM_PLUS + L'a' - L'A') {
+	else if (key == VK_OEM_PLUS + ToSmallAlphabet) {
 		_Output(pic, SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR, TRUE);
 		return S_OK;
 	}
-
 	// H±(•ÏŠ·’†) + n(V‹K) => H±(Šm’è) + n(•ÏŠ·’†)  (ˆÃ–ÙŠm’è)
 	if (!m_CurrentCandidates.empty()) {
 		if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {

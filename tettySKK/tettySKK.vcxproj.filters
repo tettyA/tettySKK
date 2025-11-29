@@ -115,7 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\開発日記.txt" />
-    <Text Include="RomajiToKanaTransTable.txt">
+    <Text Include="RomajiToKanaTransTable.h">
       <Filter>ヘッダー ファイル</Filter>
     </Text>
   </ItemGroup>
