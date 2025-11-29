@@ -19,7 +19,7 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	if (_IsCtrlKeyPressed()) {
 		return false;
 	}
-	if ((key >= L'A' && key <= L'Z') || (m_currentMode == SKKMode::Henkan && (key == VK_SPACE || key == VK_RETURN)))
+	if ((key >= L'A' && key <= L'Z') || ((key == VK_OEM_PERIOD || key == VK_OEM_COMMA || key == VK_OEM_MINUS) && m_currentMode != SKKMode::Hankaku) || (m_currentMode == SKKMode::Henkan && (key == VK_SPACE || key == VK_RETURN)))
 	{
 		return true;
 	}
@@ -35,14 +35,7 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten) {
 	*pfEaten = FALSE;
 
-
 	WCHAR key = (WCHAR)wParam;
-	//V‚µ‚¢Œê‚Ì“o˜^ˆ—
-	/*if (m_isRegiteringNewWord) {
-		_TreatNewRegWord(key, pic);
-		*pfEaten = TRUE;
-		return S_OK;
-	}*/
 	//•ÏŠ·‚Ìˆ—
 	if (_IsCtrlKeyPressed() && key == L'J') {
 		_ChangeCurrentMode(SKKMode::Kakutei);
@@ -133,7 +126,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 	if (_IsKeyEaten(wParam))
 	{
-		key += L'a' - L'A';
+		key += ToSmallAlphabet;
 		*pfEaten = TRUE;
 		
 		return _HandleCharKey(pic, key);
@@ -144,7 +137,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		if (m_currentMode == SKKMode::Hankaku) {
 			if ((key >= L'A' && key <= L'Z') || (key == VK_SPACE))
 			{
-				key += L'a' - L'A';
+				key += ToSmallAlphabet;
 				*pfEaten = TRUE;
 				_Output(pic, std::wstring(1, key), FALSE);
 

@@ -14,7 +14,7 @@ class TranslatetRomajiToKana {
 public:
 	__declspec(noinline) TranslatetRomajiToKana() {
 		m_RomajiToKana = {
-#include "RomajiToKanaTransTable.txt"
+#include "RomajiToKanaTransTable.h"
 
 		};
 
@@ -41,6 +41,14 @@ public:
 				m_buffer += key;
 				return true;
 			}
+		}
+
+		if (key == VK_OEM_COMMA + ToSmallAlphabet || key == VK_OEM_PERIOD + ToSmallAlphabet || key == VK_OEM_MINUS + ToSmallAlphabet) {
+			//ãLçÜÇÕë¶ïœä∑
+			output = m_buffer;
+			output += m_RomajiToKana[std::wstring(1, (wchar_t)(key-(ToSmallAlphabet)))][mode == KanaMode::Hiragana ? TrR2K_INDEX_HIRAGANA : TrR2K_INDEX_KATAKANA];
+			m_buffer.clear();
+			return true;
 		}
 
 		m_buffer += key;
