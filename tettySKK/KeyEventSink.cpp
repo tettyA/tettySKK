@@ -27,6 +27,11 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	if (key == VK_OEM_PLUS || key == L';') {
 		return true;
 	}
+
+	//•ÏŠ·’†‚Ì‚Æ‚«‚ÍCBackSpace‚àH‚¤
+	if (m_currentMode == SKKMode::Henkan && key == VK_BACK) {
+		return true;
+	}
 	return false;
 }
 
@@ -123,7 +128,36 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			return S_OK;
 		}
 	}
+	else if (key == VK_BACK) {
+		if (m_isRegiteringNewWord) {
+			//pass
+		}
+		if (_pComposition && m_currentMode == SKKMode::Henkan) {
+			*pfEaten = TRUE;
 
+
+			HRESULT hr = S_OK;
+			std::wstring currentCompStr;
+			_GetCompositionString(currentCompStr);
+			if (currentCompStr.length() > 0) {
+				currentCompStr.pop_back();
+				m_currentInputKana.pop_back();
+				if (m_CurrentCandidates.size() > 0) {
+					__InsertText(pic, currentCompStr.c_str(), TRUE);
+					_CommitComposition(pic);
+				}
+				else {
+					__InsertText(pic, currentCompStr.c_str(), FALSE);
+				}
+			}
+			else {
+				_CommitComposition(pic);
+			}
+			m_RomajiToKanaTranslator.Reset();
+
+			return hr;
+		}
+	}
 	if (_IsKeyEaten(wParam))
 	{
 		key += ToSmallAlphabet;
