@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -21,32 +21,32 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{05fb0109-d0ec-4770-aaf9-5be110dc467b}</ProjectGuid>
-    <RootNamespace>tettySKK</RootNamespace>
+    <ProjectGuid>{14981422-6dcd-4afb-8c87-25973d67d34b}</ProjectGuid>
+    <RootNamespace>SetUpConsole</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -74,17 +74,13 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;TETTYSKK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>tettySKK.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -93,41 +89,28 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;TETTYSKK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>tettySKK.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;TETTYSKK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>tettySKK.def</ModuleDefinitionFile>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
-    <PreBuildEvent>
-      <Command>taskkill /f /im notepad.exe
-if exist "$(TargetPath)" move /Y "$(TargetPath)" "$(TargetPath).locked_old"
-notepad.exe</Command>
-      <Message>テスト用に使用するメモ帳を強制終了させ，生成されるdllの名前を変更することによってリンカーがエラーを起こさないようにし，再びメモ帳を起動させます。</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -135,88 +118,18 @@ notepad.exe</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;TETTYSKK_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <Optimization>MaxSpeed</Optimization>
-      <FavorSizeOrSpeed>
-      </FavorSizeOrSpeed>
-      <OmitFramePointers>
-      </OmitFramePointers>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>tettySKK.def</ModuleDefinitionFile>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
-    <PreBuildEvent>
-      <Command>taskkill /f /im notepad.exe
-if exist "$(TargetPath)" move /Y "$(TargetPath)" "$(TargetPath).locked_old"
-notepad.exe</Command>
-      <Message>テスト用に使用するメモ帳を強制終了させ，生成されるdllの名前を変更することによってリンカーがエラーを起こさないようにし，再びメモ帳を起動させます。</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CCandidateWindow.h" />
-    <ClInclude Include="CDisplayAttributeInfo.h" />
-    <ClInclude Include="CEditSessionBase.h" />
-    <ClInclude Include="CEnumDisplayAttributeInfo.h" />
-    <ClInclude Include="CInsertTextEditSession.h" />
-    <ClInclude Include="CLangBarItemButton.h" />
-    <ClInclude Include="CSkkIme.h" />
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="Global.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="SKKDictionaly.h" />
-    <ClInclude Include="SKKImeFactory.h" />
-    <ClInclude Include="TranslatetRomajiToKana.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="CCandidateWindow.cpp" />
-    <ClCompile Include="CDisplayAttributeInfo.cpp" />
-    <ClCompile Include="CEditSessionBase.cpp" />
-    <ClCompile Include="CEnumDisplayAttributeInfo.cpp" />
-    <ClCompile Include="CLangBarItemButton.cpp" />
-    <ClCompile Include="Compartment.cpp" />
-    <ClCompile Include="Composition.cpp" />
-    <ClCompile Include="CSkkIme.cpp" />
-    <ClCompile Include="DisplayAttributeProvider.cpp" />
-    <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="HandleInputKey.cpp" />
-    <ClCompile Include="KeyEventSink.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Register.cpp" />
-    <ClCompile Include="SKKDictionaly.cpp" />
-    <ClCompile Include="SKKImeFactory.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="tettySKK.def" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\開発日記.txt" />
-    <Text Include="RomajiToKanaTransTable.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resource.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="tettySKKIMEICON\imeicon32x32.ico" />
-    <Image Include="tettySKKIMEICON\imejicon.ico" />
-    <Image Include="tettySKKIMEICON\imejicon16.ico" />
-    <Image Include="tettySKKIMEICON\imejicon16.png" />
-    <Image Include="tettySKKIMEICON\imelicon.ico" />
-    <Image Include="tettySKKIMEICON\imelicon16.ico" />
-    <Image Include="tettySKKIMEICON\imeqicon.ico" />
-    <Image Include="tettySKKIMEICON\imeqicon16.ico" />
+    <ClCompile Include="SetUpConsole.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

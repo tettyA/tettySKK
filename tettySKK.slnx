@@ -1,7 +1,9 @@
 <Solution>
   <Configurations>
+    <Platform Name="Any CPU" />
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="SetUpConsole/SetUpConsole.vcxproj" Id="14981422-6dcd-4afb-8c87-25973d67d34b" />
   <Project Path="tettySKK/tettySKK.vcxproj" Id="05fb0109-d0ec-4770-aaf9-5be110dc467b" />
 </Solution>
