@@ -25,6 +25,7 @@ void Log(const std::string& message) {
     bufs << "[Installer] " << message << std::endl;
     logfile << bufs.str();
     std::cout << bufs.str();
+    logfile.flush();
 }
 void skkUninstall();
 void LogError(const std::string& message) {
@@ -32,17 +33,14 @@ void LogError(const std::string& message) {
     bufs << "[ERROR] " << message << std::endl;
     logfile << bufs.str();
     std::cerr << bufs.str();
-
+    logfile.flush();
     logfile.close();
 
     skkUninstall();
 }
 
 void WaitEnter() {
-    std::cout << "[Press Some Key And Enter]\n";
-	logfile << "[Press Some Key And Enter]\n";
-    std::string somek;
-    std::cin >> somek;
+	system("pause");
 
     logfile.flush();
 }
@@ -256,7 +254,6 @@ void skkUninstall() {
     {
         Log("IMEのwindowsの登録を外します。");
 
-
         {
             WCHAR sysPath[MAX_PATH];
 
@@ -264,10 +261,13 @@ void skkUninstall() {
 
             fs::path installdir = std::wstring(sysPath);
 
-            std::system(("cd" + installdir.string()).c_str());
-
-            std::string cmd = "regsvr32 /u \"" + install_dll_path.string() + "\"";
-            std::system(cmd.c_str());
+            install_dll_path = installdir.wstring() + L"\\IME\\tettySKK\\"+ L"tettySkk.dll";
+            std::string cmd = installdir.string() + "\\regsvr32 /u \"" + install_dll_path.string() + "\"";
+            if (std::system(cmd.c_str()) != 0) {
+                LogError("コマンド[" + cmd + "]に失敗しました。");
+                return;
+            }
+            Log("コマンド[" + cmd + "]を実行しました。");
         }
 
         {
@@ -276,28 +276,33 @@ void skkUninstall() {
             GetSystemWow64Directory(sysPath, MAX_PATH);
 
             fs::path installdirx86 = std::wstring(sysPath);
-            install_dll_pathx86 = installdirx86.wstring() + L"tettySkk.dll";
-            std::system(("cd" + installdirx86.string()).c_str());
-
-            std::string cmd = "regsvr32 /u \"" + install_dll_pathx86.string() + "\"";
-            std::system(cmd.c_str());
+            install_dll_pathx86 = installdirx86.wstring() + L"\\IME\\tettySKK\\" + L"tettySkk.dll";
+            std::string cmd = installdirx86.string() + "\\regsvr32 /u \"" + install_dll_pathx86.string() + "\"";
+            if (std::system(cmd.c_str()) != 0) {
+                LogError("コマンド[" + cmd + "]に失敗しました。");
+                return;
+            }
+            Log("コマンド[" + cmd + "]を実行しました。");
         }
     }
 
 
     {
-        Log("DLLファイルを削除しています。[1/2]");
-
-
         {
             WCHAR sysPath[MAX_PATH];
             GetSystemDirectory(sysPath, MAX_PATH);
 
             fs::path installdir = std::wstring(sysPath) + L"\\IME\\tettySKK\\";
+            install_dll_path = installdir.wstring() + L"tettySkk.dll";
 
             if (fs::exists(installdir)) {
+				fs::remove(install_dll_path);
                 fs::remove(installdir);
+                
+				Log(installdir.string() + "を削除しました。");
             }
+
+
 
         }
     }
@@ -315,7 +320,10 @@ void skkUninstall() {
 
             if (fs::exists(installdirx86)) {
                 fs::remove(install_dll_pathx86);
+				fs::remove(installdirx86);
+				Log(installdirx86.string() + "を削除しました。");
             }
+
 
         }
     }
