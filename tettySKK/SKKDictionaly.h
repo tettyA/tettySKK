@@ -21,8 +21,8 @@ using SKKCandidates = std::vector<SKKCandidate>;//候補文字列群
 using SKKDictionary = std::map<std::wstring, SKKCandidates>;//読み，候補文字列群
 
 //TODO: 辞書ファイルパスの設定方法を考える
-#define SKK_DICTIONARY_FILEPATH LR"(D:\SKK-JISYO.L)"
-#define SKK_USER_DICTIONARY_FILEPATH LR"(D:\SKK-JISYO.USER.L)"
+__declspec(selectany) std::wstring SKK_DICTIONARY_FILEPATH = LR"(D:\SKK-JISYO.L)";
+__declspec(selectany) std::wstring SKK_USER_DICTIONARY_FILEPATH = LR"(D:\SKK-JISYO.USER.L)";
 
 #define EUC_JP_CODEPAGE 20932
 

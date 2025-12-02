@@ -4,7 +4,7 @@
 #include "Global.h"
 #include "CDisplayAttributeInfo.h"
 
-
+#include <ShlObj.h>
 #include "msctf.h"
 #include "ctffunc.h"
 
@@ -35,6 +35,17 @@ CSkkIme::CSkkIme()
 	
 	m_pLangBarItemButton = new CLangBarItemButton(this, GUID_LBI_INPUTMODE);
 	m_isRegiteringNewWord = FALSE;
+
+	{
+
+		WCHAR wdir[MAX_PATH];
+		GetWindowsDirectoryW(wdir, MAX_PATH);
+		WCHAR wudir[MAX_PATH];
+		SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, wudir);
+
+		SKK_DICTIONARY_FILEPATH = std::wstring(wdir) + L"skk-dict.txt";
+		SKK_USER_DICTIONARY_FILEPATH = std::wstring(wudir) + L"skk-user-dict.txt";
+	}
 }
 
 CSkkIme::~CSkkIme()
