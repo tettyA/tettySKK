@@ -1,48 +1,28 @@
-
 #include <iostream>
 #include <ShlObj.h>
 #include <filesystem>
 #include <urlmon.h>
 
-#include <iostream>
-#include <sstream>
-#include <fstream>
-
 #pragma comment(lib, "urlmon.lib")
 
 namespace fs = std::filesystem;
 
-std::ofstream logfile;
-
 void PutSep() {
-    std::stringstream bufs;
-    bufs << "-----------------------------------------" << std::endl;
-	logfile << bufs.str();
-	std::cout << bufs.str();
+    std::cout << "-----------------------------------------" << std::endl;
+
 }
 void Log(const std::string& message) {
-    std::stringstream bufs;
-    bufs << "[Installer] " << message << std::endl;
-    logfile << bufs.str();
-    std::cout << bufs.str();
-    logfile.flush();
+    std::cout << "[Installer] " << message << std::endl;
 }
 void skkUninstall();
 void LogError(const std::string& message) {
-    std::stringstream bufs;
-    bufs << "[ERROR] " << message << std::endl;
-    logfile << bufs.str();
-    std::cerr << bufs.str();
-    logfile.flush();
-    logfile.close();
+    std::cerr << "[ERROR] " << message << std::endl;
 
     skkUninstall();
 }
 
 void WaitEnter() {
 	system("pause");
-
-    logfile.flush();
 }
 
 bool DownloadDict(const std::wstring& url, const fs::path& destPath) {
@@ -154,7 +134,7 @@ void skkInstall() {
             fs::path installdir = std::wstring(sysPath);
 
 
-            std::string cmd = installdir.string() + "\\regsvr32 \"" + install_dll_path.string() + "\"";
+            std::string cmd = installdir.string() + "\\regsvr32 /s \"" + install_dll_path.string() + "\"";
             if (std::system(cmd.c_str())!=0) {
                 LogError("コマンド[" + cmd + "]に失敗しました。");
                 return;
@@ -169,7 +149,7 @@ void skkInstall() {
 
             fs::path installdirx86 = std::wstring(sysPath);
 
-            std::string cmd = installdirx86.string()+"\\regsvr32 \"" + install_dll_pathx86.string() + "\"";
+            std::string cmd = installdirx86.string()+"\\regsvr32 /s \"" + install_dll_pathx86.string() + "\"";
             if (std::system(cmd.c_str())!=0) {
                 LogError("コマンド[" + cmd + "]に失敗しました。");
                 return;
@@ -262,11 +242,8 @@ void skkUninstall() {
             fs::path installdir = std::wstring(sysPath);
 
             install_dll_path = installdir.wstring() + L"\\IME\\tettySKK\\"+ L"tettySkk.dll";
-            std::string cmd = installdir.string() + "\\regsvr32 /u \"" + install_dll_path.string() + "\"";
-            if (std::system(cmd.c_str()) != 0) {
-                LogError("コマンド[" + cmd + "]に失敗しました。");
-                return;
-            }
+            std::string cmd = installdir.string() + "\\regsvr32 /s /u \"" + install_dll_path.string() + "\"";
+            std::system(cmd.c_str());
             Log("コマンド[" + cmd + "]を実行しました。");
         }
 
@@ -277,11 +254,8 @@ void skkUninstall() {
 
             fs::path installdirx86 = std::wstring(sysPath);
             install_dll_pathx86 = installdirx86.wstring() + L"\\IME\\tettySKK\\" + L"tettySkk.dll";
-            std::string cmd = installdirx86.string() + "\\regsvr32 /u \"" + install_dll_pathx86.string() + "\"";
-            if (std::system(cmd.c_str()) != 0) {
-                LogError("コマンド[" + cmd + "]に失敗しました。");
-                return;
-            }
+            std::string cmd = installdirx86.string() + "\\regsvr32 /s /u \"" + install_dll_pathx86.string() + "\"";
+            std::system(cmd.c_str()) ;
             Log("コマンド[" + cmd + "]を実行しました。");
         }
     }
@@ -338,9 +312,7 @@ void skkUninstall() {
 
 int main()
 {
-	logfile = std::ofstream("tettySKK_Installer.log", std::ios::out);
 
-    std::wstring buf;
 
     Log("Welcome tettySKK Installer");
     PutSep();
@@ -371,9 +343,5 @@ int main()
     }
 
 
-	logfile.close();
-    return 0;
-
-
-    
+    return 0;    
 }

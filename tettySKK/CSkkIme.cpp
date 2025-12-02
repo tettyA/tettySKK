@@ -37,14 +37,13 @@ CSkkIme::CSkkIme()
 	m_isRegiteringNewWord = FALSE;
 
 	{
-
 		WCHAR wdir[MAX_PATH];
-		GetWindowsDirectoryW(wdir, MAX_PATH);
+		SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, wdir);
 		WCHAR wudir[MAX_PATH];
 		SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, wudir);
 
-		SKK_DICTIONARY_FILEPATH = std::wstring(wdir) + L"skk-dict.txt";
-		SKK_USER_DICTIONARY_FILEPATH = std::wstring(wudir) + L"skk-user-dict.txt";
+		SKK_DICTIONARY_FILEPATH = std::wstring(wdir) + L"\\skk-dict.txt";
+		SKK_USER_DICTIONARY_FILEPATH = std::wstring(wudir) + L"\\skk-user-dict.txt";
 	}
 }
 
