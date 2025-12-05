@@ -49,9 +49,9 @@ CCandidateWindow::~CCandidateWindow()
 	}
 }
 
-// Mode = 0 : 一つのみ表示
-// Mode = 1 : 複数(ASDFJKL)表示
-// Mode = 2 : 登録語(candidates[-2]に確定文字列，candidates[-1]に未確定文字列，candidates[2...]に候補。indexは無視)
+// Mode = CANDIDATEWINDOW_MODE_SINGLE   : 一つのみ表示
+// Mode = CANDIDATEWINDOW_MODE_MULTIPLE : 複数(ASDFJKL)表示
+// Mode = CANDIDATEWINDOW_MODE_REGWORD  : 登録語(candidates[-2]に確定文字列，candidates[-1]に未確定文字列，candidates[0...-3]に候補。indexは無視)
 void CCandidateWindow::SetCandidates(SKKCandidates& candidates, size_t index, int Mode)
 {
 	if (!IsWindowExists()) {
@@ -122,6 +122,8 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hWnd, UINT message, WPARAM wPara
 
 #define CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB RGB(128, 128, 128)
 #define CANDIDATES_WINDOW_UNDETERMINEDTEXTCOLOR_RGB RGB(0, 128, 0)
+
+#define CANDIDATES_WINDOW_PREDICTTEXTCOLOR_RGB RGB(128, 0, 128)
 
 #define CANDIDATES_WINDOW_FONT_HSIZE (46)
 
@@ -223,7 +225,11 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 
 		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, x + 2, y + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	}
-	
+	else if (m_Mode & CANDIDATEWINDOW_MODE_PREDICT) {
+		//予測変換モード
+		__PaintPredictMode(hdc, x, y, strsize);
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2 + 5, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+	}
 
 	
 }
@@ -233,6 +239,7 @@ void CCandidateWindow::__PaintSingleMode(HDC hdc, int _bgnx, int _bgny, SIZE& _r
 	int x = _bgnx;
 	int y = _bgny;
 	SIZE strsize;
+	SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
 	TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate));
 	GetTextExtentPoint(hdc, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate + L" "), &strsize);
 	x += strsize.cx;
@@ -308,4 +315,24 @@ void CCandidateWindow::__PaintMultipleMode(HDC hdc, int _bgnx, int _bgny, SIZE& 
 	_rectsize.cx = maxx;
 	_rectsize.cy = y + strsize.cy;
 	//FIX: 何かバグりそう。
+}
+
+void CCandidateWindow::__PaintPredictMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize)
+{
+	int x = _bgnx;
+	int y = _bgny;
+	SIZE strsize;
+
+	SetTextColor(hdc, CANDIDATES_WINDOW_PREDICTTEXTCOLOR_RGB);
+	std::wstring predictPrefix = L"予測:";
+	TextOut(hdc, x, y, WSTR_AND_WLEN(predictPrefix));
+	GetTextExtentPoint(hdc, WSTR_AND_WLEN(predictPrefix), &strsize);
+	x += strsize.cx;
+
+
+	_rectsize.cx = x;
+	_rectsize.cy = strsize.cy;
+
+
+	__PaintSingleMode(hdc, _rectsize.cx, _bgny, _rectsize);
 }

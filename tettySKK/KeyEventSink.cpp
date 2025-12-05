@@ -123,7 +123,9 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		}
 		if (_pComposition) {
 			*pfEaten = TRUE;
-	
+			if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX && m_CurrentCandidates.size() > m_CurrentShowCandidateIndex) {
+				m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
+			}
 			_CommitComposition(pic);
 			return S_OK;
 		}
@@ -144,6 +146,10 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				m_currentInputKana.pop_back();
 				if (m_CurrentCandidates.size() > 0) {
 					__InsertText(pic, currentCompStr.c_str(), TRUE);
+					if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX && m_CurrentCandidates.size() > m_CurrentShowCandidateIndex) {
+						m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
+						//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
+					}
 					_CommitComposition(pic);
 				}
 				else {
@@ -157,6 +163,25 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 			return hr;
 		}
+	}
+	else if (!m_isRegiteringNewWord && m_currentMode == SKKMode::Henkan && m_CurrentCandidates.empty() &&
+		key == VK_OEM_PERIOD
+		) {
+			*pfEaten = TRUE;
+			//予測候補で変換。
+			
+			//TODO: 送り仮名の処理
+			//TODO: 変換した後に，スペースなどで候補が入れ替わるようにする。
+			SKKCandidate predictionCandidate;
+			m_SKKDictionaly.GetPredictionCandidate(m_currentInputKana, predictionCandidate);
+			if (!predictionCandidate _Candidate.empty()) {
+				_Output(pic, predictionCandidate _Candidate.c_str(), TRUE);
+				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
+				m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, predictionCandidate);
+				_CommitComposition(pic);
+			}
+
+			return S_OK;
 	}
 	if (_IsKeyEaten(wParam))
 	{

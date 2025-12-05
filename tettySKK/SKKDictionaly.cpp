@@ -27,8 +27,9 @@ void CSKKDictionaly::GetCandidates(std::wstring& key, SKKCandidates& candidates)
 	auto uit = m_userdictionary.find(key);
 	if (uit != m_userdictionary.end()) {
 		//ユーザ辞書の方を後ろに追加
-		candidates.insert(candidates.end(), uit->second.begin(), uit->second.end());
+		candidates.insert(candidates.begin(), uit->second.begin(), uit->second.end());
 	}
+	//TODO: ユーザ辞書と通常辞書の重複排除(変換履歴により生じる)
 }
 
 void CSKKDictionaly::AddCandidate(const std::wstring& key, const std::wstring& candidate)
@@ -48,15 +49,18 @@ void CSKKDictionaly::AddCandidate(const std::wstring& key, const std::wstring& c
 
 }
 
-BOOL CSKKDictionaly::LoadDictionaryFromFile(const std::wstring& filepath)
+BOOL CSKKDictionaly::LoadDictionaryFromFile(const std::wstring& filepath, const std::wstring& userfilepath)
 {
-	return _LoadDictionaryFromFile(filepath, m_dictionary);
+	_LoadDictionaryFromFile(filepath, m_dictionary);
+	_LoadDictionaryFromFile(userfilepath, m_userdictionary);
+	return TRUE;
 }
 
+/*
 BOOL CSKKDictionaly::LoadUserDictionaryFromFile(const std::wstring& filepath)
 {
 	return _LoadDictionaryFromFile(filepath, m_userdictionary);
-}
+}*/
 
 BOOL CSKKDictionaly::SaveDictionaryToUserFile(const std::wstring& filepath) const
 {
@@ -111,6 +115,79 @@ BOOL CSKKDictionaly::SaveDictionaryToUserFile(const std::wstring& filepath) cons
 	file.close();
 
 	return TRUE;
+}
+
+void CSKKDictionaly::GetPredictionCandidate(std::wstring& prefix, SKKCandidate& candidate) const
+{
+	_ConvertToHiragana(prefix);
+	candidate = SKKCandidate(L"", L"");
+	for (const auto& e : m_history)
+	{
+		if (e.starts_with(prefix)) {
+			auto uit=m_userdictionary.find(e);
+			if( uit!= m_userdictionary.end() &&!uit->second.empty())
+			{
+				candidate = uit->second[0];
+				return;
+			}
+			else {
+				auto it = m_dictionary.find(e);
+				if (it != m_dictionary.end() && !it->second.empty()) {
+					candidate = it->second[0];
+					return;
+				}
+			}
+			return;
+		}
+	}
+
+	auto uit = m_userdictionary.lower_bound(prefix);
+	if (uit != m_userdictionary.end()) {
+		if (uit->first.starts_with(prefix)) {
+			if (!uit->second.empty()) {
+				candidate = uit->second[0];
+				return;
+			}
+		}
+	}
+
+	auto it = m_dictionary.lower_bound(prefix);
+	if (it != m_dictionary.end()) {
+		if (it->first.starts_with(prefix)) {
+			if (!it->second.empty()) {
+				candidate = it->second[0];
+				return;
+			}
+		}
+	}
+
+	return;
+}
+
+//TODO: user辞書が変更されるので，保存をするか考える。
+void CSKKDictionaly::AddHistoryCandidate(const std::wstring& yomi, const SKKCandidate& candidate)
+{
+	//重複排除
+	for (auto it = m_history.begin(); it != m_history.end(); ++it) {
+		if ((*it) == yomi ) {
+			m_history.erase(it);
+			break;
+		}
+	}
+
+	m_history.push_front(yomi);
+	if (m_history.size() > MAX_SKK_DICTIONARY_HISTORY) {
+		m_history.pop_back();
+	}
+	
+	for (auto it = m_userdictionary[yomi].begin(); it != m_userdictionary[yomi].end(); ++it)
+	{
+		if ((*it)_Candidate == candidate _Candidate) {
+			m_userdictionary[yomi].erase(it);
+			break;
+		}
+	}
+	m_userdictionary[yomi].push_front(candidate);
 }
 
 BOOL CSKKDictionaly::_LoadDictionaryFromFile(const std::wstring& filepath, SKKDictionary& _dict)

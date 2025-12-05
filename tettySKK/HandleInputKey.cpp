@@ -246,6 +246,8 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			//TODO: ASDFJKL を打ち込む時に，それ以外のものが打ち込まれたらCandidates[0]で確定	
 		}
 		else {
+			//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
+			m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
 			_CommitComposition(pic);
 		}
 	}
@@ -326,11 +328,16 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				}
 
 				//__InsertText(pic, (L"[debug]"), FALSE);
+				//FIX: 必要か? この，if ?  (m_isRegiteringNewWord==TRUE の時は既に弾かれている)
 				if (m_isRegiteringNewWord) {
 					baseword = m_RegCurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
 					additionalStr = L"";
 				}
-
+				else {
+					m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]);
+				}
+				
+				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
 				_Output(pic, (baseword + additionalStr), FALSE);
 				_CommitComposition(pic);
 				return S_OK;
@@ -368,6 +375,9 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				[[fallthrough]];
 			case  SKK_CHOOSE_CANDIDATES_SMLSTR[0]:
 			{
+				//TODO: 範囲チェック
+				//TODO: Lの時にローマジ入力に変わるのでそれを治す。
+				//TODO: もう一方の方(Reg)も修正してら替える。
 				std::wstring baseword = m_RegCurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
 				std::wstring additionalStr = L"";
 
@@ -429,6 +439,29 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			}
 
 		}
+
+
+		//変換履歴からの予測変換候補表示
+		if (!m_isRegiteringNewWord && m_CurrentCandidates.empty()) {
+
+			SKKCandidate predictionCandidate;
+			m_SKKDictionaly.GetPredictionCandidate(m_currentInputKana, predictionCandidate);
+
+			if (!predictionCandidate _Candidate.empty()) {
+				SKKCandidates predictionCandidateVec = { predictionCandidate };
+				m_pCandidateWindow->SetCandidates(predictionCandidateVec, 0, CANDIDATEWINDOW_MODE_PREDICT);
+				_UpDateCandidateWindowPosition(pic);
+			}
+			else {
+				if (m_pCandidateWindow->IsWindowExists()) {
+					m_pCandidateWindow->HideWindow();
+				}
+			}
+		}
+
+	
+
+		return S_OK;
 	}
 
 	if (m_currentMode == SKKMode::Kakutei) {
@@ -440,6 +473,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			//変換に達していない場合は，バッファをそのまま表示
 			_Output(pic, m_RomajiToKanaTranslator.GetBuffer(), FALSE);
 		}
+		return S_OK;
 	}
 
 	return S_OK;

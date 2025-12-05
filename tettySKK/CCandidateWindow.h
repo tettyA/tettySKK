@@ -7,6 +7,7 @@
 #define CANDIDATEWINDOW_MODE_SINGLE   (0b0001)
 #define CANDIDATEWINDOW_MODE_MULTIPLE (0b0010)
 #define CANDIDATEWINDOW_MODE_REGWORD  (0b0100)
+#define CANDIDATEWINDOW_MODE_PREDICT  (0b1000)
 
 #define BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX 5
 #define NUM_SHOW_CANDIDATE_MULTIPLE 7
@@ -16,9 +17,9 @@ public:
 	CCandidateWindow(HINSTANCE hInstance);
 	~CCandidateWindow();
 
-	// Mode = 0 : 一つのみ表示
-    // Mode = 1 : 複数(ASDFJKL)表示
-    // Mode = 2 : 登録語(candidates[-2]に確定文字列，candidates[-1]に未確定文字列，candidates[2...]に候補。indexは無視)
+	// Mode = CANDIDATEWINDOW_MODE_SINGLE   : 一つのみ表示
+    // Mode = CANDIDATEWINDOW_MODE_MULTIPLE : 複数(ASDFJKL)表示
+    // Mode = CANDIDATEWINDOW_MODE_REGWORD  : 登録語(candidates[-2]に確定文字列，candidates[-1]に未確定文字列，candidates[0...-3]に候補。indexは無視)
 	void SetCandidates(SKKCandidates& candidates, size_t index, int Mode);
 	void GetCandidates(SKKCandidates& candidates) const {
 		candidates = m_Candidates;
@@ -43,5 +44,6 @@ private:
 	void _OnPaint(HDC hdc);
 	void __PaintSingleMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize);
 	void __PaintMultipleMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize);
+	void __PaintPredictMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize);
 };
 
