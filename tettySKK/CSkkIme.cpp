@@ -42,8 +42,9 @@ CSkkIme::CSkkIme()
 		WCHAR wudir[MAX_PATH];
 		SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, wudir);
 
-		SKK_DICTIONARY_FILEPATH = std::wstring(wdir) + L"\\skk-dict.txt";
-		SKK_USER_DICTIONARY_FILEPATH = std::wstring(wudir) + L"\\skk-user-dict.txt";
+		//FIX: ReleaseÇ≈å≥Ç…Ç‡Ç«Ç∑ÅB
+		//SKK_DICTIONARY_FILEPATH = std::wstring(wdir) + L"\\skk-dict.txt";
+		//SKK_USER_DICTIONARY_FILEPATH = std::wstring(wudir) + L"\\skk-user-dict.txt";
 	}
 }
 

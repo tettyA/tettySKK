@@ -241,7 +241,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		return S_OK;
 	}
 	// H±(•ÏŠ·’†) + n(V‹K) => H±(Šm’è) + n(•ÏŠ·’†)  (ˆÃ–ÙŠm’è)
-	if (!m_CurrentCandidates.empty()) {
+	if (!m_isRegiteringNewWord && !m_CurrentCandidates.empty()) {
 		if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
 			//TODO: ASDFJKL ‚ð‘Å‚¿ž‚ÞŽž‚ÉC‚»‚êˆÈŠO‚Ì‚à‚Ì‚ª‘Å‚¿ž‚Ü‚ê‚½‚çCandidates[0]‚ÅŠm’è	
 		}
@@ -293,7 +293,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 	//•ÏŠ·’†
 	if (m_currentMode == SKKMode::Henkan) {
 		//ASDFJKL ‚Å‘I‚Ô’iŠK
-		if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+		if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX && m_isRegiteringNewWord==FALSE) {
 
 			int cnt = 0;
 			switch (key)
@@ -343,7 +343,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 
 			return S_OK;
 		}
-		if (m_isRegiteringNewWord && m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+		if (m_isRegiteringNewWord==TRUE && m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
 
 			int cnt = 0;
 			switch (key)

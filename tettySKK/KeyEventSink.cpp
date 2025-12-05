@@ -303,7 +303,8 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 	m_RegCurrentShowCandidateIndex = 0;
 	m_RegCurrentCandidates.clear();
 
-	__InsertText(pic, L"", FALSE);
+	__InsertText(pic, (std::to_wstring(m_CurrentShowCandidateIndex)).c_str(), FALSE);
+	//__InsertText(pic, L"", FALSE);
 
 	SKKCandidates regKeyCandidate = { {L"",regKey},{L"",L""}};
 	m_pCandidateWindow->SetCandidates(regKeyCandidate, 0, CANDIDATEWINDOW_MODE_REGWORD);
