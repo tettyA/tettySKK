@@ -90,7 +90,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 						additionalStr = m_currentInputKana.substr(m_Gokan.length());
 					}
-
+					
 					_ChangeCurrentMode(SKKMode::Henkan);
 
 					__InsertTextMakeCandidateWindow(pic,

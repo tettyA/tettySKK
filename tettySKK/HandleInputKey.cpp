@@ -160,41 +160,64 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 {
 	if (key == L'q') {
-		_ChangeCurrenKanaMode(KanaMode::Katakana);
+		if (_pComposition && m_currentInputKana.length() > 0) {
+			if (!m_isRegiteringNewWord) {
+				_ConvertToKatakana(m_currentInputKana);
+				_Output(pic, m_currentInputKana, TRUE);
+			}
+			else {
+				_ConvertToKatakana(m_RegInputDetermined);
+				_Output(pic, m_RegInputDetermined, TRUE);
+			}
+			_CommitComposition(pic);
+		}
+		else {
+			_ChangeCurrenKanaMode(KanaMode::Katakana);
+		}
 		return S_OK;
 	}
 	else if (key == L'l') {
-		//TODO: ˆ—‚Ì‹¤’Ê‰»
-		if (m_isRegiteringNewWord) {
-			m_RegCurrentCandidates.clear();
-			m_RegCurrentShowCandidateIndex = 0;
-			m_RegInputDetermined += m_RegInputUndetermined;
-			m_RegInputUndetermined = L"";
-
-
-			m_RomajiToKanaTranslator.Reset();
-
-			m_Gokan = L"";
-			m_OkuriganaFirstChar = L'\0';
-			SKKCandidates tempCanddates = {{ m_RegInputDetermined,m_RegKey }, { L"",L"" }};
-			m_pCandidateWindow->SetCandidates(tempCanddates, 0, CANDIDATEWINDOW_MODE_REGWORD);
-			_UpDateCandidateWindowPosition(pic);
+		if (m_currentMode == SKKMode::Henkan &&
+			(
+				(m_isRegiteringNewWord && m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX)
+				||
+				(!m_isRegiteringNewWord && m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX)
+				)) {
+			//pass(SDFJKL‚Å‘I‚ñ‚Å‚¢‚é’iŠK‚È‚Ì‚Å)
 		}
-		else
-		{
-			if (m_pCandidateWindow->IsWindowExists()) {
-				m_pCandidateWindow->HideWindow();
+		else {
+			//TODO: ˆ—‚Ì‹¤’Ê‰»
+			if (m_isRegiteringNewWord) {
+				m_RegCurrentCandidates.clear();
+				m_RegCurrentShowCandidateIndex = 0;
+				m_RegInputDetermined += m_RegInputUndetermined;
+				m_RegInputUndetermined = L"";
+
+
+				m_RomajiToKanaTranslator.Reset();
+
+				m_Gokan = L"";
+				m_OkuriganaFirstChar = L'\0';
+				SKKCandidates tempCanddates = { { m_RegInputDetermined,m_RegKey }, { L"",L"" } };
+				m_pCandidateWindow->SetCandidates(tempCanddates, 0, CANDIDATEWINDOW_MODE_REGWORD);
+				_UpDateCandidateWindowPosition(pic);
+			}
+			else
+			{
+				if (m_pCandidateWindow->IsWindowExists()) {
+					m_pCandidateWindow->HideWindow();
+				}
+
+				m_CurrentCandidates.clear();
+				m_CurrentShowCandidateIndex = 0;
+
+				m_Gokan = L"";
+				m_OkuriganaFirstChar = L'\0';
 			}
 
-			m_CurrentCandidates.clear();
-			m_CurrentShowCandidateIndex = 0;
-
-			m_Gokan = L"";
-			m_OkuriganaFirstChar = L'\0';
+			_ChangeCurrentMode(SKKMode::Hankaku);
+			return S_OK;
 		}
-
-		_ChangeCurrentMode(SKKMode::Hankaku);
-		return S_OK;
 	}
 	else if (key == L'x' && m_currentMode == SKKMode::Henkan) {
 

@@ -53,6 +53,21 @@ BOOL CSKKDictionaly::LoadDictionaryFromFile(const std::wstring& filepath, const 
 {
 	_LoadDictionaryFromFile(filepath, m_dictionary);
 	_LoadDictionaryFromFile(userfilepath, m_userdictionary);
+
+	for (auto& [wkey,wcandidates] : m_userdictionary)
+	{
+		for (auto& wcandidate : wcandidates) {
+			for (auto it = m_dictionary[wkey].begin(); it != m_dictionary[wkey].end(); ++it)
+			{
+				if ((*it)  == wcandidate) {
+					//d•¡‚µ‚Ä‚¢‚éê‡C’Êí«‘‘¤‚ğíœ
+					m_dictionary[wkey].erase(it);
+					
+					break;
+				}
+			}
+		}
+	}
 	return TRUE;
 }
 
@@ -188,6 +203,15 @@ void CSKKDictionaly::AddHistoryCandidate(const std::wstring& yomi, const SKKCand
 		}
 	}
 	m_userdictionary[yomi].push_front(candidate);
+
+	//’Êí«‘‚©‚ç‚àíœ(d•¡‚Ì”rœ)
+	for (auto it = m_dictionary[yomi].begin(); it != m_dictionary[yomi].end(); ++it)
+	{
+		if ((*it)_Candidate == candidate _Candidate) {
+			m_dictionary[yomi].erase(it);
+			break;
+		}
+	}
 }
 
 BOOL CSKKDictionaly::_LoadDictionaryFromFile(const std::wstring& filepath, SKKDictionary& _dict)
