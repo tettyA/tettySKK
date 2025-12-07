@@ -356,15 +356,9 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				}
 
 				//__InsertText(pic, (L"[debug]"), FALSE);
-				//FIX: ïKóvÇ©? Ç±ÇÃÅCif ?  (m_isRegiteringNewWord==TRUE ÇÃéûÇÕä˘Ç…íeÇ©ÇÍÇƒÇ¢ÇÈ)
-			//	if (m_isRegiteringNewWord) {
-			///		baseword = m_RegCurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
-			//		additionalStr = L"";
-			//	}
-				//else {
-					m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]);
-				//}
-				
+				m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]);
+
+
 				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
 				_Output(pic, (baseword + additionalStr), FALSE);
 				_CommitComposition(pic);

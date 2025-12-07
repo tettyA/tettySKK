@@ -29,7 +29,7 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	}
 
 	//変換中のときは，BackSpaceも食う
-	if (m_currentMode == SKKMode::Henkan && key == VK_BACK) {
+	if (m_currentMode == SKKMode::Henkan && key == VK_BACK && !m_isRegiteringNewWord) {
 		return true;
 	}
 	return false;
@@ -134,7 +134,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		if (m_isRegiteringNewWord) {
 			//pass
 		}
-		if (_pComposition && m_currentMode == SKKMode::Henkan) {
+		else if (_pComposition && m_currentMode == SKKMode::Henkan) {
 			*pfEaten = TRUE;
 
 
@@ -187,12 +187,12 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 	{
 		key += ToSmallAlphabet;
 		*pfEaten = TRUE;
-		
+
 		return _HandleCharKey(pic, key);
 	}
 
 
-	if (m_isRegiteringNewWord ) {
+	if (m_isRegiteringNewWord) {
 		if (m_currentMode == SKKMode::Hankaku) {
 			if ((key >= L'A' && key <= L'Z') || (key == VK_SPACE))
 			{
@@ -205,28 +205,20 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		}
 		if (key == VK_BACK) {
 			*pfEaten = TRUE;
-			if (m_currentMode == SKKMode::Henkan) {
-				//変換中のとき
-				if (m_RegInputUndetermined.length() > 0) {
-					m_RegInputUndetermined.pop_back();
-					__InsertNewRegWord(pic, m_RegInputUndetermined, FALSE);
-				}
-				else {
-					//未確定文字列が空なら確定文字列を削る
-					if (m_RegInputDetermined.length() > 0) {
-						m_RegInputDetermined.pop_back();
-						__InsertNewRegWord(pic, L"", FALSE);
-					}
-				}
+			//	if (m_currentMode == SKKMode::Henkan) {
+					//変換中のとき
+			if (m_RegInputUndetermined.length() > 0) {
+				m_RegInputUndetermined.pop_back();
+				__InsertNewRegWord(pic, m_RegInputUndetermined, FALSE);
 			}
 			else {
-				//確定中のとき
+				//未確定文字列が空なら確定文字列を削る
 				if (m_RegInputDetermined.length() > 0) {
 					m_RegInputDetermined.pop_back();
 					__InsertNewRegWord(pic, L"", FALSE);
 				}
 			}
-			
+
 			m_RomajiToKanaTranslator.Reset();
 			return S_OK;
 		}

@@ -66,7 +66,8 @@ void skkInstall() {
 
             if (!fs::exists(installdir)) {
                 Log(installdir.string() + "が見つかりませんでした。作成します。");
-                if (fs::create_directories(installdir)) {
+                fs::create_directories(installdir);
+                if (!fs::exists(installdir)) {
                     LogError(installdir.string() + "を作成することが出来ませんでした。");
                     WaitEnter();
                     return ;
@@ -105,7 +106,8 @@ void skkInstall() {
 
             if (!fs::exists(installdirx86)) {
                 Log(installdirx86.string() + "が見つかりませんでした。作成します。");
-                if (fs::create_directories(installdirx86)) {
+                fs::create_directories(installdirx86);
+                if (!fs::exists(installdirx86)) {
                     LogError(installdirx86.string() + "を作成することが出来ませんでした。");
                     WaitEnter();
                     return ;
@@ -174,10 +176,22 @@ void skkInstall() {
 
 
         std::wstring dictUrl = L"http://openlab.jp/skk/skk/dic/SKK-JISYO.L";
+		fs::path dictDir = windowsDir.string() + "\\tettySKK\\";
         fs::path dictPath = windowsDir.string() + "\\tettySKK\\skk-dict.txt";
+
+        if (!fs::exists(dictPath.parent_path())) {
+            Log(dictPath.parent_path().string() + "が見つかりませんでした。作成します。");
+            fs::create_directories(dictPath.parent_path());
+            if (!fs::exists(dictPath.parent_path())) {
+                LogError(dictPath.parent_path().string() + "を作成することが出来ませんでした。");
+                WaitEnter();
+                return;
+            }
+        }
 
         Log("SKK-JISYO.L を " + dictPath.string() + " にインストールします。時間がかかる場合があります。");
 
+  
 
         if (DownloadDict(dictUrl, dictPath)) {
             Log("辞書のダウンロードに成功しました。");
