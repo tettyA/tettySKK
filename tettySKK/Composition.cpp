@@ -160,6 +160,17 @@ HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHA
 	}
 
 	if (isDetermined && _pComposition) {
+
+		CComPtr<ITfRange> pRange;
+		if (SUCCEEDED(_pComposition->GetRange(&pRange)) && pRange) {
+			CComPtr<ITfProperty> pProp;
+			if (SUCCEEDED(pContext->GetProperty(GUID_PROP_ATTRIBUTE, &pProp)) && pProp) {
+				pProp->Clear(ec, pRange);
+			}
+		}
+
+
+
 		_pComposition->EndComposition(ec);
 
 		_pComposition.Release();
@@ -217,7 +228,7 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 
 	}
 	if (_pComposition) {
-		CTerminateCompositionEditSession* pSession = new CTerminateCompositionEditSession(_pComposition);
+		CTerminateCompositionEditSession* pSession = new CTerminateCompositionEditSession(_pComposition,pic);
 		HRESULT hr;
 		pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READWRITE, &hr);
 		pSession->Release();

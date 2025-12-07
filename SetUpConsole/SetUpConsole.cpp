@@ -174,7 +174,7 @@ void skkInstall() {
 
 
         std::wstring dictUrl = L"http://openlab.jp/skk/skk/dic/SKK-JISYO.L";
-        fs::path dictPath = windowsDir.string() + "\\skk-dict.txt";
+        fs::path dictPath = windowsDir.string() + "\\tettySKK\\skk-dict.txt";
 
         Log("SKK-JISYO.L を " + dictPath.string() + " にインストールします。時間がかかる場合があります。");
 
@@ -218,7 +218,7 @@ void skkUninstall() {
 
         fs::path windowsDir = std::wstring(wdir);
 
-        fs::path dictPath = windowsDir.string() + "\\skk-dict.txt";
+        fs::path dictPath = windowsDir.string() + "\\tettySKK\\skk-dict.txt";
 
         Log(dictPath.string() + "を削除します。時間がかかる場合があります。");
         if (fs::exists(dictPath)) {

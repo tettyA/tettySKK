@@ -100,7 +100,7 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 				m_SKKDictionaly.GetCandidates(searchStr, m_CurrentCandidates);
 			}
 			if (m_CurrentCandidates.size() == 0) {
-				//TODO: 新しい語の登録
+			
 				_BgnRegiterNewWord(pic, m_currentInputKana);
 			}
 			else {
@@ -141,7 +141,7 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 					NUM_SHOW_CANDIDATE_MULTIPLE)
 				>= m_CurrentCandidates.size())
 			) {
-			//TODO:新しい語の登録
+			
 			_BgnRegiterNewWord(pic, m_currentInputKana);
 			return S_OK;
 		}
@@ -283,7 +283,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			_CommitComposition(pic);
 		}
 	}
-
+	
 	bool isShift = _IsShiftKeyPressed();
 	//変換の開始
 	if (isShift && m_currentMode == SKKMode::Kakutei) {
@@ -343,6 +343,11 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				[[fallthrough]];
 			case  SKK_CHOOSE_CANDIDATES_SMLSTR[0]:
 			{
+				if (BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt
+					>= m_CurrentCandidates.size()
+					) {
+					return S_OK;
+				}
 				std::wstring baseword = m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
 				std::wstring additionalStr = L"";
 
@@ -352,13 +357,13 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 
 				//__InsertText(pic, (L"[debug]"), FALSE);
 				//FIX: 必要か? この，if ?  (m_isRegiteringNewWord==TRUE の時は既に弾かれている)
-				if (m_isRegiteringNewWord) {
-					baseword = m_RegCurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
-					additionalStr = L"";
-				}
-				else {
+			//	if (m_isRegiteringNewWord) {
+			///		baseword = m_RegCurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
+			//		additionalStr = L"";
+			//	}
+				//else {
 					m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]);
-				}
+				//}
 				
 				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
 				_Output(pic, (baseword + additionalStr), FALSE);
@@ -398,9 +403,12 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				[[fallthrough]];
 			case  SKK_CHOOSE_CANDIDATES_SMLSTR[0]:
 			{
-				//TODO: 範囲チェック
-				//TODO: Lの時にローマジ入力に変わるのでそれを治す。
 				//TODO: もう一方の方(Reg)も修正してら替える。
+				if (BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt
+					>= m_RegCurrentCandidates.size()
+					) {
+					return S_OK;
+				}
 				std::wstring baseword = m_RegCurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
 				std::wstring additionalStr = L"";
 
@@ -434,7 +442,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		//新しいキーを変換  ex: m + a = ま
 		std::wstring newkana;
 		m_RomajiToKanaTranslator.Translate(key, newkana, m_CurrentKanaMode);
-
+		
 		//今の画面[しm] - ローマ字[m] = ひらがな確定済部分[し]
 		std::wstring baseKana = textonScreen.substr(0, textonScreen.length() - prevRomajilen);
 
@@ -444,6 +452,8 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		m_currentInputKana = baseKana + newkana;
 
 		_Output(pic, finalText, FALSE);
+
+	
 
 		//送り仮名の指定
 		if (!textonScreen.empty() && (isShift = _IsShiftKeyPressed())) {
@@ -463,6 +473,13 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 
 		}
 
+		//送り仮名が1文字以上指定された場合，確定処理  
+		if (m_OkuriganaFirstChar != L'\0' && !m_Gokan.empty() &&
+			m_currentInputKana.length() - m_Gokan.length() >= 1) {
+			_HandleSpaceKey(pic, VK_SPACE);
+
+			return S_OK;
+		}
 
 		//変換履歴からの予測変換候補表示
 		if (!m_isRegiteringNewWord && m_CurrentCandidates.empty()) {

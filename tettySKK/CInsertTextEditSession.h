@@ -75,8 +75,9 @@ private:
 class CTerminateCompositionEditSession :public CEditSessionBase
 {
 public:
-	CTerminateCompositionEditSession(ITfComposition* pComposition) {
+	CTerminateCompositionEditSession(ITfComposition* pComposition,ITfContext* pContext) {
 		_pComposition = pComposition;
+		_pContext = pContext;
 	}
 	~CTerminateCompositionEditSession() {
 		_pComposition.Release();
@@ -85,12 +86,21 @@ public:
 	//ITfEditSession methods
 	STDMETHODIMP DoEditSession(TfEditCookie ec) override {
 		if (_pComposition) {
+			CComPtr<ITfRange> pRange;
+			if (SUCCEEDED(_pComposition->GetRange(&pRange)) && pRange) {
+				CComPtr<ITfProperty> pProp;
+				if (SUCCEEDED(_pContext->GetProperty(GUID_PROP_ATTRIBUTE, &pProp)) && pProp) {
+					pProp->Clear(ec, pRange);
+				}
+			}
+
 			_pComposition->EndComposition(ec);
 		}
 		return S_OK;
 	}
 private:
 	CComPtr<ITfComposition> _pComposition;
+	CComPtr<ITfContext> _pContext;
 };
 
 //候補ウィンドウの座標を取得するためのEditSession
