@@ -100,8 +100,15 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 				m_SKKDictionaly.GetCandidates(searchStr, m_CurrentCandidates);
 			}
 			if (m_CurrentCandidates.size() == 0) {
-			
-				_BgnRegiterNewWord(pic, m_currentInputKana);
+				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+					//‘—‚è‰¼–¼‚ ‚è—p
+					_BgnRegiterNewWord(pic, m_Gokan + m_OkuriganaFirstChar);
+				}
+				else {
+					_BgnRegiterNewWord(pic, m_currentInputKana);
+				}
+
+				return S_OK;
 			}
 			else {
 
@@ -116,6 +123,8 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 					(displayStr).c_str(),
 					(displayStr).c_str()
 				);
+
+				return S_OK;
 			}
 			return S_OK;
 		}
@@ -142,7 +151,12 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 				>= m_CurrentCandidates.size())
 			) {
 			
-			_BgnRegiterNewWord(pic, m_currentInputKana);
+			if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+				_BgnRegiterNewWord(pic, m_Gokan + m_OkuriganaFirstChar);
+			}
+			else {
+				_BgnRegiterNewWord(pic, m_currentInputKana);
+			}
 			return S_OK;
 		}
 

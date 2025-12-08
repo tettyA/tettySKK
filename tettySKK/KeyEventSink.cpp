@@ -71,7 +71,9 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			//TODO: 実装
 			*pfEaten = TRUE;
 			if (!m_RegInputUndetermined.empty()) {
+				//未確定文字列の確定
 				_CommitRegComposition(pic);
+				return S_OK;
 			}
 			else if (m_RegInputDetermined.empty()) {
 				//文字列がないときは，キャンセル扱いにする
@@ -108,13 +110,37 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				return S_OK;
 			}
 			else {
+
+				//送り仮名の取得(Commitして前のcompStrを潰してしまう前に取得しておく)
+				//TODO: 送り仮名が複数文字の場合の対応(そんなことはないと思うが...)
+				std::wstring tempStr;
+				{
+					//regの方ではなく，通常のcomposition文字列を取得したいので，一旦FALSEにする。
+					m_isRegiteringNewWord = FALSE;
+					_GetCompositionString(tempStr);
+					if (std::isalpha(m_RegKey.back())) {
+						//送り仮名がある(あった)場合は，送りがなもOutputする。
+						tempStr = tempStr.back();
+					}
+					else {
+						tempStr.clear();
+					}
+					m_isRegiteringNewWord = TRUE;
+				}
+
+
+				//新しい単語の登録確定
 				_CommitComposition(pic);
-				//TODO: ファイルにも保存されるようにする
+
 				m_isRegiteringNewWord = FALSE;
-				_Output(pic, m_RegInputDetermined.substr(0,  m_RegInputDetermined.find(SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_CHAR)).c_str(), TRUE);
+
+				_Output(pic, (m_RegInputDetermined.substr(0, m_RegInputDetermined.find(SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_CHAR)) + tempStr).c_str(), TRUE);
+				
+				
 				m_SKKDictionaly.AddCandidate(m_RegKey, m_RegInputDetermined);
 				m_SKKDictionaly.SaveDictionaryToUserFile(SKK_USER_DICTIONARY_FILEPATH);
 
+				
 				_EndRegiterNewWord();
 
 				return S_OK;
@@ -320,7 +346,7 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 	m_RegCurrentShowCandidateIndex = 0;
 	m_RegCurrentCandidates.clear();
 
-	__InsertText(pic, (std::to_wstring(m_CurrentShowCandidateIndex)).c_str(), FALSE);
+	//__InsertText(pic, (std::to_wstring(m_CurrentShowCandidateIndex)).c_str(), FALSE);
 	//__InsertText(pic, L"", FALSE);
 
 	SKKCandidates regKeyCandidate = { {L"",regKey},{L"",L""}};

@@ -34,10 +34,10 @@ void CSkkIme::__InsertNewRegWord(ITfContext* pic, const std::wstring& text, BOOL
 	if (m_pCandidateWindow->IsWindowExists()) {
 		//TODO: d‚»‚¤‚â‚¯‚ÇC‚Ç‚¤‚·‚é?
 		SKKCandidates tempCandidate = { {m_RegInputDetermined ,m_RegKey
-			+(m_currentMode==SKKMode::Hankaku?L"Hankaku":
+			/*+(m_currentMode==SKKMode::Hankaku?L"Hankaku":
 				m_currentMode==SKKMode::Henkan?L"Henkan":L"kakutei")
 			+L"/text:"+text
-			+L"/buf:"+m_RomajiToKanaTranslator.GetBuffer()
+			+L"/buf:"+m_RomajiToKanaTranslator.GetBuffer():*/
 			},{m_RegInputUndetermined,L""} };
 		if (m_RegCurrentCandidates.size() > 0) {
 			tempCandidate.insert(tempCandidate.begin(), m_RegCurrentCandidates.begin(), m_RegCurrentCandidates.end());
@@ -47,7 +47,6 @@ void CSkkIme::__InsertNewRegWord(ITfContext* pic, const std::wstring& text, BOOL
 		}
 		m_pCandidateWindow->SetCandidates(tempCandidate, m_RegCurrentShowCandidateIndex, CANDIDATEWINDOW_MODE_REGWORD | ((m_RegCurrentCandidates.empty() ? 0 : (m_RegCurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX ? CANDIDATEWINDOW_MODE_SINGLE : CANDIDATEWINDOW_MODE_MULTIPLE))));
 		_UpDateCandidateWindowPosition(pic);
-		__InsertText(pic, (L"["+m_RegInputUndetermined+L"]").c_str(), FALSE);
 	}
 }
  
