@@ -72,9 +72,9 @@ private:
 
 	BOOL _InitKeyEventSink();
 	void _UninitKeyEventSink();
-
+public:
 	HRESULT _SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCookie ec, ITfRange* pRange);
-
+private:
 	bool _IsKeyEaten(WPARAM wParam);
 	bool _IsKeyEatenTest(WPARAM wParam);
 

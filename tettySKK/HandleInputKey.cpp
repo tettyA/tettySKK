@@ -4,6 +4,7 @@
 #include "Global.h"
 #include "CCandidateWindow.h"
 
+#include "CInsertTextEditSession.h"
 
 HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 {
@@ -285,7 +286,48 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		else {
 			//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
 			m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
-			_CommitComposition(pic);
+			//	_CommitComposition(pic);
+
+			std::wstring nextChar(1, key);
+			std::wstring newxtKana;
+			std::wstring nextinsert;
+			m_RomajiToKanaTranslator.Reset();
+			m_RomajiToKanaTranslator.Translate(key, newxtKana, m_CurrentKanaMode);
+
+			if (_pComposition) {
+				nextinsert = nextChar;
+				CShiftStartEditSession* pEditSession =
+					new CShiftStartEditSession(this, _pComposition, pic, nextinsert, _clientId);
+
+
+				HRESULT hr;
+				pic->RequestEditSession(
+					_clientId,
+					pEditSession,
+					TF_ES_READWRITE | TF_ES_SYNC,
+					&hr);
+
+				pEditSession->Release();
+
+				//ˆ—‚Ì‹¤’Ê‰»(_CommitComposition‚Ìˆê•”‚ðŠÖ”‰»)
+				if (m_pCandidateWindow->IsWindowExists()) {
+					m_pCandidateWindow->HideWindow();
+				}
+
+				if (m_isRegiteringNewWord) {
+					m_RegCurrentCandidates.clear();
+					m_RegCurrentShowCandidateIndex = 0;
+				}
+				m_CurrentCandidates.clear();
+				m_CurrentShowCandidateIndex = 0;
+				//m_RomajiToKanaTranslator.Reset();
+			//	_ChangeCurrentMode(SKKMode::Kakutei);
+
+				m_Gokan = L"";
+				m_OkuriganaFirstChar = L'\0';
+			}
+			//_Output(pic, nextinsert, FALSE);
+			return S_OK;
 		}
 	}
 

@@ -37,6 +37,101 @@ private:
 	BOOL _isDetermined;
 };
 
+//確定と新規入力を同時に行うためのEditSession
+class CShiftStartEditSession :public CEditSessionBase
+{
+public:
+	_declspec(noinline) CShiftStartEditSession(CSkkIme*pIme,ITfComposition * pComp, ITfContext * pic, const std::wstring & newText, TfClientId tid) {
+		_pComposition = pComp;
+		_pContext = pic;
+		_newText = newText;
+		_clientId = tid;
+		_pIme = pIme;
+	}
+
+	__declspec(noinline) ~CShiftStartEditSession() {
+		_pComposition.Release();
+		_pContext.Release();
+		_pIme.Release();
+	}
+
+	STDMETHODIMP DoEditSession(TfEditCookie ec)override {
+		CComPtr<ITfRange> pRange;
+		if (FAILED(_pComposition->GetRange(&pRange)) || (pRange == nullptr)) {
+			return E_FAIL;
+		}
+
+		//確定する部分の下線を消す
+		CComPtr<ITfProperty> pProp;
+		if (SUCCEEDED(_pContext->GetProperty(GUID_PROP_ATTRIBUTE, &pProp)) && pProp) {
+			pProp->Clear(ec, pRange);
+		}
+
+		//FIXME: バッファオーバーランの可能性あり
+	/*	WCHAR buf[512];
+		ULONG cchFetched = 0;
+		std::wstring combinedText;
+		if (FAILED(pRange->GetText(ec, 0, buf, 512, &cchFetched)) && cchFetched <= 0) {
+			return E_FAIL;
+		}
+		combinedText.assign(buf, cchFetched);*/
+
+		CComPtr<ITfRange> pEndRange;
+		pRange->Clone(&pEndRange);
+		pEndRange->Collapse(ec, TF_ANCHOR_END);//末尾に移動
+
+		if (FAILED(_pComposition->ShiftStart(ec, pEndRange))) {
+			return E_FAIL;
+		}
+
+
+		////区切り位置(未発見，の未)を計算
+		//size_t commitPos = combinedText.length();
+		//combinedText += _newText;
+		//pRange->SetText(ec, 0, combinedText.c_str(), (LONG)combinedText.length());
+		//
+		//CComPtr<ITfRange> pSplitRange;
+		//pRange->Clone(&pSplitRange);
+		//pSplitRange->Collapse(ec, TF_ANCHOR_START);//先頭に移動
+
+		//LONG cch;
+		//pSplitRange->ShiftEnd(ec, (LONG)commitPos, &cch, nullptr);
+		//pSplitRange->Collapse(ec, TF_ANCHOR_END);// そこで潰す (未発見，の未|h)
+
+
+		//範囲の末尾を取得し，新たな開始点とする。
+		///Compositionの開始位置を移動
+		/*if (FAILED(_pComposition->ShiftStart(ec, pSplitRange))) {
+			return E_FAIL;
+		}*/
+
+		//新しいテキストを挿入
+		CComPtr<ITfRange> pNewRange;
+		if (SUCCEEDED(_pComposition->GetRange(&pNewRange)) && pNewRange) {
+			pNewRange->SetText(ec, 0, _newText.c_str(), (LONG)_newText.length());
+
+			//新たな下線を引く(CSkkIme::_SetInputDisplayAttributeInfoを流用)
+			_pIme->_SetInputDisplayAttributeInfo(_pContext, ec, pNewRange);
+
+			//カーソルの移動
+			pNewRange->Collapse(ec, TF_ANCHOR_END);
+			TF_SELECTION sl = { 0 };
+			sl.range = pNewRange;
+			sl.style.ase = TF_AE_NONE;
+
+			_pContext->SetSelection(ec, 1, &sl);
+		}
+
+		return S_OK;
+	}
+private:
+	CComPtr<CSkkIme> _pIme;
+	CComPtr<ITfComposition> _pComposition;
+	CComPtr<ITfContext> _pContext;
+	std::wstring _newText;
+	TfClientId _clientId;
+};
+
 //Compositionのテキストを取得するためのEditSession
 class CGetTextEditSession :public CEditSessionBase
 {
