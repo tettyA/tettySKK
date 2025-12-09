@@ -76,6 +76,7 @@ private:
 	HRESULT _SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCookie ec, ITfRange* pRange);
 
 	bool _IsKeyEaten(WPARAM wParam);
+	bool _IsKeyEatenTest(WPARAM wParam);
 
 	HRESULT _HandleRegSpaceKey(ITfContext* pic, WCHAR key);
 	HRESULT _HandleSpaceKey(ITfContext* pic, WCHAR key);

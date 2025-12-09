@@ -32,6 +32,16 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	if (m_currentMode == SKKMode::Henkan && key == VK_BACK && !m_isRegiteringNewWord) {
 		return true;
 	}
+
+	return false;
+}
+
+bool CSkkIme::_IsKeyEatenTest(WPARAM wParam)
+{
+	WCHAR key = (WCHAR)wParam;
+	if (m_isRegiteringNewWord && (key == VK_RETURN || key == VK_BACK)) {
+		return true;
+	}
 	return false;
 }
 
@@ -261,7 +271,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 //キーが離された瞬間
 STDAPI CSkkIme::OnKeyUp(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten) {
 	*pfEaten = FALSE;
-	if (_IsKeyEaten(wParam))
+	if (_IsKeyEaten(wParam) || _IsKeyEatenTest(wParam))
 	{
 		*pfEaten = TRUE;
 		return S_OK;
@@ -272,7 +282,7 @@ STDAPI CSkkIme::OnKeyUp(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfE
 //このキーを処理しますかどうかを問い合わせる(キーが押された瞬間)
 STDAPI CSkkIme::OnTestKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten) {
 	*pfEaten = FALSE;
-	if (_IsKeyEaten(wParam))
+	if (_IsKeyEaten(wParam) || _IsKeyEatenTest(wParam))
 	{
 		*pfEaten = TRUE;
 		return S_OK;
@@ -282,7 +292,7 @@ STDAPI CSkkIme::OnTestKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOO
 
 STDAPI CSkkIme::OnTestKeyUp(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten) {
 	*pfEaten = FALSE;
-	if (_IsKeyEaten(wParam))
+	if (_IsKeyEaten(wParam) || _IsKeyEatenTest(wParam))
 	{
 		*pfEaten = TRUE;
 		return S_OK;
