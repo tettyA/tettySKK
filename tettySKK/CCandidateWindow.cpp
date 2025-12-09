@@ -132,6 +132,8 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hWnd, UINT message, WPARAM wPara
 
 #define CANDIDATES_WINDOW_MAXWIDTH (900)
 
+#define CNADIDATE_WINDOW_FONT_NAME (L"Meiryo UI")
+
 void CCandidateWindow::_OnPaint(HDC hdc)
 {
 	RECT cc;
@@ -153,7 +155,7 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 			CLIP_DEFAULT_PRECIS,
 			PROOF_QUALITY,
 			FIXED_PITCH | FF_MODERN,
-			L"Meiryo UI"
+			CNADIDATE_WINDOW_FONT_NAME
 		);
 
 	SelectObject(hdc, hFont);

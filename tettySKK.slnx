@@ -5,5 +5,6 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="SetUpConsole/SetUpConsole.vcxproj" Id="14981422-6dcd-4afb-8c87-25973d67d34b" />
+  <Project Path="SKKSetting/SKKSetting.csproj" Id="9ef0c140-4a98-481d-a04a-8a6842813df9" />
   <Project Path="tettySKK/tettySKK.vcxproj" Id="05fb0109-d0ec-4770-aaf9-5be110dc467b" />
 </Solution>
