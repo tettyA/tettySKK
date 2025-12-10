@@ -292,10 +292,15 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			std::wstring newxtKana;
 			std::wstring nextinsert;
 			m_RomajiToKanaTranslator.Reset();
-			m_RomajiToKanaTranslator.Translate(key, newxtKana, m_CurrentKanaMode);
-
+			if (m_RomajiToKanaTranslator.Translate(key, newxtKana, m_CurrentKanaMode)) {
+				nextinsert = newxtKana;
+			}
+			else {
+				//変換に達していない場合は，バッファをそのまま表示
+				nextinsert = m_RomajiToKanaTranslator.GetBuffer();
+			}
 			if (_pComposition) {
-				nextinsert = nextChar;
+			//	nextinsert = nextChar;
 				CShiftStartEditSession* pEditSession =
 					new CShiftStartEditSession(this, _pComposition, pic, nextinsert, _clientId);
 
@@ -321,8 +326,9 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				m_CurrentCandidates.clear();
 				m_CurrentShowCandidateIndex = 0;
 				//m_RomajiToKanaTranslator.Reset();
-			//	_ChangeCurrentMode(SKKMode::Kakutei);
-
+				if (!_IsShiftKeyPressed()) {
+					_ChangeCurrentMode(SKKMode::Kakutei);
+				}
 				m_Gokan = L"";
 				m_OkuriganaFirstChar = L'\0';
 			}
@@ -514,11 +520,25 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			// もし，既に語幹が設定されていたら無視。
 			//_InsertText(pic, (L"[Debug1:"+ m_Gokan + L"]").c_str(), TRUE);
 			if (baseKana.length() >= 1 && m_Gokan.empty() && m_OkuriganaFirstChar == L'\0') {
+
 				m_Gokan = baseKana;
 				m_OkuriganaFirstChar = key;
 				if (prevRomajilen >= 1) {
 					m_OkuriganaFirstChar = prevRomaji[0];
 				}
+				if ((newkana == L"ん" && m_CurrentKanaMode == KanaMode::Hiragana) ||
+					(newkana == L"ン" && m_CurrentKanaMode == KanaMode::Katakana)) {
+					m_Gokan += newkana;
+					m_OkuriganaFirstChar = key;// 非n に戻す
+					//ん に変換させる。
+
+					finalText = baseKana + newkana;
+					m_currentInputKana = finalText;
+
+				}
+				
+
+				//__InsertText(pic, (L"[Debug:" + std::wstring(1, m_OkuriganaFirstChar) + L"]").c_str(), TRUE);
 			}
 
 		}

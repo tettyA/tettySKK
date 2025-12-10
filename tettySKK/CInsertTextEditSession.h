@@ -67,14 +67,6 @@ public:
 			pProp->Clear(ec, pRange);
 		}
 
-		//FIXME: バッファオーバーランの可能性あり
-	/*	WCHAR buf[512];
-		ULONG cchFetched = 0;
-		std::wstring combinedText;
-		if (FAILED(pRange->GetText(ec, 0, buf, 512, &cchFetched)) && cchFetched <= 0) {
-			return E_FAIL;
-		}
-		combinedText.assign(buf, cchFetched);*/
 
 		CComPtr<ITfRange> pEndRange;
 		pRange->Clone(&pEndRange);
@@ -85,25 +77,6 @@ public:
 		}
 
 
-		////区切り位置(未発見，の未)を計算
-		//size_t commitPos = combinedText.length();
-		//combinedText += _newText;
-		//pRange->SetText(ec, 0, combinedText.c_str(), (LONG)combinedText.length());
-		//
-		//CComPtr<ITfRange> pSplitRange;
-		//pRange->Clone(&pSplitRange);
-		//pSplitRange->Collapse(ec, TF_ANCHOR_START);//先頭に移動
-
-		//LONG cch;
-		//pSplitRange->ShiftEnd(ec, (LONG)commitPos, &cch, nullptr);
-		//pSplitRange->Collapse(ec, TF_ANCHOR_END);// そこで潰す (未発見，の未|h)
-
-
-		//範囲の末尾を取得し，新たな開始点とする。
-		///Compositionの開始位置を移動
-		/*if (FAILED(_pComposition->ShiftStart(ec, pSplitRange))) {
-			return E_FAIL;
-		}*/
 
 		//新しいテキストを挿入
 		CComPtr<ITfRange> pNewRange;
