@@ -10,7 +10,7 @@ void CSkkIme::_SetCompartment(REFGUID guid, const VARIANT& var)
 	{
 		return;
 	}
-
+	
 	CComPtr<ITfCompartment> pCompartment;
 	if (FAILED(pCompartmentMgr->GetCompartment(guid, &pCompartment)))
 	{
