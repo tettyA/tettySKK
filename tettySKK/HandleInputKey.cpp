@@ -63,12 +63,12 @@ HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 		}
 
 		m_RegCurrentShowCandidateIndex++;
-		if (m_RegCurrentShowCandidateIndex >= m_RegCurrentCandidates.size() - 2 ||
+		if ((int)m_RegCurrentShowCandidateIndex >=(int)( (int)m_RegCurrentCandidates.size() - 2) ||
 			(m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX &&
 				(BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX +
 					(m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) *
 					NUM_SHOW_CANDIDATE_MULTIPLE)
-				>= m_RegCurrentCandidates.size() - 2)
+				>= (int)((int)m_RegCurrentCandidates.size() - 2))
 			) {
 			m_RegCurrentShowCandidateIndex = 0;//‚Æ‚è‚ ‚¦‚¸Å‰‚É–ß‚·
 			//return S_OK;
@@ -177,15 +177,14 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 {
 	if (key == L'q') {
-		if (_pComposition && m_currentInputKana.length() > 0) {
-			if (!m_isRegiteringNewWord) {
-				_ConvertToKatakana(m_currentInputKana);
-				_Output(pic, m_currentInputKana, TRUE);
-			}
-			else {
-				_ConvertToKatakana(m_RegInputDetermined);
-				_Output(pic, m_RegInputDetermined, TRUE);
-			}
+		if (_pComposition && m_currentInputKana.length() > 0 && !m_isRegiteringNewWord) {
+			_ConvertToKatakana(m_currentInputKana);
+			_Output(pic, m_currentInputKana, TRUE);
+			_CommitComposition(pic);
+		}
+		else if (m_isRegiteringNewWord && m_RegInputUndetermined.length() > 0) {
+			_ConvertToKatakana(m_RegInputUndetermined);
+			_Output(pic, m_RegInputUndetermined, TRUE);
 			_CommitComposition(pic);
 		}
 		else {
@@ -287,7 +286,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		}
 		else {
 			//‘—‚è‰¼–¼‚ğ‘Å‚Âê‡‚ÍCŠm’è‚ğ‚µ‚È‚¢
-			if (m_OkuriganaFirstChar != L'\0') {
+		//	if (m_OkuriganaFirstChar != L'\0') {
 				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
 				m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
 				//	_CommitComposition(pic);
@@ -309,7 +308,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				}
 				//_Output(pic, nextinsert, FALSE);
 				return S_OK;
-			}
+		//	}
 		}
 	}
 
