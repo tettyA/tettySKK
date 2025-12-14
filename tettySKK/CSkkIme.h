@@ -82,6 +82,9 @@ private:
 	HRESULT _HandleSpaceKey(ITfContext* pic, WCHAR key);
 	HRESULT _HandleCharKey(ITfContext* pic, WCHAR key);
 	
+	void _AddToTextonScreenAndUpdateCurrentInputKana(WCHAR key,std::wstring& textonScreen, std::wstring& baseKana, std::wstring& newkana,std::wstring&prevRomaji,size_t &prevRomajilen ,std::wstring& finalText);
+	void _AddToTextonScreenAndUpdateCurrentInputKana(WCHAR key,std::wstring& textOnscreen,std::wstring& finalText);
+	
 
 	TranslatetRomajiToKana m_RomajiToKanaTranslator;
 
@@ -98,6 +101,7 @@ private:
 
 	
 	void _CommitComposition(ITfContext* pic);
+	void _CommitAndStartComposition(ITfContext* pic, std::wstring nextinsert);
 	void _CommitRegComposition(ITfContext* pic);
 
 	CCandidateWindow* m_pCandidateWindow;

@@ -164,6 +164,10 @@ if exist "$(TargetPath)" move /Y "$(TargetPath)" "$(TargetPath).locked_old"
 notepad.exe</Command>
       <Message>テスト用に使用するメモ帳を強制終了させ，生成されるdllの名前を変更することによってリンカーがエラーを起こさないようにし，再びメモ帳を起動させます。</Message>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CCandidateWindow.h" />

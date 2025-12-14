@@ -29,7 +29,7 @@ DEFINE_GUID(GUID_LangBarItem_SkkIme ,
 	0xf1f04704, 0x463d, 0x4e47, 0x94, 0xdd, 0x72, 0x1d, 0x76, 0x49, 0xe2, 0x56);
 
 
-#define gtettySKK_IME_NAME L"Hyper Great tettySKK IME"
+#define gtettySKK_IME_NAME L"tettySKK"
 
 #define ToSmallAlphabet (L'a' - L'A')
 

@@ -51,6 +51,35 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 	*pfEaten = FALSE;
 
 	WCHAR key = (WCHAR)wParam;
+	if ((!(key >= L'A' && key <= L'Z')) && m_RomajiToKanaTranslator.GetBuffer() == L"n" && m_currentMode!=SKKMode::Hankaku) {
+		//撥音が残っており，かつ，ローマ字入力以外のキーが押された場合は，撥音を確定する
+
+		if (m_currentMode == SKKMode::Kakutei) {
+
+			std::wstring output;
+			if (m_CurrentKanaMode == KanaMode::Hiragana) {
+				output = L"ん";
+			}
+			else {
+				output = L"ン";
+			}
+			_Output(pic, output, TRUE);
+
+		}
+		else if (m_currentMode==SKKMode::Henkan) {
+			std::wstring  tempCompStr;
+			std::wstring finalText;
+			_GetCompositionString(tempCompStr);
+			// bufferが nn になるので，'ん'が追加されるはず.
+			_AddToTextonScreenAndUpdateCurrentInputKana(L'n', tempCompStr, finalText);
+
+			_Output(pic, finalText, FALSE);
+		}
+		
+
+		m_RomajiToKanaTranslator.Reset();
+	}
+
 	//変換の処理
 	if (_IsCtrlKeyPressed() && key == L'J') {
 		_ChangeCurrentMode(SKKMode::Kakutei);
@@ -99,7 +128,6 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					//TODO: 処理の共通化
 
 					if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
-
 						additionalStr = m_currentInputKana.substr(m_Gokan.length());
 					}
 					
@@ -261,7 +289,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 	}
 
 	if (key != VK_SHIFT) {
-		m_RomajiToKanaTranslator.Reset();
+//		m_RomajiToKanaTranslator.Reset();
 	}
 
 	return S_OK;

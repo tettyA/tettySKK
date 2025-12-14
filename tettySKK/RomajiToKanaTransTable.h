@@ -307,3 +307,6 @@ MAKETRANSTABLE(hye, ひぇ, ヒェ),
 { std::wstring(1,(wchar_t)VK_OEM_COMMA), {L"，", L"，"} },
 { std::wstring(1,(wchar_t)VK_OEM_PERIOD), {L"。", L"。"} },
 { std::wstring(1,(wchar_t)VK_OEM_MINUS), {L"ー", L"ー"} },
+
+{ std::wstring(1,(wchar_t)VK_OEM_4), {L"「", L"「"}},
+{ std::wstring(1,(wchar_t)VK_OEM_6), {L"」", L"」"}},

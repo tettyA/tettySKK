@@ -118,6 +118,7 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0'/* && compositionString.length() > m_Gokan.length()*/) {
 					//displayStr = 書   compositionString = 書k or 書く
 					displayStr += compositionString.substr(m_Gokan.length());
+					//__InsertText(pic, (L"[go:" + m_Gokan + L" co:"+compositionString+L"]").c_str(), TRUE);
 				}
 
 				__InsertTextMakeCandidateWindow(pic,
@@ -137,10 +138,11 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 		std::wstring compositionString;
 
 		_GetCompositionString(compositionString);
+
 		//送り仮名付きのとき
 		if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
 			//書k or 書く  -> k or く
-			additionalStr = compositionString.substr(compositionString.length() - 1);
+			additionalStr = m_currentInputKana.substr(m_Gokan.length());
 		}
 
 		m_CurrentShowCandidateIndex++;
@@ -263,7 +265,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			//送り仮名付きのとき
 			if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
 				//書k or 書く  -> k or く
-				additionalStr = compositionString.substr(compositionString.length() - 1);
+				additionalStr = m_currentInputKana.substr(m_Gokan.length());
 			}
 			m_CurrentShowCandidateIndex = max(0, (int)m_CurrentShowCandidateIndex - 1);
 
@@ -284,56 +286,30 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			//TODO: ASDFJKL を打ち込む時に，それ以外のものが打ち込まれたらCandidates[0]で確定	
 		}
 		else {
-			//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
-			m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
-			//	_CommitComposition(pic);
+			//送り仮名を打つ場合は，確定をしない
+			if (m_OkuriganaFirstChar != L'\0') {
+				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
+				m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
+				//	_CommitComposition(pic);
 
-			std::wstring nextChar(1, key);
-			std::wstring newxtKana;
-			std::wstring nextinsert;
-			m_RomajiToKanaTranslator.Reset();
-			if (m_RomajiToKanaTranslator.Translate(key, newxtKana, m_CurrentKanaMode)) {
-				nextinsert = newxtKana;
-			}
-			else {
-				//変換に達していない場合は，バッファをそのまま表示
-				nextinsert = m_RomajiToKanaTranslator.GetBuffer();
-			}
-			if (_pComposition) {
-			//	nextinsert = nextChar;
-				CShiftStartEditSession* pEditSession =
-					new CShiftStartEditSession(this, _pComposition, pic, nextinsert, _clientId);
-
-
-				HRESULT hr;
-				pic->RequestEditSession(
-					_clientId,
-					pEditSession,
-					TF_ES_READWRITE | TF_ES_SYNC,
-					&hr);
-
-				pEditSession->Release();
-
-				//処理の共通化(_CommitCompositionの一部を関数化)
-				if (m_pCandidateWindow->IsWindowExists()) {
-					m_pCandidateWindow->HideWindow();
+				std::wstring nextChar(1, key);
+				std::wstring newxtKana;
+				std::wstring nextinsert;
+				m_RomajiToKanaTranslator.Reset();
+				if (m_RomajiToKanaTranslator.Translate(key, newxtKana, m_CurrentKanaMode)) {
+					nextinsert = newxtKana;
 				}
-
-				if (m_isRegiteringNewWord) {
-					m_RegCurrentCandidates.clear();
-					m_RegCurrentShowCandidateIndex = 0;
+				else {
+					//変換に達していない場合は，バッファをそのまま表示
+					nextinsert = m_RomajiToKanaTranslator.GetBuffer();
 				}
-				m_CurrentCandidates.clear();
-				m_CurrentShowCandidateIndex = 0;
-				//m_RomajiToKanaTranslator.Reset();
-				if (!_IsShiftKeyPressed()) {
-					_ChangeCurrentMode(SKKMode::Kakutei);
+				if (_pComposition) {
+					//	nextinsert = nextChar;
+					_CommitAndStartComposition(pic, nextinsert);
 				}
-				m_Gokan = L"";
-				m_OkuriganaFirstChar = L'\0';
+				//_Output(pic, nextinsert, FALSE);
+				return S_OK;
 			}
-			//_Output(pic, nextinsert, FALSE);
-			return S_OK;
 		}
 	}
 
@@ -491,21 +467,14 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		std::wstring textonScreen = L"";
 		_GetCompositionString(textonScreen);
 
-		//前回のローマ字変換バッファ長さを取得 ex: m = 1
-		size_t prevRomajilen = m_RomajiToKanaTranslator.GetBuffer().length();
-		std::wstring prevRomaji = m_RomajiToKanaTranslator.GetBuffer();
-
-		//新しいキーを変換  ex: m + a = ま
+		std::wstring baseKana;
 		std::wstring newkana;
-		m_RomajiToKanaTranslator.Translate(key, newkana, m_CurrentKanaMode);
-		
-		//今の画面[しm] - ローマ字[m] = ひらがな確定済部分[し]
-		std::wstring baseKana = textonScreen.substr(0, textonScreen.length() - prevRomajilen);
+		size_t prevRomajilen = 0;
+		std::wstring finalText;
+		std::wstring prevRomaji;
 
-		//ひらがな確定済部分[し] + 新かな[ま] + 新ローマ字バッファ[]
-		std::wstring finalText = baseKana + newkana + m_RomajiToKanaTranslator.GetBuffer();
+		_AddToTextonScreenAndUpdateCurrentInputKana(key, textonScreen, baseKana, newkana, prevRomaji, prevRomajilen, finalText);
 
-		m_currentInputKana = baseKana + newkana;
 
 		_Output(pic, finalText, FALSE);
 
@@ -526,7 +495,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				if (prevRomajilen >= 1) {
 					m_OkuriganaFirstChar = prevRomaji[0];
 				}
-				if ((newkana == L"ん" && m_CurrentKanaMode == KanaMode::Hiragana) ||
+				/*if ((newkana == L"ん" && m_CurrentKanaMode == KanaMode::Hiragana) ||
 					(newkana == L"ン" && m_CurrentKanaMode == KanaMode::Katakana)) {
 					m_Gokan += newkana;
 					m_OkuriganaFirstChar = key;// 非n に戻す
@@ -536,7 +505,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 					m_currentInputKana = finalText;
 
 				}
-				
+				*/
 
 				//__InsertText(pic, (L"[Debug:" + std::wstring(1, m_OkuriganaFirstChar) + L"]").c_str(), TRUE);
 			}
@@ -546,8 +515,27 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		//送り仮名が1文字以上指定された場合，確定処理  
 		if (m_OkuriganaFirstChar != L'\0' && !m_Gokan.empty() &&
 			m_currentInputKana.length() - m_Gokan.length() >= 1) {
-			_HandleSpaceKey(pic, VK_SPACE);
-
+			//	__InsertText(pic, L"[okuri]", TRUE);
+			if (
+				(
+					(
+						(newkana == L"っ" && m_CurrentKanaMode == KanaMode::Hiragana) ||
+						(newkana == L"ッ" && m_CurrentKanaMode == KanaMode::Katakana)
+					) &&
+					m_currentInputKana.length() - m_Gokan.length() >= 1
+				 )
+				) {
+				//"っ" が入力される時は一回待つ
+			}
+			else {
+			//	__InsertText(pic, (L"[newkana:" + newkana + L",baseKana:" + baseKana + L"]").c_str(), TRUE);
+				if (m_isRegiteringNewWord) {
+					_HandleRegSpaceKey(pic, VK_SPACE);
+				}
+				else {
+					_HandleSpaceKey(pic, VK_SPACE);
+				}
+			}
 			return S_OK;
 		}
 
@@ -588,3 +576,38 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 
 	return S_OK;
 }
+
+void CSkkIme::_AddToTextonScreenAndUpdateCurrentInputKana(WCHAR key, std::wstring& textonScreen, std::wstring& baseKana, std::wstring& newkana, std::wstring& prevRomaji, size_t& prevRomajilen, std::wstring& finalText)
+{
+	//前回のローマ字変換バッファ長さを取得 ex: m = 1
+	//size_t 
+	prevRomajilen = m_RomajiToKanaTranslator.GetBuffer().length();
+	
+	//std::wstring
+		prevRomaji = m_RomajiToKanaTranslator.GetBuffer();
+
+	//新しいキーを変換  ex: m + a = ま
+	//std::wstring newkana;
+	m_RomajiToKanaTranslator.Translate(key, newkana, m_CurrentKanaMode);
+
+	//今の画面[しm] - ローマ字[m] = ひらがな確定済部分[し]
+	//std::wstring 
+		baseKana = textonScreen.substr(0, textonScreen.length() - prevRomajilen);
+
+	//ひらがな確定済部分[し] + 新かな[ま] + 新ローマ字バッファ[]
+	//std::wstring
+	finalText = baseKana + newkana + m_RomajiToKanaTranslator.GetBuffer();
+
+	m_currentInputKana = baseKana + newkana;
+}
+
+void CSkkIme::_AddToTextonScreenAndUpdateCurrentInputKana(WCHAR key,std::wstring& textOnscreen,std::wstring & finalText)
+{
+	std::wstring baseKana;
+	std::wstring newkana;
+	size_t prevRomajilen = 0;
+	//std::wstring finalText;
+	std::wstring prevRomaji;
+	_AddToTextonScreenAndUpdateCurrentInputKana(key, textOnscreen, baseKana, newkana, prevRomaji, prevRomajilen, finalText);
+}
+

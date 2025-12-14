@@ -14,6 +14,7 @@ class TranslatetRomajiToKana {
 public:
 	__declspec(noinline) TranslatetRomajiToKana() {
 		m_RomajiToKana = {
+
 #include "RomajiToKanaTransTable.h"
 
 		};

@@ -257,6 +257,40 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 	return;
 }
 
+void CSkkIme::_CommitAndStartComposition(ITfContext* pic,std::wstring nextinsert)
+{
+	CShiftStartEditSession* pEditSession =
+		new CShiftStartEditSession(this, _pComposition, pic, nextinsert, _clientId);
+
+
+	HRESULT hr;
+	pic->RequestEditSession(
+		_clientId,
+		pEditSession,
+		TF_ES_READWRITE | TF_ES_SYNC,
+		&hr);
+
+	pEditSession->Release();
+
+	//ˆ—‚Ì‹¤’Ê‰»(_CommitComposition‚Ìˆê•”‚ðŠÖ”‰»)
+	if (m_pCandidateWindow->IsWindowExists()) {
+		m_pCandidateWindow->HideWindow();
+	}
+
+	if (m_isRegiteringNewWord) {
+		m_RegCurrentCandidates.clear();
+		m_RegCurrentShowCandidateIndex = 0;
+	}
+	m_CurrentCandidates.clear();
+	m_CurrentShowCandidateIndex = 0;
+	//m_RomajiToKanaTranslator.Reset();
+	if (!_IsShiftKeyPressed()) {
+		_ChangeCurrentMode(SKKMode::Kakutei);
+	}
+	m_Gokan = L"";
+	m_OkuriganaFirstChar = L'\0';
+}
+
 void CSkkIme::_CommitRegComposition(ITfContext* pic)
 {
 	m_RegCurrentCandidates.clear();
