@@ -567,22 +567,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		}
 
 		//•ÏŠ·—š—ð‚©‚ç‚Ì—\‘ª•ÏŠ·Œó•â•\Ž¦
-		if (!m_isRegiteringNewWord && m_CurrentCandidates.empty()) {
-
-			SKKCandidate predictionCandidate;
-			m_SKKDictionaly.GetPredictionCandidate(m_currentInputKana, predictionCandidate);
-
-			if (!predictionCandidate _Candidate.empty()) {
-				SKKCandidates predictionCandidateVec = { predictionCandidate };
-				m_pCandidateWindow->SetCandidates(predictionCandidateVec, 0, CANDIDATEWINDOW_MODE_PREDICT);
-				_UpDateCandidateWindowPosition(pic);
-			}
-			else {
-				if (m_pCandidateWindow->IsWindowExists()) {
-					m_pCandidateWindow->HideWindow();
-				}
-			}
-		}
+		_SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandidateWindowFromHistory(pic);
 
 	
 

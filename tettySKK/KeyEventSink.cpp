@@ -265,6 +265,13 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					}
 					else {
 						__InsertText(pic, currentCompStr.c_str(), FALSE);
+						if (currentCompStr.length() > 0) {
+							_SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandidateWindowFromHistory(pic);
+						}
+						else {
+							m_pCandidateWindow->MustHideWindow();
+							_CommitComposition(pic);
+						}
 					}
 				}
 				else {
@@ -272,6 +279,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				}
 			}
 			else {
+				m_pCandidateWindow->MustHideWindow();
 				_CommitComposition(pic);
 			}
 		//	m_RomajiToKanaTranslator.Reset();
@@ -465,6 +473,27 @@ void CSkkIme::_EndRegiterNewWord()
 	m_RegKey = L"";
 	m_RegCurrentCandidates.clear();
 	m_pCandidateWindow->MustHideWindow();
+}
+
+void CSkkIme::_SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandidateWindowFromHistory(ITfContext* pic)
+{
+	//•ÏŠ·—š—ð‚©‚ç‚Ì—\‘ª•ÏŠ·Œó•â•\Ž¦
+	if (!m_isRegiteringNewWord && m_CurrentCandidates.empty()) {
+
+		SKKCandidate predictionCandidate;
+		m_SKKDictionaly.GetPredictionCandidate(m_currentInputKana, predictionCandidate);
+
+		if (!predictionCandidate _Candidate.empty()) {
+			SKKCandidates predictionCandidateVec = { predictionCandidate };
+			m_pCandidateWindow->SetCandidates(predictionCandidateVec, 0, CANDIDATEWINDOW_MODE_PREDICT);
+			_UpDateCandidateWindowPosition(pic);
+		}
+		else {
+			if (m_pCandidateWindow->IsWindowExists()) {
+				m_pCandidateWindow->HideWindow();
+			}
+		}
+	}
 }
 
 

@@ -142,8 +142,7 @@ private:
 	void __FinishCandidateWindowShow();
 
 	void _EndRegiterNewWord();
-
-	
+	void _SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandidateWindowFromHistory(ITfContext* pic);
 };
 
 
