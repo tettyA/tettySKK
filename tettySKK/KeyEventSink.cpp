@@ -6,6 +6,8 @@
 #include "CCandidateWindow.h"
 #include <utility>
 
+#define __DEBUGOUTPUT(dbgstr) __InsertText(pic, (L"["+(dbgstr)+L"]").c_str(), TRUE)
+
 bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	WCHAR key = (WCHAR)wParam;
 	if (_IsCtrlKeyPressed() && key == L'J') {
@@ -51,7 +53,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 	*pfEaten = FALSE;
 
 	WCHAR key = (WCHAR)wParam;
-	if ((!(key >= L'A' && key <= L'Z')) && m_RomajiToKanaTranslator.GetBuffer() == L"n" && m_currentMode!=SKKMode::Hankaku) {
+	if (((key < L'A' || key > L'Z')) && m_RomajiToKanaTranslator.GetBuffer() == L"n" && m_currentMode!=SKKMode::Hankaku) {
 		//撥音が残っており，かつ，ローマ字入力以外のキーが押された場合は，撥音を確定する
 
 		if (m_currentMode == SKKMode::Kakutei) {
@@ -78,6 +80,43 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		
 
 		m_RomajiToKanaTranslator.Reset();
+	}
+	
+	if (m_RomajiToKanaTranslator.isMustNOTExecuteKigou(key) && m_currentMode != SKKMode::Hankaku) {
+		//下については，後で処理するのでOK
+		if (
+			//特定の条件下のピリオドは除く(ピリオドを押すと，第一優先候補を確定したいため)
+			!(
+				(!m_isRegiteringNewWord && m_currentMode == SKKMode::Henkan && m_CurrentCandidates.empty() &&
+					key == VK_OEM_PERIOD)
+
+				)
+			) {
+
+
+			//約物の処理
+
+			*pfEaten = TRUE;
+			std::wstring compStr;
+			_GetCompositionString(compStr);
+			//約物は即変換(但し，セミコロンやEnter,Backspaceなどのものは除く)
+			std::wstring kigou; //= m_RomajiToKanaTranslator.GetBuffer();
+			m_RomajiToKanaTranslator.TranslateKigou(key, kigou);
+
+			std::wstring output = compStr + kigou;
+			if (//変換中の ー は確定させない。
+				(m_currentMode == SKKMode::Henkan && key == VK_OEM_MINUS)) {
+				_Output(pic, output, FALSE);
+			}
+			else {
+				m_RomajiToKanaTranslator.Reset();
+				_Output(pic, output, TRUE);
+				_CommitComposition(pic);
+			}
+
+
+			return S_OK;
+		}
 	}
 
 	//変換の処理
@@ -195,10 +234,17 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		}
 	}
 	else if (key == VK_BACK) {
+		if (m_RomajiToKanaTranslator.GetBuffer().length() > 0) {
+			//__DEBUGOUTPUT(L"1:"+m_RomajiToKanaTranslator.GetBuffer());
+			m_RomajiToKanaTranslator.PopBackBuffer();
+			*pfEaten = TRUE;
+			//__DEBUGOUTPUT(L"2:" + m_RomajiToKanaTranslator.GetBuffer());
+
+		}
 		if (m_isRegiteringNewWord) {
 			//pass
 		}
-		else if (_pComposition && m_currentMode == SKKMode::Henkan) {
+		else if (_pComposition) {
 			*pfEaten = TRUE;
 
 
@@ -207,14 +253,19 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			_GetCompositionString(currentCompStr);
 			if (currentCompStr.length() > 0) {
 				currentCompStr.pop_back();
-				m_currentInputKana.pop_back();
-				if (m_CurrentCandidates.size() > 0) {
-					__InsertText(pic, currentCompStr.c_str(), TRUE);
-					if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX && m_CurrentCandidates.size() > m_CurrentShowCandidateIndex) {
-						m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
-						//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
+				if (m_currentMode == SKKMode::Henkan) {
+					m_currentInputKana.pop_back();
+					if (m_CurrentCandidates.size() > 0) {
+						__InsertText(pic, currentCompStr.c_str(), TRUE);
+						if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX && m_CurrentCandidates.size() > m_CurrentShowCandidateIndex) {
+							m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
+							//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
+						}
+						_CommitComposition(pic);
 					}
-					_CommitComposition(pic);
+					else {
+						__InsertText(pic, currentCompStr.c_str(), FALSE);
+					}
 				}
 				else {
 					__InsertText(pic, currentCompStr.c_str(), FALSE);
@@ -223,9 +274,12 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			else {
 				_CommitComposition(pic);
 			}
-			m_RomajiToKanaTranslator.Reset();
-
+		//	m_RomajiToKanaTranslator.Reset();
+			
 			return hr;
+		}
+		if (!m_isRegiteringNewWord) {
+			return S_OK;
 		}
 	}
 	else if (!m_isRegiteringNewWord && m_currentMode == SKKMode::Henkan && m_CurrentCandidates.empty() &&
@@ -283,7 +337,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				}
 			}
 
-			m_RomajiToKanaTranslator.Reset();
+		//	m_RomajiToKanaTranslator.Reset();
 			return S_OK;
 		}
 	}
@@ -390,6 +444,17 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 	SKKCandidates regKeyCandidate = { {L"",regKey},{L"",L""}};
 	m_pCandidateWindow->SetCandidates(regKeyCandidate, 0, CANDIDATEWINDOW_MODE_REGWORD);
 	_UpDateCandidateWindowPosition(pic);
+}
+
+void CSkkIme::__FinishCandidateWindowShow()
+{
+	m_pCandidateWindow->MustHideWindow();
+	if (m_isRegiteringNewWord) {
+		m_RegCurrentCandidates.clear();
+		m_RegCurrentShowCandidateIndex = 0;
+	}
+	m_CurrentCandidates.clear();
+	m_CurrentShowCandidateIndex = 0;
 }
 
 void CSkkIme::_EndRegiterNewWord()

@@ -179,6 +179,7 @@ notepad.exe</Command>
     <ClInclude Include="CSkkIme.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Global.h" />
+    <ClInclude Include="KigouToKanaTransTable.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SKKDictionaly.h" />

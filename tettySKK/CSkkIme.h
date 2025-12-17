@@ -139,7 +139,7 @@ private:
 	void __InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _multiIntsertText,const WCHAR* _singleInsertText);
 
 
-
+	void __FinishCandidateWindowShow();
 
 	void _EndRegiterNewWord();
 

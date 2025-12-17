@@ -9,6 +9,7 @@
 #define TrR2K_INDEX_KATAKANA 1
 
 #define MAKETRANSTABLE(romaji,hiragana,katakana) {L#romaji, {L#hiragana, L#katakana}}
+#define MAKETKIGOUTRANSTABLE(keycode,jpnsymbol) { keycode, L#jpnsymbol}
 
 class TranslatetRomajiToKana {
 public:
@@ -19,8 +20,23 @@ public:
 
 		};
 
+		m_KigouToJpnKigou = {
+			#include "KigouToKanaTransTable.h"
+		
+		};
 	}
 	~TranslatetRomajiToKana() {
+	}
+
+	//true: ïœä∑ê¨å˜  false: ïœä∑Ç…íBÇµÇƒÇ¢Ç»Ç¢
+	ATL_NOINLINE bool TranslateKigou(WCHAR key, std::wstring& output) {
+		output.clear();
+		auto it = m_KigouToJpnKigou.find((int)key);
+		if (it != m_KigouToJpnKigou.end()) {
+			output =it->second;
+			return true;
+		}
+		return false;
 	}
 
 	//true: ïœä∑ê¨å˜  false: ïœä∑Ç…íBÇµÇƒÇ¢Ç»Ç¢ 
@@ -44,12 +60,21 @@ public:
 			}
 		}
 
-		if (key == VK_OEM_COMMA + ToSmallAlphabet || key == VK_OEM_PERIOD + ToSmallAlphabet || key == VK_OEM_MINUS + ToSmallAlphabet) {
+		/*if (key == VK_OEM_COMMA + ToSmallAlphabet || key == VK_OEM_PERIOD + ToSmallAlphabet || key == VK_OEM_MINUS + ToSmallAlphabet) {
 			//ãLçÜÇÕë¶ïœä∑
 			output = m_buffer;
 			output += m_RomajiToKana[std::wstring(1, (wchar_t)(key-(ToSmallAlphabet)))][mode == KanaMode::Hiragana ? TrR2K_INDEX_HIRAGANA : TrR2K_INDEX_KATAKANA];
 			m_buffer.clear();
 			return true;
+		}*/
+		{
+			auto it = m_KigouToJpnKigou.find((int)key);
+			if ((key < L'A' || key > L'Z') && (it != m_KigouToJpnKigou.end())) {
+				output = m_buffer;
+				output += it->second[key];
+				m_buffer.clear();
+				return true;
+			}
 		}
 
 		m_buffer += key;
@@ -75,12 +100,26 @@ public:
 	std::wstring GetBuffer() const {
 		return m_buffer;
 	}
+	
+	bool isMustNOTExecuteKigou(WCHAR key) const {
+		auto it = m_KigouToJpnKigou.find((int)key);
+		if ((key < L'A' || key > L'Z') && (it != m_KigouToJpnKigou.end())) {
+			return true;
+		}
+		return false;
+	}
 
 	void Reset() {
 		m_buffer.clear();
+	}
+	void PopBackBuffer() {
+		if (!m_buffer.empty()) {
+			m_buffer.pop_back();
+		}
 	}
 
 private:
 	std::wstring m_buffer;
 	std::unordered_map<std::wstring, std::vector<std::wstring>> m_RomajiToKana;
+	std::unordered_map<int, std::wstring>m_KigouToJpnKigou;
 };

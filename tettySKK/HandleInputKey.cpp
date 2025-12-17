@@ -82,6 +82,8 @@ HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 
 		return S_OK;
 	}
+
+	return S_OK;
 }
 
 HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
@@ -171,11 +173,12 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 
 		return S_OK;
 	}
-
+	return S_OK;
 }
 
 HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 {
+
 	if (key == L'q') {
 		if (_pComposition && m_currentInputKana.length() > 0 && !m_isRegiteringNewWord) {
 			_ConvertToKatakana(m_currentInputKana);
@@ -241,6 +244,13 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		//TODO:  ˆ—‚Ì‹¤’Ê‰»
 
 		if (m_isRegiteringNewWord) {
+			if (m_RegCurrentShowCandidateIndex == 0) {
+				__InsertText(pic, (m_RegKey).c_str(), FALSE);
+				m_RegCurrentCandidates.clear();
+				m_RegCurrentShowCandidateIndex = 0;
+
+				return S_OK;
+			}
 			//std::wstring additionalStr = L"";
 			std::wstring compositionString;
 			_GetCompositionString(compositionString);
@@ -250,14 +260,20 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			//	//‘k or ‘‚­  -> k or ‚­
 				//additionalStr = compositionString.substr(compositionString.length() - 1);
 		//	}
+			
 			m_RegCurrentShowCandidateIndex = max(0, (int)m_RegCurrentShowCandidateIndex - 1);
-
+			
 			__InsertTextMakeCandidateWindow(pic,
 				(m_RegCurrentCandidates[m_RegCurrentShowCandidateIndex]_Candidate ).c_str(),
 				(m_RegKey).c_str()
 			);
 		}
 		else {
+			if (m_CurrentShowCandidateIndex == 0) {
+				__InsertText(pic, m_currentInputKana.c_str(), FALSE);
+				__FinishCandidateWindowShow();
+				return S_OK;
+			}
 			std::wstring additionalStr = L"";
 			std::wstring compositionString;
 			_GetCompositionString(compositionString);
@@ -505,7 +521,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 
 				}
 				*/
-
+				
 				//__InsertText(pic, (L"[Debug:" + std::wstring(1, m_OkuriganaFirstChar) + L"]").c_str(), TRUE);
 			}
 

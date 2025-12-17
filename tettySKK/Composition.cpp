@@ -239,16 +239,18 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 		_pComposition = nullptr;
 
 	}
-	if (m_pCandidateWindow->IsWindowExists() ) {
-		m_pCandidateWindow->HideWindow();
-	}
+	__FinishCandidateWindowShow();
 
-	if (m_isRegiteringNewWord) {
-		m_RegCurrentCandidates.clear();
-		m_RegCurrentShowCandidateIndex = 0;
-		}
-	m_CurrentCandidates.clear();
-	m_CurrentShowCandidateIndex = 0;
+	//if (m_pCandidateWindow->IsWindowExists() ) {
+	//	m_pCandidateWindow->HideWindow();
+	//}
+
+	//if (m_isRegiteringNewWord) {
+	//	m_RegCurrentCandidates.clear();
+	//	m_RegCurrentShowCandidateIndex = 0;
+	//	}
+	//m_CurrentCandidates.clear();
+	//m_CurrentShowCandidateIndex = 0;
 	m_RomajiToKanaTranslator.Reset();
 	_ChangeCurrentMode(SKKMode::Kakutei);
 
