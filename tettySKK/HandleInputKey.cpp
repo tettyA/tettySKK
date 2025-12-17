@@ -5,7 +5,7 @@
 #include "CCandidateWindow.h"
 
 #include "CInsertTextEditSession.h"
-
+#define __DEBUGOUTPUT(dbgstr) __InsertText(pic, (L"["+(dbgstr)+L"]").c_str(), TRUE)
 HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 {
 	if (m_currentMode != SKKMode::Henkan) {
@@ -311,8 +311,16 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				std::wstring newxtKana;
 				std::wstring nextinsert;
 				m_RomajiToKanaTranslator.Reset();
+			//	__DEBUGOUTPUT(L"next:" + nextChar);
 				if (m_RomajiToKanaTranslator.Translate(key, newxtKana, m_CurrentKanaMode)) {
 					nextinsert = newxtKana;
+					std::wstring tmp;
+					_GetCompositionString(tmp);
+					tmp += nextinsert;
+					_Output(pic, tmp, TRUE);
+					_CommitComposition(pic);
+
+					return S_OK;
 				}
 				else {
 					//変換に達していない場合は，バッファをそのまま表示
@@ -545,10 +553,14 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			else {
 			//	__InsertText(pic, (L"[newkana:" + newkana + L",baseKana:" + baseKana + L"]").c_str(), TRUE);
 				if (m_isRegiteringNewWord) {
-					_HandleRegSpaceKey(pic, VK_SPACE);
+					if (m_RegCurrentCandidates.empty()) {
+						_HandleRegSpaceKey(pic, VK_SPACE);
+					}
 				}
 				else {
-					_HandleSpaceKey(pic, VK_SPACE);
+					if (m_CurrentCandidates.empty()) {
+						_HandleSpaceKey(pic, VK_SPACE);
+					}
 				}
 			}
 			return S_OK;
