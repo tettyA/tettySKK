@@ -543,7 +543,9 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				(
 					(
 						(newkana == L"‚Á" && m_CurrentKanaMode == KanaMode::Hiragana) ||
-						(newkana == L"ƒb" && m_CurrentKanaMode == KanaMode::Katakana)
+						(newkana == L"ƒb" && m_CurrentKanaMode == KanaMode::Katakana) ||
+						(newkana == L"‚ñ" && m_CurrentKanaMode == KanaMode::Hiragana) ||
+						(newkana == L"ƒ“" && m_CurrentKanaMode == KanaMode::Katakana)
 					) &&
 					m_currentInputKana.length() - m_Gokan.length() >= 1
 				 )

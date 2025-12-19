@@ -134,6 +134,7 @@ BOOL CSKKDictionaly::SaveDictionaryToUserFile(const std::wstring& filepath) cons
 
 void CSKKDictionaly::GetPredictionCandidate(std::wstring& prefix, SKKCandidate& candidate) const
 {
+	
 	_ConvertToHiragana(prefix);
 	candidate = SKKCandidate(L"", L"");
 	for (const auto& e : m_history)
