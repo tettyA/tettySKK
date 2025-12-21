@@ -304,9 +304,13 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			//ëóÇËâºñºÇë≈Ç¬èÍçáÇÕÅCämíËÇÇµÇ»Ç¢
 		//	if (m_OkuriganaFirstChar != L'\0') {
 				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
-				m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
-				//	_CommitComposition(pic);
-				
+			{
+				std::wstring searchKey = m_currentInputKana;
+				if (m_OkuriganaFirstChar != L'\0') {
+					searchKey= m_Gokan + m_OkuriganaFirstChar;
+				}
+				m_SKKDictionaly.AddHistoryCandidate(searchKey, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
+			}
 				std::wstring nextChar(1, key);
 				std::wstring newxtKana;
 				std::wstring nextinsert;
@@ -417,7 +421,14 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				}
 
 				//__InsertText(pic, (L"[debug]"), FALSE);
-				m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]);
+				{
+					std::wstring searchKey = m_currentInputKana;
+					if (m_OkuriganaFirstChar != L'\0') {
+						searchKey = m_Gokan + m_OkuriganaFirstChar;
+					}
+					m_SKKDictionaly.AddHistoryCandidate(searchKey, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
+				}
+				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]);
 
 
 				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
