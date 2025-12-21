@@ -306,7 +306,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
 				m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
 				//	_CommitComposition(pic);
-
+				
 				std::wstring nextChar(1, key);
 				std::wstring newxtKana;
 				std::wstring nextinsert;
@@ -560,6 +560,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 					}
 				}
 				else {
+					
 					if (m_CurrentCandidates.empty()) {
 						_HandleSpaceKey(pic, VK_SPACE);
 					}

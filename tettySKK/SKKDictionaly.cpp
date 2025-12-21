@@ -20,6 +20,31 @@ CSKKDictionaly::~CSKKDictionaly()
 void CSKKDictionaly::GetCandidates(std::wstring& key, SKKCandidates& candidates) const
 {
 	_ConvertToHiragana(key);
+
+
+	// ---------------------------------------
+
+	/*for (const auto& e : m_history)
+	{
+		if (e.starts_with(key)) {
+			auto uit = m_userdictionary.find(e);
+			if (uit != m_userdictionary.end() && !uit->second.empty())
+			{
+				candidate = uit->second[0];
+				return;
+			}
+			else {
+				auto it = m_dictionary.find(e);
+				if (it != m_dictionary.end() && !it->second.empty()) {
+					candidate = it->second[0];
+					return;
+				}
+			}
+			return;
+		}
+	}*/
+
+	// ---------------------------------------
 	auto it = m_dictionary.find(key);
 	if (it != m_dictionary.end()) {
 		candidates = it->second;

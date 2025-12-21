@@ -156,7 +156,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			else if (m_RegInputDetermined.empty()) {
 				//文字列がないときは，キャンセル扱いにする
 				//候補がある時は，最後の候補ウィンドウを，なければ表示しない
-				if (m_CurrentCandidates.size() > 0) {
+				if (m_CurrentCandidates.size() > 0 && m_CurrentShowCandidateIndex > 0) {
 					m_CurrentShowCandidateIndex--;
 
 					m_isRegiteringNewWord = FALSE;
@@ -169,7 +169,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
 						additionalStr = m_currentInputKana.substr(m_Gokan.length());
 					}
-					
+
 					_ChangeCurrentMode(SKKMode::Henkan);
 
 					__InsertTextMakeCandidateWindow(pic,
@@ -479,7 +479,7 @@ void CSkkIme::_SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandi
 {
 	//変換履歴からの予測変換候補表示
 	if (!m_isRegiteringNewWord && m_CurrentCandidates.empty()) {
-
+		
 		SKKCandidate predictionCandidate;
 		m_SKKDictionaly.GetPredictionCandidate(m_currentInputKana, predictionCandidate);
 

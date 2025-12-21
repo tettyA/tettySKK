@@ -183,7 +183,9 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 		x += strsize.cx;
 
 		size_t clen = m_Candidates.size();
-
+		//if (clen - 2 <= 0) {
+		//	return;
+		//}
 		if (!m_Candidates[clen - 2]_Candidate.empty()) {
 			SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
 			TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[clen - 2]_Candidate));
@@ -238,10 +240,13 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 
 void CCandidateWindow::__PaintSingleMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize)
 {
+	if (m_CurrentPageIndex >= m_Candidates.size())return;
+
 	int x = _bgnx;
 	int y = _bgny;
 	SIZE strsize;
 	SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
+	
 	TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate));
 	GetTextExtentPoint(hdc, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate + L" "), &strsize);
 	x += strsize.cx;
