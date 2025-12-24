@@ -241,10 +241,12 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		}
 	}
 	else if (key == VK_BACK) {
+		bool isRomajiBufferDeleted = false;
 		if (m_RomajiToKanaTranslator.GetBuffer().length() > 0) {
 			//__DEBUGOUTPUT(L"1:"+m_RomajiToKanaTranslator.GetBuffer());
 			m_RomajiToKanaTranslator.PopBackBuffer();
 			*pfEaten = TRUE;
+			isRomajiBufferDeleted = true;
 			//__DEBUGOUTPUT(L"2:" + m_RomajiToKanaTranslator.GetBuffer());
 
 		}
@@ -261,7 +263,9 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			if (currentCompStr.length() > 0) {
 				currentCompStr.pop_back();
 				if (m_currentMode == SKKMode::Henkan) {
-					m_currentInputKana.pop_back();
+					if (!isRomajiBufferDeleted) {
+						m_currentInputKana.pop_back();
+					}
 					if (m_CurrentCandidates.size() > 0) {
 						__InsertText(pic, currentCompStr.c_str(), TRUE);
 						if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX && m_CurrentCandidates.size() > m_CurrentShowCandidateIndex) {

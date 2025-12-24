@@ -419,6 +419,7 @@ namespace SKKSetting
         {
             romajiToKanaSettings=new List<RomajiToKanaSetting>();
 //TODO: ‚±‚±‚É–{“–‚Ì’l‚ğ’¼‚ÉÚ‚¹‚éB
+
             using (StreamReader sr = new StreamReader(@"hogehoge", Encoding.GetEncoding("shift_jis")))
             {
                 while (!sr.EndOfStream)
