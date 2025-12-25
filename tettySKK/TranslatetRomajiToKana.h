@@ -27,7 +27,7 @@ public:
 	}
 	~TranslatetRomajiToKana() {
 	}
-
+	
 	//true: •ÏŠ·¬Œ÷  false: •ÏŠ·‚É’B‚µ‚Ä‚¢‚È‚¢
 	ATL_NOINLINE bool TranslateKigou(WCHAR key, std::wstring& output) {
 		output.clear();

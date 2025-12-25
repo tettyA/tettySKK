@@ -88,7 +88,7 @@ void CCandidateWindow::ShowWindow(int x, int y)
 	if (!IsWindowExists()) {
 		return;
 	}
-	SetWindowPos(m_hWnd, HWND_TOPMOST, x, y, 0, 0, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE | SWP_SHOWWINDOW);
+	SetWindowPos(m_hWnd, HWND_TOPMOST, x, y, 0, 0, SWP_NOACTIVATE/* | SWP_NOZORDER */| SWP_NOSIZE | SWP_SHOWWINDOW);
 	InvalidateRect(m_hWnd, NULL, TRUE);
 
 	UpdateWindow(m_hWnd);
@@ -168,11 +168,11 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 ///	y += 12;
 	if (m_Mode == CANDIDATEWINDOW_MODE_SINGLE) {
 		__PaintSingleMode(hdc, x, y, strsize);
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2+5, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2+5, strsize.cy + 2, SWP_NOACTIVATE /*| SWP_NOZORDER*/ | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	}
 	else if (m_Mode == CANDIDATEWINDOW_MODE_MULTIPLE) {
 		__PaintMultipleMode(hdc, x, y, strsize);
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2+5, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2+5, strsize.cy + 2, SWP_NOACTIVATE /*| SWP_NOZORDER */| SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	}
 	else if ((m_Mode & CANDIDATEWINDOW_MODE_REGWORD) > 0) {
 		//ìoò^åÍÉÇÅ[Éh
@@ -227,12 +227,12 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 		}
 
 
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, x + 2, y + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, x + 2, y + 2, SWP_NOACTIVATE  | /*SWP_NOZORDER | */ SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	}
 	else if (m_Mode & CANDIDATEWINDOW_MODE_PREDICT) {
 		//ó\ë™ïœä∑ÉÇÅ[Éh
 		__PaintPredictMode(hdc, x, y, strsize);
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2 + 5, strsize.cy + 2, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2 + 5, strsize.cy + 2, SWP_NOACTIVATE  | /*SWP_NOZORDER | */ SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	}
 
 	

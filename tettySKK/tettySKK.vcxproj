@@ -161,12 +161,13 @@ notepad.exe</Command>
     <PreBuildEvent>
       <Command>taskkill /f /im notepad.exe
 if exist "$(TargetPath)" move /Y "$(TargetPath)" "$(TargetPath).locked_old"
-notepad.exe</Command>
+if exist "C:\Windows\System32\IME\tettySKK\$(TargetName)$(TargetExt)" move /Y "C:\Windows\System32\IME\tettySKK\$(TargetName)$(TargetExt)" "C:\Windows\System32\IME\tettySKK\$(TargetName)$(TargetExt).locked_old"
+</Command>
       <Message>テスト用に使用するメモ帳を強制終了させ，生成されるdllの名前を変更することによってリンカーがエラーを起こさないようにし，再びメモ帳を起動させます。</Message>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>move /Y "$(TargetPath)" "C:\Windows\System32\IME\tettySKK\$(TargetName)$(TargetExt) "
+notepad.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

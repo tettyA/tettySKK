@@ -95,7 +95,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 
 			//ñÒï®ÇÃèàóù
-
+			
 			*pfEaten = TRUE;
 			std::wstring compStr;
 			_GetCompositionString(compStr);
@@ -107,6 +107,12 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			if (//ïœä∑íÜÇÃ Å[ ÇÕämíËÇ≥ÇπÇ»Ç¢ÅB
 				(m_currentMode == SKKMode::Henkan && key == VK_OEM_MINUS)) {
 				_Output(pic, output, FALSE);
+				if (m_isRegiteringNewWord) {
+					m_RegInputUndetermined += kigou;
+				}
+				else {
+					m_currentInputKana += kigou;
+				}
 			}
 			else {
 				m_RomajiToKanaTranslator.Reset();
