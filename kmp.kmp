@@ -1,0 +1,428 @@
+- written by tettyあ
+- written by tettyA
+- Encode method: Shift JIS
+- エンコード方式:Shift JIS
+
+- ref
+- 参考
+- https:learn.microsoft.com/ja-jp/windows/win32/inputdev/virtual-key-codes
+
+@def
+- do not change following section
+- ！以下の文を変更してはいけない！
+
+-  Virtual Keys, Standard Set
+ 
+#!iddef : ?LBUTTON        : 0x01
+#!iddef : ?RBUTTON        : 0x02
+#!iddef : ?CANCEL         : 0x03
+#!iddef : ?MBUTTON        : 0x04 
+
+#!iddef : ?XBUTTON1       : 0x05  
+#!iddef : ?XBUTTON2       : 0x06  
+
+-  : 0x07 : reserved
+ 
+#!iddef : ?BACK           : 0x08
+#!iddef : ?TAB            : 0x09
+
+-  : 0x0A - : 0x0B : reserved
+ 
+#!iddef : ?CLEAR          : 0x0C
+#!iddef : ?RETURN         : 0x0D
+
+-  : 0x0E - : 0x0F : unassigned
+
+#!iddef : ?SHIFT          : 0x10
+#!iddef : ?CONTROL        : 0x11
+#!iddef : ?MENU           : 0x12
+#!iddef : ?PAUSE          : 0x13
+#!iddef : ?CAPITAL        : 0x14
+
+#!iddef : ?KANA           : 0x15
+#!iddef : ?HANGEUL        : 0x15
+#!iddef : ?HANGUL         : 0x15
+#!iddef : ?IME_ON         : 0x16
+#!iddef : ?JUNJA          : 0x17
+#!iddef : ?FINAL          : 0x18
+#!iddef : ?HANJA          : 0x19
+#!iddef : ?KANJI          : 0x19
+#!iddef : ?IME_OFF        : 0x1A
+
+#!iddef : ?ESCAPE         : 0x1B
+
+#!iddef : ?CONVERT        : 0x1C
+#!iddef : ?NONCONVERT     : 0x1D
+#!iddef : ?ACCEPT         : 0x1E
+#!iddef : ?MODECHANGE     : 0x1F
+
+#!iddef : ?SPACE          : 0x20
+#!iddef : ?PRIOR          : 0x21
+#!iddef : ?NEXT           : 0x22
+#!iddef : ?END            : 0x23
+#!iddef : ?HOME           : 0x24
+#!iddef : ?LEFT           : 0x25
+#!iddef : ?UP             : 0x26
+#!iddef : ?RIGHT          : 0x27
+#!iddef : ?DOWN           : 0x28
+#!iddef : ?SELECT         : 0x29
+#!iddef : ?PRINT          : 0x2A
+#!iddef : ?EXECUTE        : 0x2B
+#!iddef : ?SNAPSHOT       : 0x2C
+#!iddef : ?INSERT         : 0x2D
+#!iddef : ?DELETE         : 0x2E
+#!iddef : ?HELP           : 0x2F
+
+
+-  0 - 9 are the same as ASCII '0' - '9' (: 0x30 - : 0x39)
+-  : 0x3A - : 0x40 : unassigned
+-  A - Z are the same as ASCII 'A' - 'Z' (: 0x41 - : 0x5A)
+ 
+#!iddef : 0               : 0x30
+#!iddef : 1               : 0x31
+#!iddef : 2               : 0x32
+#!iddef : 3               : 0x33
+#!iddef : 4               : 0x34
+#!iddef : 5               : 0x35
+#!iddef : 6               : 0x36
+#!iddef : 7               : 0x37
+#!iddef : 8               : 0x38
+#!iddef : 9               : 0x39
+#!iddef : A               : 0x41
+#!iddef : B               : 0x42
+#!iddef : C               : 0x43
+#!iddef : D               : 0x44
+#!iddef : E               : 0x45
+#!iddef : F               : 0x46
+#!iddef : G               : 0x47
+#!iddef : H               : 0x48
+#!iddef : I               : 0x49
+#!iddef : J               : 0x4A
+#!iddef : K               : 0x4B
+#!iddef : L               : 0x4C
+#!iddef : M               : 0x4D
+#!iddef : N               : 0x4E
+#!iddef : O               : 0x4F
+#!iddef : P               : 0x50
+#!iddef : Q               : 0x51
+#!iddef : R               : 0x52
+#!iddef : S               : 0x53
+#!iddef : T               : 0x54
+#!iddef : U               : 0x55
+#!iddef : V               : 0x56
+#!iddef : W               : 0x57
+#!iddef : X               : 0x58
+#!iddef : Y               : 0x59
+#!iddef : Z               : 0x5A
+
+
+#!iddef : ?LWIN           : 0x5B
+#!iddef : ?RWIN           : 0x5C
+#!iddef : ?APPS           : 0x5D
+
+
+-  : 0x5E : reserved
+ 
+
+#!iddef : ?SLEEP          : 0x5F
+
+#!iddef : ?NUMPAD0        : 0x60
+#!iddef : ?NUMPAD1        : 0x61
+#!iddef : ?NUMPAD2        : 0x62
+#!iddef : ?NUMPAD3        : 0x63
+#!iddef : ?NUMPAD4        : 0x64
+#!iddef : ?NUMPAD5        : 0x65
+#!iddef : ?NUMPAD6        : 0x66
+#!iddef : ?NUMPAD7        : 0x67
+#!iddef : ?NUMPAD8        : 0x68
+#!iddef : ?NUMPAD9        : 0x69
+#!iddef : ?MULTIPLY       : 0x6A
+#!iddef : ?ADD            : 0x6B
+#!iddef : ?SEPARATOR      : 0x6C
+#!iddef : ?SUBTRACT       : 0x6D
+#!iddef : ?DECIMAL        : 0x6E
+#!iddef : ?DIVIDE         : 0x6F
+#!iddef : ?F1             : 0x70
+#!iddef : ?F2             : 0x71
+#!iddef : ?F3             : 0x72
+#!iddef : ?F4             : 0x73
+#!iddef : ?F5             : 0x74
+#!iddef : ?F6             : 0x75
+#!iddef : ?F7             : 0x76
+#!iddef : ?F8             : 0x77
+#!iddef : ?F9             : 0x78
+#!iddef : ?F10            : 0x79
+#!iddef : ?F11            : 0x7A
+#!iddef : ?F12            : 0x7B
+#!iddef : ?F13            : 0x7C
+#!iddef : ?F14            : 0x7D
+#!iddef : ?F15            : 0x7E
+#!iddef : ?F16            : 0x7F
+#!iddef : ?F17            : 0x80
+#!iddef : ?F18            : 0x81
+#!iddef : ?F19            : 0x82
+#!iddef : ?F20            : 0x83
+#!iddef : ?F21            : 0x84
+#!iddef : ?F22            : 0x85
+#!iddef : ?F23            : 0x86
+#!iddef : ?F24            : 0x87
+
+
+-  : 0x88 - : 0x8F : UI navigation
+ 
+
+#!iddef : ?NAVIGATION_VIEW     : 0x88
+#!iddef : ?NAVIGATION_MENU     : 0x89
+#!iddef : ?NAVIGATION_UP       : 0x8A
+#!iddef : ?NAVIGATION_DOWN     : 0x8B 
+#!iddef : ?NAVIGATION_LEFT     : 0x8C 
+#!iddef : ?NAVIGATION_RIGHT    : 0x8D 
+#!iddef : ?NAVIGATION_ACCEPT   : 0x8E 
+#!iddef : ?NAVIGATION_CANCEL   : 0x8F
+
+
+
+#!iddef : ?NUMLOCK        : 0x90
+#!iddef : ?SCROLL         : 0x91
+
+
+-  NEC PC-9800 kbd definitions
+- '=' key on numpad
+
+#!iddef : ?OEM_NEC_EQUAL  : 0x92  
+
+-  Fujitsu/OASYS kbd definitions
+
+#!iddef : ?OEM_FJ_JISHO   : 0x92
+#!iddef : ?OEM_FJ_MASSHOU : 0x93  
+#!iddef : ?OEM_FJ_TOUROKU : 0x94
+#!iddef : ?OEM_FJ_LOYA    : 0x95  
+#!iddef : ?OEM_FJ_ROYA    : 0x96  
+
+
+-  : 0x97 - : 0x9F : unassigned
+ 
+-  L* & R* - left and right Alt, Ctrl and Shift virtual keys.
+-  Used only as parameters to GetAsyncKeyState() and GetKeyState().
+-  No other API or message will distinguish left and right keys in this way.
+ 
+#!iddef : ?LSHIFT         : 0xA0
+#!iddef : ?RSHIFT         : 0xA1
+#!iddef : ?LCONTROL       : 0xA2
+#!iddef : ?RCONTROL       : 0xA3
+#!iddef : ?LMENU          : 0xA4
+#!iddef : ?RMENU          : 0xA5
+
+
+#!iddef : ?BROWSER_BACK        : 0xA6
+#!iddef : ?BROWSER_FORWARD     : 0xA7
+#!iddef : ?BROWSER_REFRESH     : 0xA8
+#!iddef : ?BROWSER_STOP        : 0xA9
+#!iddef : ?BROWSER_SEARCH      : 0xAA
+#!iddef : ?BROWSER_FAVORITES   : 0xAB
+#!iddef : ?BROWSER_HOME        : 0xAC
+
+#!iddef : ?VOLUME_MUTE         : 0xAD
+#!iddef : ?VOLUME_DOWN         : 0xAE
+#!iddef : ?VOLUME_UP           : 0xAF
+#!iddef : ?MEDIA_NEXT_TRACK    : 0xB0
+#!iddef : ?MEDIA_PREV_TRACK    : 0xB1
+#!iddef : ?MEDIA_STOP          : 0xB2
+#!iddef : ?MEDIA_PLAY_PAUSE    : 0xB3
+#!iddef : ?LAUNCH_MAIL         : 0xB4
+#!iddef : ?LAUNCH_MEDIA_SELECT : 0xB5
+#!iddef : ?LAUNCH_APP1         : 0xB6
+#!iddef : ?LAUNCH_APP2         : 0xB7
+
+
+
+
+-  : 0xB8 - : 0xB9 : reserved
+ 
+
+#!iddef : ?OEM_1          : 0xBA  
+-  ':*' 
+#!iddef : ?PLUS           : 0xBB   
+-  ';+' any country
+#!iddef : ?COMMA          : 0xBC   
+-  ',<' any country
+#!iddef : ?MINUS          : 0xBD   
+/ '-=' any country
+#!iddef : ?PERIOD         : 0xBE   
+-  '.>' any country
+#!iddef : ?OEM_2          : 0xBF   
+-  '/?' for US
+#!iddef : ?OEM_3          : 0xC0   
+-  '`~' for US
+-  : 0xC1 - : 0xC2 : reserved
+ 
+-  : 0xC3 - : 0xDA : Gamepad input
+ 
+
+#!iddef : ?GAMEPAD_A                         : 0xC3 
+#!iddef : ?GAMEPAD_B                         : 0xC4 
+#!iddef : ?GAMEPAD_X                         : 0xC5 
+#!iddef : ?GAMEPAD_Y                         : 0xC6 
+#!iddef : ?GAMEPAD_RIGHT_SHOULDER            : 0xC7 
+#!iddef : ?GAMEPAD_LEFT_SHOULDER             : 0xC8 
+#!iddef : ?GAMEPAD_LEFT_TRIGGER              : 0xC9 
+#!iddef : ?GAMEPAD_RIGHT_TRIGGER             : 0xCA 
+#!iddef : ?GAMEPAD_DPAD_UP                   : 0xCB 
+#!iddef : ?GAMEPAD_DPAD_DOWN                 : 0xCC 
+#!iddef : ?GAMEPAD_DPAD_LEFT                 : 0xCD 
+#!iddef : ?GAMEPAD_DPAD_RIGHT                : 0xCE 
+#!iddef : ?GAMEPAD_MENU                      : 0xCF 
+#!iddef : ?GAMEPAD_VIEW                      : 0xD0 
+#!iddef : ?GAMEPAD_LEFT_THUMBSTICK_BUTTON    : 0xD1 
+#!iddef : ?GAMEPAD_RIGHT_THUMBSTICK_BUTTON   : 0xD2 
+#!iddef : ?GAMEPAD_LEFT_THUMBSTICK_UP        : 0xD3 
+#!iddef : ?GAMEPAD_LEFT_THUMBSTICK_DOWN      : 0xD4 
+#!iddef : ?GAMEPAD_LEFT_THUMBSTICK_RIGHT     : 0xD5 
+#!iddef : ?GAMEPAD_LEFT_THUMBSTICK_LEFT      : 0xD6 
+#!iddef : ?GAMEPAD_RIGHT_THUMBSTICK_UP       : 0xD7 
+#!iddef : ?GAMEPAD_RIGHT_THUMBSTICK_DOWN     : 0xD8 
+#!iddef : ?GAMEPAD_RIGHT_THUMBSTICK_RIGHT    : 0xD9 
+#!iddef : ?GAMEPAD_RIGHT_THUMBSTICK_LEFT     : 0xDA 
+
+
+
+#!iddef : ?OEM_4          : 0xDB  
+-   '[{' for US
+#!iddef : ?OEM_5          : 0xDC  
+-   '\|' for US
+#!iddef : ?OEM_6          : 0xDD  
+-   ']}' for US
+#!iddef : ?OEM_7          : 0xDE  
+-   ''"' for US
+#!iddef : ?OEM_8          : 0xDF
+
+
+-  : 0xE0 : reserved
+ 
+
+
+-  Various extended or enhanced keyboards
+ 
+#!iddef : ?OEM_AX         : 0xE1  
+-   'AX' key on Japanese AX kbd
+#!iddef : ?OEM_102        : 0xE2  
+-   "<>" or "\|" on RT 102-key kbd.
+#!iddef : ?ICO_HELP       : 0xE3  
+-   Help key on ICO
+#!iddef : ?ICO_00         : 0xE4 
+ -   00 key on ICO
+
+
+#!iddef : ?PROCESSKEY     : 0xE5
+#!iddef : ?ICO_CLEAR      : 0xE6
+#!iddef : ?PACKET         : 0xE7
+
+-  : 0xE8 : unassigned
+ 
+-  Nokia/Ericsson definitions
+ 
+#!iddef : ?OEM_RESET      : 0xE9
+#!iddef : ?OEM_JUMP       : 0xEA
+#!iddef : ?OEM_PA1        : 0xEB
+#!iddef : ?OEM_PA2        : 0xEC
+#!iddef : ?OEM_PA3        : 0xED
+#!iddef : ?OEM_WSCTRL     : 0xEE
+#!iddef : ?OEM_CUSEL      : 0xEF
+#!iddef : ?OEM_ATTN       : 0xF0
+#!iddef : ?OEM_FINISH     : 0xF1
+#!iddef : ?OEM_COPY       : 0xF2
+#!iddef : ?OEM_AUTO       : 0xF3
+#!iddef : ?OEM_ENLW       : 0xF4
+#!iddef : ?OEM_BACKTAB    : 0xF5
+
+#!iddef : ?ATTN           : 0xF6
+#!iddef : ?CRSEL          : 0xF7
+#!iddef : ?EXSEL          : 0xF8
+#!iddef : ?EREOF          : 0xF9
+#!iddef : ?PLAY           : 0xFA
+#!iddef : ?ZOOM           : 0xFB
+#!iddef : ?NONAME         : 0xFC
+#!iddef : ?PA1            : 0xFD
+#!iddef : ?OEM_CLEAR      : 0xFE
+
+
+#!iddef : ?smalltu : 540001
+#!iddef : ?nn      : 540002
+#!iddef : ?youon   : 540003
+#!iddef : ?exdel   : 540004
+
+
+- you can write free after this line.
+- 以下の文から自由に記述してよい。
+
+#dirdef :  A     : L
+#dirdef :  S     : L
+#dirdef :  D     : L
+#dirdef :  F     : L
+#dirdef :  G     : L
+#dirdef :  H     : R
+#dirdef :  J     : R
+#dirdef :  K     : R
+#dirdef :  L     : R
+#dirdef : ?PLUS : R
+
+#dirdef : E : L
+#dirdef : I : R
+
+
+
+- 以下の@def及び@keymapを変更するとプログラムが動かなくなる！
+
+
+-#!iddef : !dakuon     : 100002
+-#!iddef : !smalltu    : 100003
+-#!iddef : !ModeChange : 100005
+-#!iddef : !NN         : 100006
+-#!iddef : !handaku    : 100007
+#!iddef : !boin       : 100008
+
+- end @def
+
+@keymap
+
+Q : Send : Q
+W : Send : ?MINUS
+E : DSend : Y / Y - E
+R : Send : L
+T : DSend : F - F
+- Y : DSend : C - C
+- U : Send : !dakuon
+I : DSend : H / B - E
+O : Send : ?smalltu
+P : DSend : P - P
+
+----------------------------
+
+- L
+A : DSend : !boin - A
+S : DSend : S / Z - O
+D : DSend : M / M - I
+F : DSend : T / D - U
+G : Send  : Y
+- R
+H : Send  : H
+J : DSend : N / N - U
+K : DSend : K / G - I
+L : DSend : R / R - O
+?PLUS : DSend : W / V - A
+?OEM_1   : Send : ?RETURN
+
+-----------------------------
+
+- Z : Send : V
+X : Send : X
+C : DSend : J - J
+V : Send : ?youon
+U : Dsend : C - C
+N : Send : ?nn
+M : Send : ?exdel
+
+-ここでの!boinはnullのようなもの
+-?SPACE : DSend : !boin - ?youon
+
+- ?OEM_2 : Send : !handaku
