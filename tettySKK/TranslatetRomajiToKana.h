@@ -40,20 +40,20 @@ public:
 	}
 
 	//true: •ÏŠ·¬Œ÷  false: •ÏŠ·‚É’B‚µ‚Ä‚¢‚È‚¢ 
-	__declspec(noinline) bool Translate(WCHAR key, std::wstring& output, KanaMode mode) {
+	__declspec(noinline) bool Translate(WCHAR key, std::wstring& output) {
 		output.clear();
 
 		if (m_buffer.size() == 1) {
 			//‘£‰¹ˆ—
 			if (key == m_buffer[0]) {
 				if (key != L'n') {
-					output = (mode == KanaMode::Hiragana ? L'‚Á' : L'ƒb');
+					output = (g_CurrentKanaMode == KanaMode::Hiragana ? L'‚Á' : L'ƒb');
 					return true;
 				}
 			}
 			//›‰¹‚Ìˆ—
 			if (m_buffer[0] == L'n' && (key != L'n' && key != L'a' && key != 'i' && key != 'u' && key != 'e' && key != 'o' && key != 'y')) {
-				output = (mode == KanaMode::Hiragana ? L'‚ñ' : L'ƒ“');
+				output = (g_CurrentKanaMode == KanaMode::Hiragana ? L'‚ñ' : L'ƒ“');
 				m_buffer.clear();
 				m_buffer += key;
 				return true;
@@ -69,7 +69,7 @@ public:
 		}*/
 		{
 			auto it = m_KigouToJpnKigou.find((int)key);
-			if ((key < L'A' || key > L'Z') && (it != m_KigouToJpnKigou.end())) {
+			if ((!__isAlphabet(key)) && (it != m_KigouToJpnKigou.end())) {
 				output = m_buffer;
 				output += it->second[key];
 				m_buffer.clear();
@@ -80,7 +80,7 @@ public:
 		m_buffer += key;
 		auto it = m_RomajiToKana.find(m_buffer);
 		if (it != m_RomajiToKana.end()) {
-			output = (*it).second[mode == KanaMode::Hiragana ? TrR2K_INDEX_HIRAGANA : TrR2K_INDEX_KATAKANA];
+			output = (*it).second[g_CurrentKanaMode == KanaMode::Hiragana ? TrR2K_INDEX_HIRAGANA : TrR2K_INDEX_KATAKANA];
 			m_buffer.clear();
 			return true;
 		}
@@ -103,7 +103,7 @@ public:
 	
 	bool isMustNOTExecuteKigou(WCHAR key) const {
 		auto it = m_KigouToJpnKigou.find((int)key);
-		if ((key < L'A' || key > L'Z') && (it != m_KigouToJpnKigou.end())) {
+		if ((!__isAlphabet(key)) && (it != m_KigouToJpnKigou.end())) {
 			return true;
 		}
 		return false;
@@ -117,6 +117,8 @@ public:
 			m_buffer.pop_back();
 		}
 	}
+
+
 
 private:
 	std::wstring m_buffer;

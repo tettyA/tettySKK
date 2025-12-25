@@ -25,8 +25,8 @@ CSkkIme::CSkkIme()
 
 	m_pCandidateWindow = new CCandidateWindow(g_hModule);
 
-	m_currentMode = SKKMode::Hankaku;
-	m_CurrentKanaMode = KanaMode::Hiragana;
+	g_currentMode = SKKMode::Hankaku;
+	g_CurrentKanaMode = KanaMode::Hiragana;
 
 	m_Gokan = L"";
 	m_OkuriganaFirstChar = L'\0';

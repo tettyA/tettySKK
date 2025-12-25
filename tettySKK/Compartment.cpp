@@ -41,17 +41,17 @@ void CSkkIme::__UpdateInputMode()
 		V_I4(&var) = TF_SENTENCEMODE_PHRASEPREDICT;
 		_SetCompartment(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_SENTENCE, var);
 	}
-	if(m_currentMode == SKKMode::Hankaku) {
+	if(g_currentMode == SKKMode::Hankaku) {
 		varOpen.lVal = FALSE;
 	}
-	else if (m_currentMode == SKKMode::Henkan || m_currentMode == SKKMode::Kakutei) {
+	else if (g_currentMode == SKKMode::Henkan || g_currentMode == SKKMode::Kakutei) {
 		varOpen.lVal = TRUE;
 	}
 
-	if (m_CurrentKanaMode == KanaMode::Hiragana) {
+	if (g_CurrentKanaMode == KanaMode::Hiragana) {
 		varConv.lVal = TF_CONVERSIONMODE_NATIVE | TF_CONVERSIONMODE_FULLSHAPE;
 	}
-	else if (m_CurrentKanaMode == KanaMode::Katakana) {
+	else if (g_CurrentKanaMode == KanaMode::Katakana) {
 		varConv.lVal = TF_CONVERSIONMODE_NATIVE | TF_CONVERSIONMODE_FULLSHAPE | TF_CONVERSIONMODE_KATAKANA;
 	}
 	else {

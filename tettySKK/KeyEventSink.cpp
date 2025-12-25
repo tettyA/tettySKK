@@ -15,13 +15,13 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 		_ChangeCurrenKanaMode(KanaMode::Hiragana);
 		return true;
 	}
-	if (m_currentMode == SKKMode::Hankaku ) {
+	if (g_currentMode == SKKMode::Hankaku ) {
 		return false;
 	}
 	if (_IsCtrlKeyPressed()) {
 		return false;
 	}
-	if ((key >= L'A' && key <= L'Z') || ((key == VK_OEM_PERIOD || key == VK_OEM_COMMA || key == VK_OEM_MINUS) && m_currentMode != SKKMode::Hankaku) || (m_currentMode == SKKMode::Henkan && (key == VK_SPACE || key == VK_RETURN)))
+	if ( __isAlphabet(key) || ((key == VK_OEM_PERIOD || key == VK_OEM_COMMA || key == VK_OEM_MINUS) && g_currentMode != SKKMode::Hankaku) || (g_currentMode == SKKMode::Henkan && (key == VK_SPACE || key == VK_RETURN)))
 	{
 		return true;
 	}
@@ -31,7 +31,7 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 	}
 
 	//変換中のときは，BackSpaceも食う
-	if (m_currentMode == SKKMode::Henkan && key == VK_BACK && !m_isRegiteringNewWord) {
+	if (g_currentMode == SKKMode::Henkan && key == VK_BACK && !m_isRegiteringNewWord) {
 		return true;
 	}
 
@@ -47,19 +47,18 @@ bool CSkkIme::_IsKeyEatenTest(WPARAM wParam)
 	return false;
 }
 
-
-//キーが押された瞬間
-STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten) {
+HRESULT CSkkIme::ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten)
+{
 	*pfEaten = FALSE;
 
 	WCHAR key = (WCHAR)wParam;
-	if (((key < L'A' || key > L'Z')) && m_RomajiToKanaTranslator.GetBuffer() == L"n" && m_currentMode!=SKKMode::Hankaku) {
+	if ((!__isAlphabet(key)) && m_RomajiToKanaTranslator.GetBuffer() == L"n" && g_currentMode != SKKMode::Hankaku) {
 		//撥音が残っており，かつ，ローマ字入力以外のキーが押された場合は，撥音を確定する
 
-		if (m_currentMode == SKKMode::Kakutei) {
+		if (g_currentMode == SKKMode::Kakutei) {
 
 			std::wstring output;
-			if (m_CurrentKanaMode == KanaMode::Hiragana) {
+			if (g_CurrentKanaMode == KanaMode::Hiragana) {
 				output = L"ん";
 			}
 			else {
@@ -68,7 +67,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			_Output(pic, output, TRUE);
 
 		}
-		else if (m_currentMode==SKKMode::Henkan) {
+		else if (g_currentMode == SKKMode::Henkan) {
 			std::wstring  tempCompStr;
 			std::wstring finalText;
 			_GetCompositionString(tempCompStr);
@@ -77,17 +76,17 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 			_Output(pic, finalText, FALSE);
 		}
-		
+
 
 		m_RomajiToKanaTranslator.Reset();
 	}
-	
-	if (m_RomajiToKanaTranslator.isMustNOTExecuteKigou(key) && m_currentMode != SKKMode::Hankaku) {
+
+	if (m_RomajiToKanaTranslator.isMustNOTExecuteKigou(key) && g_currentMode != SKKMode::Hankaku) {
 		//下については，後で処理するのでOK
 		if (
 			//特定の条件下のピリオドは除く(ピリオドを押すと，第一優先候補を確定したいため)
 			!(
-				(!m_isRegiteringNewWord && m_currentMode == SKKMode::Henkan && m_CurrentCandidates.empty() &&
+				(!m_isRegiteringNewWord && g_currentMode == SKKMode::Henkan && m_CurrentCandidates.empty() &&
 					key == VK_OEM_PERIOD)
 
 				)
@@ -95,7 +94,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 
 			//約物の処理
-			
+
 			*pfEaten = TRUE;
 			std::wstring compStr;
 			_GetCompositionString(compStr);
@@ -105,7 +104,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 			std::wstring output = compStr + kigou;
 			if (//変換中の ー は確定させない。
-				(m_currentMode == SKKMode::Henkan && key == VK_OEM_MINUS)) {
+				(g_currentMode == SKKMode::Henkan && key == VK_OEM_MINUS)) {
 				_Output(pic, output, FALSE);
 				if (m_isRegiteringNewWord) {
 					m_RegInputUndetermined += kigou;
@@ -134,7 +133,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 	}
 	else if (key == VK_SPACE) {
 		//未入力もしくは変換モードでないならば，そのまま返す
-		if (((!_pComposition) || m_currentMode != SKKMode::Henkan))
+		if (((!_pComposition) || g_currentMode != SKKMode::Henkan))
 		{
 			if (m_isRegiteringNewWord == FALSE)
 				return S_OK;
@@ -214,16 +213,16 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 				//新しい単語の登録確定
 				_CommitComposition(pic);
-				
+
 				m_isRegiteringNewWord = FALSE;
 
 				_Output(pic, (m_RegInputDetermined.substr(0, m_RegInputDetermined.find(SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_CHAR)) + tempStr).c_str(), TRUE);
-				
-				
+
+
 				m_SKKDictionaly.AddCandidate(m_RegKey, m_RegInputDetermined);
 				m_SKKDictionaly.SaveDictionaryToUserFile(SKK_USER_DICTIONARY_FILEPATH);
 
-				
+
 				_EndRegiterNewWord();
 
 				return S_OK;
@@ -268,14 +267,14 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			_GetCompositionString(currentCompStr);
 			if (currentCompStr.length() > 0) {
 				currentCompStr.pop_back();
-				if (m_currentMode == SKKMode::Henkan) {
+				if (g_currentMode == SKKMode::Henkan) {
 					if (!isRomajiBufferDeleted) {
 						m_currentInputKana.pop_back();
 					}
 					if (m_CurrentCandidates.size() > 0) {
 						__InsertText(pic, currentCompStr.c_str(), TRUE);
 						if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX && m_CurrentCandidates.size() > m_CurrentShowCandidateIndex) {
-						//	m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
+							//	m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
 							{
 								std::wstring searchKey = m_currentInputKana;
 								if (m_OkuriganaFirstChar != L'\0') {
@@ -306,39 +305,39 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				m_pCandidateWindow->MustHideWindow();
 				_CommitComposition(pic);
 			}
-		//	m_RomajiToKanaTranslator.Reset();
-			
+			//	m_RomajiToKanaTranslator.Reset();
+
 			return hr;
 		}
 		if (!m_isRegiteringNewWord) {
 			return S_OK;
 		}
 	}
-	else if (!m_isRegiteringNewWord && m_currentMode == SKKMode::Henkan && m_CurrentCandidates.empty() &&
+	else if (!m_isRegiteringNewWord && g_currentMode == SKKMode::Henkan && m_CurrentCandidates.empty() &&
 		key == VK_OEM_PERIOD
 		) {
-			*pfEaten = TRUE;
-			//予測候補で変換。
-			
-			//TODO: 送り仮名の処理
-			//TODO: 変換した後に，スペースなどで候補が入れ替わるようにする。
-			SKKCandidate predictionCandidate;
-			m_SKKDictionaly.GetPredictionCandidate(m_currentInputKana, predictionCandidate);
-			if (!predictionCandidate _Candidate.empty()) {
-				_Output(pic, predictionCandidate _Candidate.c_str(), TRUE);
-				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
-				{
-					std::wstring searchKey = m_currentInputKana;
-					if (m_OkuriganaFirstChar != L'\0') {
-						searchKey = m_Gokan + m_OkuriganaFirstChar;
-					}
-					m_SKKDictionaly.AddHistoryCandidate(searchKey, predictionCandidate);
-				}
-				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, predictionCandidate);
-				_CommitComposition(pic);
-			}
+		*pfEaten = TRUE;
+		//予測候補で変換。
 
-			return S_OK;
+		//TODO: 送り仮名の処理
+		//TODO: 変換した後に，スペースなどで候補が入れ替わるようにする。
+		SKKCandidate predictionCandidate;
+		m_SKKDictionaly.GetPredictionCandidate(m_currentInputKana, predictionCandidate);
+		if (!predictionCandidate _Candidate.empty()) {
+			_Output(pic, predictionCandidate _Candidate.c_str(), TRUE);
+			//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana);
+			{
+				std::wstring searchKey = m_currentInputKana;
+				if (m_OkuriganaFirstChar != L'\0') {
+					searchKey = m_Gokan + m_OkuriganaFirstChar;
+				}
+				m_SKKDictionaly.AddHistoryCandidate(searchKey, predictionCandidate);
+			}
+			//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, predictionCandidate);
+			_CommitComposition(pic);
+		}
+
+		return S_OK;
 	}
 	if (_IsKeyEaten(wParam))
 	{
@@ -350,8 +349,8 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 
 	if (m_isRegiteringNewWord) {
-		if (m_currentMode == SKKMode::Hankaku) {
-			if ((key >= L'A' && key <= L'Z') || (key == VK_SPACE))
+		if (g_currentMode == SKKMode::Hankaku) {
+			if (__isAlphabet(key) || (key == VK_SPACE))
 			{
 				key += ToSmallAlphabet;
 				*pfEaten = TRUE;
@@ -376,16 +375,24 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				}
 			}
 
-		//	m_RomajiToKanaTranslator.Reset();
+			//	m_RomajiToKanaTranslator.Reset();
 			return S_OK;
 		}
 	}
 
 	if (key != VK_SHIFT) {
-//		m_RomajiToKanaTranslator.Reset();
+		//		m_RomajiToKanaTranslator.Reset();
 	}
 
 	return S_OK;
+}
+
+
+//キーが押された瞬間
+STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten) {
+	*pfEaten = FALSE;
+
+	return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 }
 
 
@@ -472,7 +479,7 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 	m_RegInputUndetermined = L"";
 	m_RegKey = regKey;
 
-	m_currentMode = SKKMode::Kakutei;
+	g_currentMode = SKKMode::Kakutei;
 
 	m_RegCurrentShowCandidateIndex = 0;
 	m_RegCurrentCandidates.clear();
@@ -526,6 +533,8 @@ void CSkkIme::_SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandi
 		}
 	}
 }
+
+
 
 
 void CSkkIme::__InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _multiIntsertText,const WCHAR* _singleInsertText)

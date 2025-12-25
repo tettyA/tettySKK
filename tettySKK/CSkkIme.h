@@ -49,8 +49,8 @@ public:
 	HRESULT _DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHAR* text,BOOL _isDetermined);
 
 	void _GetCurrentMode(SKKMode& mode, KanaMode& kanaMode) {
-		mode = m_currentMode;
-		kanaMode = m_CurrentKanaMode;
+		mode = g_currentMode;
+		kanaMode = g_CurrentKanaMode;
 	}
 	void _GetThreadMgr(ITfThreadMgr** ppThreadMgr) {
 		if (ppThreadMgr == nullptr)return;
@@ -77,6 +77,8 @@ public:
 private:
 	bool _IsKeyEaten(WPARAM wParam);
 	bool _IsKeyEatenTest(WPARAM wParam);
+
+	HRESULT ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten);
 
 	HRESULT _HandleRegSpaceKey(ITfContext* pic, WCHAR key);
 	HRESULT _HandleSpaceKey(ITfContext* pic, WCHAR key);
@@ -108,14 +110,13 @@ private:
 	void _UpDateCandidateWindowPosition(ITfContext* pic);
 	void _EndCandidateWindow();
 
-	 SKKMode m_currentMode;
-	 KanaMode m_CurrentKanaMode;
+	
 	void _ChangeCurrentMode(const SKKMode mode) {
-		m_currentMode = mode;
+		g_currentMode = mode;
 		__UpdateInputMode();
 	}
 	void _ChangeCurrenKanaMode(const KanaMode mode) {
-		m_CurrentKanaMode = mode;
+		g_CurrentKanaMode = mode;
 		__UpdateInputMode();
 	}
 
@@ -143,6 +144,8 @@ private:
 
 	void _EndRegiterNewWord();
 	void _SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandidateWindowFromHistory(ITfContext* pic);
+
+	
 };
 
 

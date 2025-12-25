@@ -15,14 +15,14 @@ void CSkkIme::__InsertText(ITfContext* pic, const WCHAR* text,BOOL isDetermined)
 
 void CSkkIme::__InsertNewRegWord(ITfContext* pic, const std::wstring& text, BOOL _isDetermined)
 {
-	if (m_currentMode == SKKMode::Hankaku) {
+	if (g_currentMode == SKKMode::Hankaku) {
 		m_RegInputDetermined += text;
 		m_RegInputUndetermined = L"";
 	}
-	else if (m_currentMode == SKKMode::Kakutei) {
+	else if (g_currentMode == SKKMode::Kakutei) {
 		m_RegInputUndetermined = text;
 	}
-	else if (m_currentMode == SKKMode::Henkan) {
+	else if (g_currentMode == SKKMode::Henkan) {
 		m_RegInputUndetermined = text;
 	}
 
@@ -34,8 +34,8 @@ void CSkkIme::__InsertNewRegWord(ITfContext* pic, const std::wstring& text, BOOL
 	if (m_pCandidateWindow->IsWindowExists()) {
 		//TODO: èdÇªÇ§Ç‚ÇØÇ«ÅCÇ«Ç§Ç∑ÇÈ?
 		SKKCandidates tempCandidate = { {m_RegInputDetermined ,m_RegKey
-			+(m_currentMode==SKKMode::Hankaku?L"Hankaku":
-				m_currentMode==SKKMode::Henkan?L"Henkan":L"kakutei")
+			+(g_currentMode==SKKMode::Hankaku?L"Hankaku":
+				g_currentMode==SKKMode::Henkan?L"Henkan":L"kakutei")
 			+L"/text:"+text
 			+L"/buf:"+m_RomajiToKanaTranslator.GetBuffer()
 			+ L"/idx:" + std::to_wstring(m_RegCurrentShowCandidateIndex)+L"/" +std::to_wstring(m_RegCurrentCandidates.size())

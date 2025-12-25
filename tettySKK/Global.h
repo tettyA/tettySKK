@@ -2,6 +2,8 @@
 
 #include <string>
 
+#define TETTYSKK_CONTAIN_Q_ELF
+
 extern HMODULE g_hModule;
 //SKK IME –{‘Ì‚ÌCLSID
 // {C021919B-A5A1-463E-A1BF-C71F7B6313A2}
@@ -37,7 +39,6 @@ LONG DllAddRef(void);
 LONG DllRelease(void);
 
 void _ConvertToKatakana(std::wstring& str);
-void _ConvertToHiragana(std::wstring& str);
 
 enum class SKKMode {
 	Kakutei,
@@ -49,3 +50,17 @@ enum class KanaMode {
 	Hiragana,
 	Katakana
 };
+
+void _ConvertToHiragana(std::wstring& str);
+
+DECLSPEC_SELECTANY SKKMode g_currentMode;
+DECLSPEC_SELECTANY KanaMode g_CurrentKanaMode;
+
+inline bool __isAlphabet(WCHAR key) {
+	return (key >= L'A' && key <= L'Z')
+#ifdef TETTYSKK_CONTAIN_Q_ELF
+	//	||
+	//	(key == VK_OEM_PLUS && (g_currentMode == SKKMode::Henkan || g_currentMode == SKKMode::Kakutei))
+#endif
+		;
+}

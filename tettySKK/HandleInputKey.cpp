@@ -8,7 +8,7 @@
 #define __DEBUGOUTPUT(dbgstr) __InsertText(pic, (L"["+(dbgstr)+L"]").c_str(), TRUE)
 HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 {
-	if (m_currentMode != SKKMode::Henkan) {
+	if (g_currentMode != SKKMode::Henkan) {
 		_Output(pic, std::wstring(1, L' '), TRUE);
 		return S_OK;
 	}
@@ -196,7 +196,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		return S_OK;
 	}
 	else if (key == L'l') {
-		if (m_currentMode == SKKMode::Henkan &&
+		if (g_currentMode == SKKMode::Henkan &&
 			(
 				(m_isRegiteringNewWord && m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX)
 				||
@@ -238,7 +238,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			return S_OK;
 		}
 	}
-	else if (key == L'x' && m_currentMode == SKKMode::Henkan) {
+	else if (key == L'x' && g_currentMode == SKKMode::Henkan) {
 
 		//前の候補
 		//TODO:  処理の共通化
@@ -316,7 +316,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				std::wstring nextinsert;
 				m_RomajiToKanaTranslator.Reset();
 			//	__DEBUGOUTPUT(L"next:" + nextChar);
-				if (m_RomajiToKanaTranslator.Translate(key, newxtKana, m_CurrentKanaMode)) {
+				if (m_RomajiToKanaTranslator.Translate(key, newxtKana)) {
 					nextinsert = newxtKana;
 					std::wstring tmp;
 					_GetCompositionString(tmp);
@@ -351,7 +351,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 	
 	bool isShift = _IsShiftKeyPressed();
 	//変換の開始
-	if (isShift && m_currentMode == SKKMode::Kakutei) {
+	if (isShift && g_currentMode == SKKMode::Kakutei) {
 
 		if (_pComposition) {
 			//_CommitComposition(pic);
@@ -381,7 +381,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 	//FIX: 書k (no shift) の場合，書 で検索する。 つまり，変換中のローマ字がシフトが押されずに確定された場合は，削除する。
 	//_InsertText(pic, (L"[Debug2:]"), TRUE);
 	//変換中
-	if (m_currentMode == SKKMode::Henkan) {
+	if (g_currentMode == SKKMode::Henkan) {
 		//ASDFJKL で選ぶ段階
 		if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX && m_isRegiteringNewWord==FALSE) {
 
@@ -553,10 +553,10 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			if (
 				(
 					(
-						(newkana == L"っ" && m_CurrentKanaMode == KanaMode::Hiragana) ||
-						(newkana == L"ッ" && m_CurrentKanaMode == KanaMode::Katakana) ||
-						(newkana == L"ん" && m_CurrentKanaMode == KanaMode::Hiragana) ||
-						(newkana == L"ン" && m_CurrentKanaMode == KanaMode::Katakana)
+						(newkana == L"っ" && g_CurrentKanaMode == KanaMode::Hiragana) ||
+						(newkana == L"ッ" && g_CurrentKanaMode == KanaMode::Katakana) ||
+						(newkana == L"ん" && g_CurrentKanaMode == KanaMode::Hiragana) ||
+						(newkana == L"ン" && g_CurrentKanaMode == KanaMode::Katakana)
 					) &&
 					m_currentInputKana.length() - m_Gokan.length() >= 1
 				 )
@@ -588,9 +588,9 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		return S_OK;
 	}
 
-	if (m_currentMode == SKKMode::Kakutei) {
+	if (g_currentMode == SKKMode::Kakutei) {
 		std::wstring newkana;
-		if (m_RomajiToKanaTranslator.Translate(key, newkana, m_CurrentKanaMode)) {
+		if (m_RomajiToKanaTranslator.Translate(key, newkana)) {
 			_Output(pic, newkana, TRUE);
 		}
 		else {
@@ -614,7 +614,7 @@ void CSkkIme::_AddToTextonScreenAndUpdateCurrentInputKana(WCHAR key, std::wstrin
 
 	//新しいキーを変換  ex: m + a = ま
 	//std::wstring newkana;
-	m_RomajiToKanaTranslator.Translate(key, newkana, m_CurrentKanaMode);
+	m_RomajiToKanaTranslator.Translate(key, newkana);
 
 	//今の画面[しm] - ローマ字[m] = ひらがな確定済部分[し]
 	//std::wstring 
