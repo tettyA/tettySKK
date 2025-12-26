@@ -5,7 +5,7 @@ class Q_ELF_Translater
 {
 public:
 	Q_ELF_Translater();
-	~Q_ELF_Translater();
+	~Q_ELF_Translater() {};
 
 	/// <summary>
 	/// QWERTY配列からQ-ELF配列への変換を行います。
@@ -20,6 +20,12 @@ public:
 		return kmp.KMPs.contains(key);
 	}
 	void LoadKmpFileFromFile(std::wstring &path);
+	bool Get_kmp_is_key_pushed_shift() {
+		return kmp.is_key_pushed.shift;
+	}
+	void Set_kmp_is_key_pushed_shift(bool value) {
+		kmp.is_key_pushed.shift = value;
+	}
 
 private:
 	std::wstring m_buffer;

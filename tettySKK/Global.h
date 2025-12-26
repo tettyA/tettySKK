@@ -59,7 +59,7 @@ DECLSPEC_SELECTANY KanaMode g_CurrentKanaMode;
 inline bool __isAlphabet(WCHAR key) {
 	return (key >= L'A' && key <= L'Z')
 #ifdef TETTYSKK_CONTAIN_Q_ELF
-	//	||
+		//||
 	//	(key == VK_OEM_PLUS && (g_currentMode == SKKMode::Henkan || g_currentMode == SKKMode::Kakutei))
 #endif
 		;

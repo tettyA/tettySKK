@@ -392,7 +392,52 @@ HRESULT CSkkIme::ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam,
 STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten) {
 	*pfEaten = FALSE;
 
-	return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
+	if (g_currentMode == SKKMode::Hankaku) {
+		m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
+		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
+	}
+	else if (g_currentMode == SKKMode::Henkan &&
+		(
+			(m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX && m_isRegiteringNewWord == FALSE)
+			||
+			(m_isRegiteringNewWord == TRUE && m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX)
+		)
+		) {
+		m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
+		//ASDFJKL‚ÅŒó•â‚ğ‘I‚Ô‚Í“Á•Ê‚Éˆ—‚·‚éB
+		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
+	}
+	else {
+		std::wstring output;
+		if (m_q_elftranslater.isNeedExecuteTranslate((WCHAR)wParam)) {
+			if (m_q_elftranslater.TranslateQWERTYtoQ_ELF((WCHAR)wParam, output)) {
+				for (int i = 0; i < output.length(); i++) {
+					BOOL tmppfEaten = FALSE;
+					HRESULT ret = ExecuteOnKeyDown(pic, output[i], lParam, &tmppfEaten);
+					
+					if (FAILED(ret)) {
+						m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
+						return ret;
+					}
+					else {
+						*pfEaten = *pfEaten || tmppfEaten;
+					}
+				}
+				m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
+				return S_OK;
+			}
+			else {
+				*pfEaten = TRUE;
+				return S_OK;
+			}
+		}
+		else {
+			m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
+			return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
+		}
+	}
+
+	return S_OK;
 }
 
 
@@ -462,7 +507,7 @@ void CSkkIme::_UninitKeyEventSink() {
 
 bool CSkkIme::_IsShiftKeyPressed()
 {
-	return ((GetKeyState(VK_SHIFT) & 0x8000) != 0);
+	return ((GetKeyState(VK_SHIFT) & 0x8000) != 0) || m_q_elftranslater.Get_kmp_is_key_pushed_shift();
 }
 
 bool CSkkIme::_IsCtrlKeyPressed()

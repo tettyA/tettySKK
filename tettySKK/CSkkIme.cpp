@@ -31,7 +31,8 @@ CSkkIme::CSkkIme()
 	m_Gokan = L"";
 	m_OkuriganaFirstChar = L'\0';
 
-
+	m_q_elftranslater = Q_ELF_Translater();
+	
 	
 	m_pLangBarItemButton = new CLangBarItemButton(this, GUID_LBI_INPUTMODE);
 	m_isRegiteringNewWord = FALSE;
@@ -45,6 +46,8 @@ CSkkIme::CSkkIme()
 		//FIX: Release‚ÅŒ³‚É‚à‚Ç‚·B
 		SKK_DICTIONARY_FILEPATH = std::wstring(wdir) + L"\\tettySKK\\skk-dict.txt";
 		SKK_USER_DICTIONARY_FILEPATH = std::wstring(wudir) + L"\\tettySKK\\skk-user-dict.txt";
+
+		SKK_Q_ELFTRANSLATER_KMP_FILEPATH = std::wstring(wudir) + L"\\tettySKK\\kmp.kmp";
 	}
 }
 
@@ -132,6 +135,8 @@ STDAPI CSkkIme::Activate(ITfThreadMgr* ptim, TfClientId tid) {
 	
 	m_SKKDictionaly.LoadDictionaryFromFile(SKK_DICTIONARY_FILEPATH, SKK_USER_DICTIONARY_FILEPATH);
 	//m_SKKDictionaly.LoadUserDictionaryFromFile(SKK_USER_DICTIONARY_FILEPATH);
+
+	m_q_elftranslater.LoadKmpFileFromFile(SKK_Q_ELFTRANSLATER_KMP_FILEPATH);
 
 	if (m_pLangBarItemButton) {
 		m_pLangBarItemButton->_Init();

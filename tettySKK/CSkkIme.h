@@ -6,6 +6,7 @@
 #include "SKKDictionaly.h"
 #include "CCandidateWindow.h"
 #include "CLangBarItemButton.h"
+#include "Q_ELF_Translater.h"
 #include "Global.h"
 
 
@@ -145,7 +146,7 @@ private:
 	void _EndRegiterNewWord();
 	void _SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandidateWindowFromHistory(ITfContext* pic);
 
-	
+	Q_ELF_Translater m_q_elftranslater;
 };
 
 

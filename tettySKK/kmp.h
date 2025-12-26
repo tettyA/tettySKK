@@ -37,6 +37,7 @@ struct KMP {
     struct SpecialKeyStates {
         bool sokuon;
         bool youon;
+        bool shift;
     }is_key_pushed;
 
     std::unordered_map<KeyCode, KMPelm>KMPs;
