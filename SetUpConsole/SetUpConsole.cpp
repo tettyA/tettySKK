@@ -31,6 +31,48 @@ bool DownloadDict(const std::wstring& url, const fs::path& destPath) {
     return SUCCEEDED(hr);
 }
 
+bool MoveDLLFile(fs::path& source_dll_path, fs::path& installdir, fs::path& install_dll_path) {
+    if (!fs::exists(source_dll_path)) {
+        LogError(source_dll_path.string() + "が見つかりませんでした。適切な位置に配置してください。");
+        WaitEnter();
+        return false;
+    }
+    Log("source_dll_path: " + source_dll_path.string());
+
+
+    {
+     
+        if (!fs::exists(installdir)) {
+            Log(installdir.string() + "が見つかりませんでした。作成します。");
+            fs::create_directories(installdir);
+            if (!fs::exists(installdir)) {
+                LogError(installdir.string() + "を作成することが出来ませんでした。");
+                WaitEnter();
+                return false;
+            }
+        }
+
+        fs::copy_file(source_dll_path, install_dll_path, fs::copy_options::overwrite_existing);
+
+        Log(source_dll_path.string() + "は" + install_dll_path.string() + "適切に複製されました。");
+    }
+    return true;
+}
+
+bool ExecuteCmdRegSvr(fs::path &sysdir,fs::path& install_dll_path) {
+    {
+
+
+        std::string cmd = sysdir.string() + "\\regsvr32 /s \"" + install_dll_path.string() + "\"";
+        if (std::system(cmd.c_str()) != 0) {
+            LogError("コマンド[" + cmd + "]に失敗しました。");
+            return false;
+        }
+        Log("コマンド[" + cmd + "]を実行しました。");
+    }
+
+    return true;
+}
 
 void skkInstall() {
     PutSep();
@@ -40,86 +82,32 @@ void skkInstall() {
 
     PutSep();
 
+    //x64版
+
+    fs::path source_dll_path = fs::current_path().string() + "\\tettySkk.dll";
+    WCHAR sysPath[MAX_PATH];
+    GetSystemDirectory(sysPath, MAX_PATH);
+    fs::path installdir = std::wstring(sysPath) + L"\\IME\\tettySKK\\";
+    fs::path install_dll_path = installdir.wstring() + L"tettySkk.dll";
+    Log("IMEに必要なDLLファイルを適切な位置に設置しています。[1/2]");
+
+    if (!MoveDLLFile(source_dll_path, installdir, install_dll_path))return;
 
 
-    fs::path install_dll_path;
+    //x86版
 
-    {
-        Log("IMEに必要なDLLファイルを適切な位置に設置しています。[1/2]");
+    fs::path source_dll_pathx86 = fs::current_path().string() + "\\tettySkk32.dll";
+    WCHAR sysPathx86[MAX_PATH];
 
-        fs::path source_dll_path = fs::current_path().string() + "\\tettySkk.dll";
+    GetSystemWow64Directory(sysPathx86, MAX_PATH);
 
-        if (!fs::exists(source_dll_path)) {
-            LogError(source_dll_path.string() + "が見つかりませんでした。適切な位置に配置してください。");
-            WaitEnter();
-            return;
-        }
-		Log("source_dll_path: " + source_dll_path.string());
+    fs::path installdirx86 = std::wstring(sysPathx86) + L"\\IME\\tettySKK\\";
+    fs::path install_dll_pathx86 = installdirx86.wstring() + L"tettySkk.dll";
+    Log("IMEに必要なDLLファイルを適切な位置に設置しています。[2/2]");
 
+    if (!MoveDLLFile(source_dll_pathx86, installdirx86, install_dll_pathx86))return;
 
-        {
-            WCHAR sysPath[MAX_PATH];
-            GetSystemDirectory(sysPath, MAX_PATH);
-
-            fs::path installdir = std::wstring(sysPath) + L"\\IME\\tettySKK\\";
-            install_dll_path = installdir.wstring() + L"tettySkk.dll";
-
-            if (!fs::exists(installdir)) {
-                Log(installdir.string() + "が見つかりませんでした。作成します。");
-                fs::create_directories(installdir);
-                if (!fs::exists(installdir)) {
-                    LogError(installdir.string() + "を作成することが出来ませんでした。");
-                    WaitEnter();
-                    return ;
-                }
-            }
-
-            fs::copy_file(source_dll_path, install_dll_path, fs::copy_options::overwrite_existing);
-
-            Log(source_dll_path.string() + "は" + install_dll_path.string() + "適切に複製されました。");
-        }
-    }
-
-
-    fs::path install_dll_pathx86;
-
-    {
-        Log("IMEに必要なDLLファイルを適切な位置に設置しています。[2/2]");
-
-        fs::path source_dll_path = fs::current_path().string() + "\\tettySkk32.dll";
-        Log("source_dll_path: " + source_dll_path.string());
-        if (!fs::exists(source_dll_path)) {
-            LogError(source_dll_path.string() + "が見つかりませんでした。適切な位置に配置してください。");
-            WaitEnter();
-            return ;
-        }
-
-
-        {
-            WCHAR sysPath[MAX_PATH];
-
-            GetSystemWow64Directory(sysPath, MAX_PATH);
-
-            fs::path installdirx86 = std::wstring(sysPath) + L"\\IME\\tettySKK\\";
-            install_dll_pathx86 = installdirx86.wstring() + L"tettySkk.dll";
-
-
-            if (!fs::exists(installdirx86)) {
-                Log(installdirx86.string() + "が見つかりませんでした。作成します。");
-                fs::create_directories(installdirx86);
-                if (!fs::exists(installdirx86)) {
-                    LogError(installdirx86.string() + "を作成することが出来ませんでした。");
-                    WaitEnter();
-                    return ;
-                }
-            }
-
-            fs::copy_file(source_dll_path, install_dll_pathx86, fs::copy_options::overwrite_existing);
-
-            Log(source_dll_path.string() + "は" + install_dll_pathx86.string() + "に適切に複製されました。");
-        }
-    }
-
+    
 
     Log("全てのdllファイルは適切に複製されました。");
 
@@ -128,37 +116,11 @@ void skkInstall() {
     {
         Log("IMEをwindowsに登録します。");
 
-        {
-            WCHAR sysPath[MAX_PATH];
+        fs::path psysPath = std::wstring(sysPath);
+        if (!ExecuteCmdRegSvr(psysPath, install_dll_path))return;
 
-            GetSystemDirectory(sysPath, MAX_PATH);
-
-            fs::path installdir = std::wstring(sysPath);
-
-
-            std::string cmd = installdir.string() + "\\regsvr32 /s \"" + install_dll_path.string() + "\"";
-            if (std::system(cmd.c_str())!=0) {
-                LogError("コマンド[" + cmd + "]に失敗しました。");
-                return;
-            }
-			Log("コマンド[" + cmd + "]を実行しました。");
-        }
-
-        {
-            WCHAR sysPath[MAX_PATH];
-
-            GetSystemWow64Directory(sysPath, MAX_PATH);
-
-            fs::path installdirx86 = std::wstring(sysPath);
-
-            std::string cmd = installdirx86.string()+"\\regsvr32 /s \"" + install_dll_pathx86.string() + "\"";
-            if (std::system(cmd.c_str())!=0) {
-                LogError("コマンド[" + cmd + "]に失敗しました。");
-                return;
-            }
-            Log("コマンド[" + cmd + "]を実行しました。");
-        }
-
+        fs::path  psysPathx86 = std::wstring(sysPathx86);
+        if (!ExecuteCmdRegSvr(psysPathx86, install_dll_pathx86))return;
 
         Log("windowsにIMEを登録することに成功しました。");
 
@@ -170,13 +132,13 @@ void skkInstall() {
     {
 
         WCHAR wdir[MAX_PATH];
-		SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, wdir);
+        SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, wdir);
 
         fs::path windowsDir = std::wstring(wdir);
 
 
         std::wstring dictUrl = L"http://openlab.jp/skk/skk/dic/SKK-JISYO.L";
-		fs::path dictDir = windowsDir.string() + "\\tettySKK\\";
+        fs::path dictDir = windowsDir.string() + "\\tettySKK\\";
         fs::path dictPath = windowsDir.string() + "\\tettySKK\\skk-dict.txt";
 
         if (!fs::exists(dictPath.parent_path())) {
@@ -191,7 +153,7 @@ void skkInstall() {
 
         Log("SKK-JISYO.L を " + dictPath.string() + " にインストールします。時間がかかる場合があります。");
 
-  
+
 
         if (DownloadDict(dictUrl, dictPath)) {
             Log("辞書のダウンロードに成功しました。");
@@ -201,8 +163,18 @@ void skkInstall() {
             LogError("辞書のダウンロードに失敗しました。");
 
             WaitEnter();
-            return ;
+            return;
         }
+
+
+        Log("Q-ELF配列で使用するkmp.kmpを移動します。");
+
+        //kmp版
+
+        fs::path source_dll_pathkmp = fs::current_path().string() + "\\kmp.kmp";
+        fs::path install_dll_pathkmp = dictDir.wstring() + L"kmp.kmp";
+
+        if (!MoveDLLFile(source_dll_pathkmp, dictDir, install_dll_pathkmp))return;
     }
 
     Log("必要な全てのファイルのインストールが完了しました。");
@@ -215,7 +187,7 @@ void skkInstall() {
         ExitWindowsEx(EWX_RESTARTAPPS, SHTDN_REASON_MINOR_TERMSRV);
     }
 
-    return ;
+    return;
 }
 
 void skkUninstall() {
@@ -289,9 +261,6 @@ void skkUninstall() {
                 
 				Log(installdir.string() + "を削除しました。");
             }
-
-
-
         }
     }
 
