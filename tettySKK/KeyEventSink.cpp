@@ -394,7 +394,8 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 	if (g_currentMode == SKKMode::Hankaku) {
 	//	m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
-		m_q_elftranslater.ResetKmpState();
+		//m_q_elftranslater.ResetKmpState();
+		//__DEBUGOUTPUT(std::wstring(L"dfs1"));
 		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 	}
 	else if (g_currentMode == SKKMode::Henkan &&
@@ -405,7 +406,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		)
 		) {
 		m_q_elftranslater.ResetKmpState();
-		
+		//__DEBUGOUTPUT(std::wstring(L"dfs2"));
 		//ASDFJKLÇ≈åÛï‚ÇëIÇ‘éûÇÕì¡ï Ç…èàóùÇ∑ÇÈÅB
 		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 	}
@@ -413,7 +414,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		std::wstring output;
 		if (m_q_elftranslater.isNeedExecuteTranslate((WCHAR)wParam)) {
 			if (m_q_elftranslater.TranslateQWERTYtoQ_ELF((WCHAR)wParam, output)) {
-			//	__DEBUGOUTPUT(std::wstring(L"dfs"));
+				//__DEBUGOUTPUT(std::wstring(L"dfs"));
 				for (int i = 0; i < output.length(); i++) {
 					BOOL tmppfEaten = FALSE;
 					HRESULT ret = ExecuteOnKeyDown(pic, output[i], lParam, &tmppfEaten);
@@ -435,8 +436,9 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			}
 		}
 		else {
-			//m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
-			m_q_elftranslater.ResetKmpState();
+			m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
+			//__DEBUGOUTPUT(std::wstring(L"dfs3"));
+			//m_q_elftranslater.ResetKmpState();
 			return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 		}
 	}

@@ -83,17 +83,22 @@ bool Q_ELF_Translater::TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output)
                     }
                     else if (Send1st.dir != Send2nd.dir) {//ë˜âπ
                         output = std::wstring(1, WCHAR(Send1st.dir1.samedirkc));
+                        if (kmp.is_key_pushed.sokuon) {
+                            output += std::wstring(1, WCHAR(Send1st.dir1.samedirkc));
+                            kmp.is_key_pushed.sokuon = false;
+                        }
                     }
                     else if (Send1st.dir == Send2nd.dir) {//ê¥âπ
                         output = std::wstring(1, WCHAR(Send1st.otherdirkc));
+                        if (kmp.is_key_pushed.sokuon) {
+                            output += std::wstring(1, WCHAR(Send1st.otherdirkc));
+                            kmp.is_key_pushed.sokuon = false;
+                        }
                     }
 
 
 
-                    if (kmp.is_key_pushed.sokuon) {
-                        output += std::wstring(1, WCHAR(Send1st.dir1.samedirkc));
-                        kmp.is_key_pushed.sokuon = false;
-                    }
+                    
                     if (kmp.is_key_pushed.youon) {
                         output += L"Y";
                         kmp.is_key_pushed.youon = false;
