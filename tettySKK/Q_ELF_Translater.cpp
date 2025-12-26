@@ -7,7 +7,7 @@
 #include <filesystem>
 
 
-
+#define __DEBUGOUTPUT(dbgstr) __InsertText(pic, (L"["+(dbgstr)+L"]").c_str(), TRUE)
 
 Q_ELF_Translater::Q_ELF_Translater()
 {
@@ -45,7 +45,14 @@ bool Q_ELF_Translater::TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output)
                 return false;
                 break;
             case ex_sakujo:
-                //TODO: ŽÀ‘•‚·‚é
+                ResetKmpState();
+            {
+                INPUT input = { 0 };
+                input.type = INPUT_KEYBOARD;
+                input.ki.wVk = VK_BACK;
+                SendInput(1, &input, sizeof(INPUT));
+            }
+                return false;
                 break;
             default:
                 output = selectedkmp.to;

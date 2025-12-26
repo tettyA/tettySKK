@@ -26,6 +26,10 @@ public:
 	void Set_kmp_is_key_pushed_shift(bool value) {
 		kmp.is_key_pushed.shift = value;
 	}
+	void ResetKmpState(){
+		DSendCnt = 0;
+		kmp.is_key_pushed = { false,false,false };
+	}
 
 private:
 	std::wstring m_buffer;
