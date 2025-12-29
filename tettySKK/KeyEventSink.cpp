@@ -49,14 +49,9 @@ bool CSkkIme::_IsKeyEatenTest(WPARAM wParam)
 
 HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten)
 {
-
-}
-
-HRESULT CSkkIme::ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten)
-{
 	*pfEaten = FALSE;
-
 	WCHAR key = (WCHAR)wParam;
+
 	if ((!__isAlphabet(key)) && m_RomajiToKanaTranslator.GetBuffer() == L"n" && g_currentMode != SKKMode::Hankaku) {
 		//撥音が残っており，かつ，ローマ字入力以外のキーが押された場合は，撥音を確定する
 
@@ -344,6 +339,22 @@ HRESULT CSkkIme::ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam,
 
 		return S_OK;
 	}
+
+	return E_NOTIMPL;
+	//return 
+}
+
+HRESULT CSkkIme::ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten)
+{
+	*pfEaten = FALSE;
+
+	WCHAR key = (WCHAR)wParam;
+
+
+//	if (SUCCEEDED(ExecuteOnSpecialKeyDown(pic, wParam, lParam, pfEaten))) {
+	//	return S_OK;
+	//}
+	
 	if (_IsKeyEaten(wParam))
 	{
 		key += ToSmallAlphabet;
@@ -388,6 +399,7 @@ HRESULT CSkkIme::ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam,
 	if (key != VK_SHIFT) {
 		//		m_RomajiToKanaTranslator.Reset();
 	}
+
 
 	return S_OK;
 }
@@ -445,6 +457,10 @@ const wchar_t* const BOX_CHARS[32] = {
 STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten) {
 	*pfEaten = FALSE;
 
+	if (SUCCEEDED(ExecuteOnSpecialKeyDown(pic, wParam, lParam, pfEaten))) {
+		return S_OK;
+	}
+
 	if (g_currentMode == SKKMode::Hankaku) {
 		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 	}
@@ -472,6 +488,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					_Output(pic, tmpcmpstr, FALSE);
 				}
 #endif
+				
 				for (int i = 0; i < output.length(); i++) {
 					BOOL tmppfEaten = FALSE;
 					HRESULT ret = ExecuteOnKeyDown(pic, output[i], lParam, &tmppfEaten);
