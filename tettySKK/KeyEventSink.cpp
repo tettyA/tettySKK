@@ -340,6 +340,11 @@ HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM 
 		return S_OK;
 	}
 
+
+	if (_IsCtrlKeyPressed()) {
+		*pfEaten = FALSE;
+		return S_OK;
+	}
 	return E_NOTIMPL;
 	//return 
 }
