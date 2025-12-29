@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
+#include <windows.h>
 
-#define TETTYSKK_CONTAIN_Q_ELF
+//#define TETTYSKK_CONTAIN_Q_ELF
 
 extern HMODULE g_hModule;
 //SKK IME –{‘Ì‚ÌCLSID

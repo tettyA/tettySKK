@@ -1,6 +1,9 @@
 #include "pch.h"
-#include "Q_ELF_Translater.h"
+
 #include "Global.h"
+
+#include "Q_ELF_Translater.h"
+
 
 #include <sstream>
 #include <fstream>
@@ -14,6 +17,7 @@ Q_ELF_Translater::Q_ELF_Translater()
     kmp = KMP();
     m_buffer = L"";
     DSendCnt = 0;
+    Send1st = DsendElements();
 }
 
 bool Q_ELF_Translater::TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output)
@@ -45,15 +49,29 @@ bool Q_ELF_Translater::TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output)
                 return false;
                 break;
             case ex_sakujo:
-                ResetKmpState();
-            {
-                INPUT input = { 0 };
-                input.type = INPUT_KEYBOARD;
-                input.ki.wVk = VK_BACK;
-                SendInput(1, &input, sizeof(INPUT));
-            }
+            
+                if (DSendCnt > 0) {
+                    DSendCnt = 0;
+                    ResetKmpState();
+                }
+                else {
+                    ResetKmpState();
+                    INPUT input = { 0 };
+                    input.type = INPUT_KEYBOARD;
+                    input.ki.wVk = VK_BACK;
+                    SendInput(1, &input, sizeof(INPUT));
+                }
                 return false;
                 break;
+            case VK_RETURN:
+                ResetKmpState();
+                {
+                    INPUT input = { 0 };
+                    input.type = INPUT_KEYBOARD;
+                    input.ki.wVk = VK_RETURN;
+                    SendInput(1, &input, sizeof(INPUT));
+                }
+                return false;
             default:
                 output = selectedkmp.to;
                 return true;
@@ -80,6 +98,10 @@ bool Q_ELF_Translater::TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output)
                 if (Send1st.dir1.dirkc != ex_boin) {
                     if (Send1st.dir == KMP::Dir::None || Send2nd.dir == KMP::Dir::None) {
                         output = std::wstring(1, WCHAR(Send1st.dir1.dirkc));
+                        if (kmp.is_key_pushed.sokuon) {
+                            output += std::wstring(1, WCHAR(Send1st.dir1.dirkc));
+                            kmp.is_key_pushed.sokuon = false;
+                        }
                     }
                     else if (Send1st.dir != Send2nd.dir) {//‘÷‰¹
                         output = std::wstring(1, WCHAR(Send1st.dir1.samedirkc));
@@ -95,8 +117,6 @@ bool Q_ELF_Translater::TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output)
                             kmp.is_key_pushed.sokuon = false;
                         }
                     }
-
-
 
                     
                     if (kmp.is_key_pushed.youon) {
@@ -231,3 +251,6 @@ void Q_ELF_Translater::LoadKmpFileFromFile(std::wstring& path)
     kmpfile.close();
 
 }
+
+
+//#endif //TETTYSKK_CONTAIN_Q_ELF

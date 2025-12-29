@@ -47,6 +47,11 @@ bool CSkkIme::_IsKeyEatenTest(WPARAM wParam)
 	return false;
 }
 
+HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten)
+{
+
+}
+
 HRESULT CSkkIme::ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten)
 {
 	*pfEaten = FALSE;
@@ -387,15 +392,60 @@ HRESULT CSkkIme::ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam,
 	return S_OK;
 }
 
+#ifdef KMP_SHOWTRANSINFO
+// 変更ございません。これで全ての方向を表現します。
+constexpr int BIT_UP = 1 << 0; // 1
+constexpr int BIT_DOWN = 1 << 1; // 2
+constexpr int BIT_LEFT = 1 << 2; // 4
+constexpr int BIT_RIGHT = 1 << 3; // 8
+constexpr int BIT_BOLD = 1 << 4; // 16 (太字フラグ)
+
+// --- 全パターン網羅ルックアップテーブル ---
+const wchar_t* const BOX_CHARS[32] = {
+	// --- 通常 (細線) ---
+	L"\u3000", //  0: (なし)   -> 全角スペース、または L""
+	L"\u2575", //  1:  (上)
+	L"\u2577", //  2:  (下)
+	L"\u2502", //  3: │ (上下)
+	L"\u2574", //  4:  (左)
+	L"\u2518", //  5: ┘ (上左)
+	L"\u2510", //  6: ┐ (下左)
+	L"\u2524", //  7: ┤ (上下左)
+	L"\u2576", //  8:  (右)
+	L"\u2514", //  9: └ (上右)
+	L"\u250C", // 10: ┌ (下右)
+	L"\u251C", // 11: ├ (上下右)
+	L"\u2500", // 12: ─ (左右)
+	L"\u2534", // 13: ┴ (上左右)
+	L"\u252C", // 14: ┬ (下左右)
+	L"\u253C", // 15: ┼ (全方向)
+
+	// --- 太字 (Bold/Shift) ---
+	// ※ 1本だけ太い等の複合パターンではなく「全体が太い」定義です
+	L"\u3000", // 16: (なし)
+	L"\u2579", // 17:  (上)
+	L"\u257B", // 18:  (下)
+	L"\u2503", // 19: ┃ (上下)
+	L"\u2578", // 20:  (左)
+	L"\u251B", // 21: ┛ (上左)
+	L"\u2513", // 22: ┓ (下左)
+	L"\u252B", // 23: ┫ (上下左)
+	L"\u257A", // 24:  (右)
+	L"\u2517", // 25: ┗ (上右)
+	L"\u250F", // 26: ┏ (下右)
+	L"\u2523", // 27:  (上下右)
+	L"\u2501", // 28:  (左右)
+	L"\u253B", // 29:  (上左右)
+	L"\u2533", // 30:  (下左右)
+	L"\u254B"  // 31:  (全方向)
+};
+#endif
 
 //キーが押された瞬間
 STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten) {
 	*pfEaten = FALSE;
 
 	if (g_currentMode == SKKMode::Hankaku) {
-	//	m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
-		//m_q_elftranslater.ResetKmpState();
-		//__DEBUGOUTPUT(std::wstring(L"dfs1"));
 		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 	}
 	else if (g_currentMode == SKKMode::Henkan &&
@@ -406,7 +456,6 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		)
 		) {
 		m_q_elftranslater.ResetKmpState();
-		//__DEBUGOUTPUT(std::wstring(L"dfs2"));
 		//ASDFJKLで候補を選ぶ時は特別に処理する。
 		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 	}
@@ -414,7 +463,15 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		std::wstring output;
 		if (m_q_elftranslater.isNeedExecuteTranslate((WCHAR)wParam)) {
 			if (m_q_elftranslater.TranslateQWERTYtoQ_ELF((WCHAR)wParam, output)) {
-				//__DEBUGOUTPUT(std::wstring(L"dfs"));
+#ifdef KMP_SHOWTRANSINFO
+				std::wstring tmpcmpstr;
+				_GetCompositionString(tmpcmpstr);
+				if (tmpcmpstr.length() > 0 && tmpcmpstr.back() >= L'─' && tmpcmpstr.back() <= L'╋') {
+					tmpcmpstr.pop_back();
+
+					_Output(pic, tmpcmpstr, FALSE);
+				}
+#endif
 				for (int i = 0; i < output.length(); i++) {
 					BOOL tmppfEaten = FALSE;
 					HRESULT ret = ExecuteOnKeyDown(pic, output[i], lParam, &tmppfEaten);
@@ -432,17 +489,60 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			}
 			else {
 				*pfEaten = TRUE;
+#ifdef KMP_SHOWTRANSINFO
+				std::wstring tmpcmpstr;
+				_GetCompositionString(tmpcmpstr);
+				//tmpcmpstr += L"|" + tmpcmpstr + L"||";
+
+				if (tmpcmpstr.length() > 0 && tmpcmpstr.back() >= L'─' && tmpcmpstr.back() <= L'╋') {
+				//	__DEBUGOUTPUT(tmpcmpstr);
+					tmpcmpstr.pop_back();
+				//	__DEBUGOUTPUT(tmpcmpstr);
+				}
+				auto tmp = m_q_elftranslater.GetDSendCnt();
+				auto tmp2 = m_q_elftranslater.GetkeyState();
+
+				std::wstring nowstate;
+				if (tmp > 0) {
+					auto tmp3 = m_q_elftranslater.GetSend1stDir();
+					int mask = 0;
+					int dirmask = (tmp3 == KMP::Dir::L ? BIT_LEFT : tmp3 == KMP::Dir::R ? BIT_RIGHT : BIT_LEFT | BIT_RIGHT);
+					
+					mask = (BIT_UP | dirmask);
+					nowstate = L"";
+
+					if (tmp2.sokuon) {
+						mask |= BIT_DOWN;
+					}
+					if (tmp2.youon) {
+						int elsedirmask = (tmp3 == KMP::Dir::R ? BIT_LEFT : tmp3 == KMP::Dir::L ? BIT_RIGHT : BIT_LEFT | BIT_RIGHT);
+						mask |= elsedirmask;
+					}
+					if (tmp2.shift) {
+						mask |= BIT_BOLD;
+					}
+
+					nowstate = BOX_CHARS[mask];
+				}
+				//__DEBUGOUTPUT(tmpcmpstr+L"1234567890");
+				_Output(pic, tmpcmpstr+nowstate, FALSE);
+#endif
 				return S_OK;
 			}
 		}
 		else {
+#ifdef KMP_SHOWTRANSINFO
+			std::wstring tmpcmpstr;
+			_GetCompositionString(tmpcmpstr);
+			if (tmpcmpstr.length() > 0 && tmpcmpstr.back() >= L'─' && tmpcmpstr.back() <= L'╋') {
+				tmpcmpstr.pop_back();
+			}
+#endif
 			m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
-			//__DEBUGOUTPUT(std::wstring(L"dfs3"));
-			//m_q_elftranslater.ResetKmpState();
 			return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 		}
 	}
-
+	
 	return S_OK;
 }
 

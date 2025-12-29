@@ -79,6 +79,8 @@ private:
 	bool _IsKeyEaten(WPARAM wParam);
 	bool _IsKeyEatenTest(WPARAM wParam);
 
+	//–ñ‘©‚³‚ê‚Ä‚¢‚é‹L†‚É‚Â‚¢‚Äˆ—‚·‚é (l ‚Æ‚©CCtrl + J‚Æ‚©)
+	HRESULT ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten);
 	HRESULT ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten);
 
 	HRESULT _HandleRegSpaceKey(ITfContext* pic, WCHAR key);

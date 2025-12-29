@@ -167,7 +167,7 @@ if exist "$(TargetPath)" move /Y "$(TargetPath)" "$(TargetPath).locked_old"
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>if exist "C:\Windows\System32\IME\tettySKK\$(TargetName)$(TargetExt)" move /Y "C:\Windows\System32\IME\tettySKK\$(TargetName)$(TargetExt)" "C:\Windows\System32\IME\tettySKK\$(TargetName)$(TargetExt).locked_old"
-move /Y "$(TargetPath)" "C:\Windows\System32\IME\tettySKK\$(TargetName)$(TargetExt) "
+copy /Y "$(TargetPath)" "C:\Windows\System32\IME\tettySKK\$(TargetName)$(TargetExt) "
 notepad.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

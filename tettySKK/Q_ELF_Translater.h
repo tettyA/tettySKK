@@ -1,5 +1,11 @@
 #pragma once
+
+#include "Global.h"
+
+//#ifdef TETTYSKK_CONTAIN_Q_ELF
+
 #include "kmp.h"
+#define KMP_SHOWTRANSINFO
 
 class Q_ELF_Translater
 {
@@ -16,7 +22,7 @@ public:
 	/// <returns>trueの時，変換を行った。falseの時，変換に達しなかった</returns>
 	bool TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output);
 
-	bool isNeedExecuteTranslate(WCHAR key) {
+	bool isNeedExecuteTranslate(WCHAR key) const{
 		return kmp.KMPs.contains(key);
 	}
 	void LoadKmpFileFromFile(std::wstring &path);
@@ -30,6 +36,17 @@ public:
 		DSendCnt = 0;
 		kmp.is_key_pushed = { false,false,false };
 	}
+#ifdef KMP_SHOWTRANSINFO
+	KMP::SpecialKeyStates GetkeyState() const {
+		return kmp.is_key_pushed;
+	}
+	int GetDSendCnt() const{
+		return DSendCnt;
+	}
+	KMP::Dir GetSend1stDir() const {
+		return Send1st.dir;
+	}
+#endif
 
 private:
 	std::wstring m_buffer;
@@ -46,3 +63,4 @@ private:
 	}Send1st;
 };
 
+//#endif //TETTYSKK_CONTAIN_Q_ELF
