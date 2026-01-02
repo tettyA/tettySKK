@@ -53,21 +53,21 @@ void CSkkIme::__InsertNewRegWord(ITfContext* pic, const std::wstring& text, BOOL
  
 void CSkkIme::_Output(ITfContext* pic, const std::wstring& text, BOOL _isDetermined)
 {
-	/*if (!g_isAbleOutput) {
+	if (!g_isAbleOutput) {
 		if (_isDetermined) {
 			g_bufoutput = text;
 		}
 		else {
 			g_bufoutput += text;
 		}
-	}*/
+	}
 	if (m_isRegiteringNewWord) {
 		__InsertNewRegWord(pic, text, _isDetermined);
 	}
 	else {
 		__InsertText(pic, text.c_str(), _isDetermined);
 	}
-	//g_bufoutput = L"";
+	g_bufoutput = L"";
 }
 
 HRESULT CSkkIme::_SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCookie ec, ITfRange* pRange) {
@@ -79,6 +79,7 @@ HRESULT CSkkIme::_SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCooki
 	}
 
 	if (m_atomInptAttribute != TF_INVALID_GUIDATOM) {
+		//pProperty->Clear(ec, pRange);
 		VARIANT var;
 		var.vt = VT_I4;
 		var.lVal = (LONG)m_atomInptAttribute;
