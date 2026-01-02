@@ -97,6 +97,8 @@ private:
 	SKKCandidates m_CurrentCandidates;
 	SKKCandidates m_RegCurrentCandidates;
 
+	bool m_isExplictingConversionMode;
+
 	size_t m_CurrentShowCandidateIndex;
 	size_t m_RegCurrentShowCandidateIndex;
 

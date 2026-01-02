@@ -184,6 +184,8 @@ STDMETHODIMP CSkkIme::OnCompositionTerminated(TfEditCookie ecWrite, ITfCompositi
 	if (pComposition && this->_pComposition == pComposition) {
 		_pComposition.Release();
 		_pComposition = nullptr;
+
+		m_isExplictingConversionMode = false;
 	}
 	return S_OK;
 }
@@ -252,6 +254,7 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 	//m_CurrentCandidates.clear();
 	//m_CurrentShowCandidateIndex = 0;
 	m_RomajiToKanaTranslator.Reset();
+	m_isExplictingConversionMode = false;
 	_ChangeCurrentMode(SKKMode::Kakutei);
 
 	m_Gokan = L"";
@@ -286,6 +289,7 @@ void CSkkIme::_CommitAndStartComposition(ITfContext* pic,std::wstring nextinsert
 	}
 	m_CurrentCandidates.clear();
 	m_CurrentShowCandidateIndex = 0;
+	m_isExplictingConversionMode = false;
 	//m_RomajiToKanaTranslator.Reset();
 	if (!_IsShiftKeyPressed()) {
 		_ChangeCurrentMode(SKKMode::Kakutei);

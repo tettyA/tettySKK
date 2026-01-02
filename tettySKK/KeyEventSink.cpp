@@ -491,6 +491,8 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					tmpcmpstr.pop_back();
 
 					_Output(pic, tmpcmpstr, FALSE);
+
+					
 				}
 #endif
 				

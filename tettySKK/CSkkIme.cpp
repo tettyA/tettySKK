@@ -23,6 +23,8 @@ CSkkIme::CSkkIme()
 	m_CurrentCandidates = SKKCandidates();
 	m_RegCurrentCandidates = SKKCandidates();
 
+	m_isExplictingConversionMode = false;
+
 	m_pCandidateWindow = new CCandidateWindow(g_hModule);
 
 	g_currentMode = SKKMode::Hankaku;

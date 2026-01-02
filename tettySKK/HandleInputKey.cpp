@@ -117,6 +117,8 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 
 				std::wstring displayStr = m_CurrentCandidates[0]_Candidate;
 
+				m_isExplictingConversionMode = true;
+
 				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0'/* && compositionString.length() > m_Gokan.length()*/) {
 					//displayStr = 書   compositionString = 書k or 書く
 					displayStr += compositionString.substr(m_Gokan.length());
@@ -140,7 +142,7 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 		std::wstring compositionString;
 
 		_GetCompositionString(compositionString);
-
+		m_isExplictingConversionMode = true;
 		//送り仮名付きのとき
 		if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
 			//書k or 書く  -> k or く
@@ -205,13 +207,14 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			//pass(SDFJKLで選んでいる段階なので)
 		}
 		else {
-			//TODO: 処理の共通化
+			//TODO: 処理の共通化 
 			if (m_isRegiteringNewWord) {
 				m_RegCurrentCandidates.clear();
 				m_RegCurrentShowCandidateIndex = 0;
 				m_RegInputDetermined += m_RegInputUndetermined;
 				m_RegInputUndetermined = L"";
 
+				m_isExplictingConversionMode = false;
 
 				m_RomajiToKanaTranslator.Reset();
 
@@ -296,7 +299,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		return S_OK;
 	}
 	// 工廠(変換中) + n(新規) => 工廠(確定) + n(変換中)  (暗黙確定)
-	if (!m_isRegiteringNewWord && !m_CurrentCandidates.empty()) {
+	if (!m_isRegiteringNewWord && !m_CurrentCandidates.empty() && m_isExplictingConversionMode) {
 		if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
 			//TODO: ASDFJKL を打ち込む時に，それ以外のものが打ち込まれたらCandidates[0]で確定	
 		}
