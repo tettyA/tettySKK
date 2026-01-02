@@ -57,6 +57,9 @@ void _ConvertToHiragana(std::wstring& str);
 DECLSPEC_SELECTANY SKKMode g_currentMode;
 DECLSPEC_SELECTANY KanaMode g_CurrentKanaMode;
 
+//DECLSPEC_SELECTANY bool g_isAbleOutput;
+//DECLSPEC_SELECTANY std::wstring g_bufoutput;
+
 inline bool __isAlphabet(WCHAR key) {
 	return (key >= L'A' && key <= L'Z')
 #ifdef TETTYSKK_CONTAIN_Q_ELF

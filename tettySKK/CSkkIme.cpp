@@ -30,6 +30,9 @@ CSkkIme::CSkkIme()
 	g_currentMode = SKKMode::Hankaku;
 	g_CurrentKanaMode = KanaMode::Hiragana;
 
+	//g_isAbleOutput = false;
+	//g_bufoutput = L"";
+
 	m_Gokan = L"";
 	m_OkuriganaFirstChar = L'\0';
 

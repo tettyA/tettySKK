@@ -272,7 +272,7 @@ HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM 
 						m_currentInputKana.pop_back();
 					}
 					if (m_CurrentCandidates.size() > 0) {
-						__InsertText(pic, currentCompStr.c_str(), TRUE);
+						_Output(pic, currentCompStr.c_str(), TRUE);
 						if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX && m_CurrentCandidates.size() > m_CurrentShowCandidateIndex) {
 							//	m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
 							{
@@ -287,7 +287,7 @@ HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM 
 						_CommitComposition(pic);
 					}
 					else {
-						__InsertText(pic, currentCompStr.c_str(), FALSE);
+						_Output(pic, currentCompStr.c_str(), FALSE);
 						if (currentCompStr.length() > 0) {
 							_SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandidateWindowFromHistory(pic);
 						}
@@ -298,7 +298,7 @@ HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM 
 					}
 				}
 				else {
-					__InsertText(pic, currentCompStr.c_str(), FALSE);
+					_Output(pic, currentCompStr.c_str(), FALSE);
 				}
 			}
 			else {
@@ -495,9 +495,11 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					
 				}
 #endif
-				
+				//g_isAbleOutput = false;
+
 				for (int i = 0; i < output.length(); i++) {
 					BOOL tmppfEaten = FALSE;
+				//	g_isAbleOutput = i == output.length() - 1;
 					HRESULT ret = ExecuteOnKeyDown(pic, output[i], lParam, &tmppfEaten);
 					
 					if (FAILED(ret)) {
@@ -697,6 +699,10 @@ void CSkkIme::_SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandi
 		m_SKKDictionaly.GetPredictionCandidate(m_currentInputKana, predictionCandidate);
 
 		if (!predictionCandidate _Candidate.empty()) {
+		//	std::wstring tmp;
+			//_GetCompositionString(tmp);
+
+			//predictionCandidate _Candidate += L" i:" + m_currentInputKana + L" c:" + tmp;
 			SKKCandidates predictionCandidateVec = { predictionCandidate };
 			m_pCandidateWindow->SetCandidates(predictionCandidateVec, 0, CANDIDATEWINDOW_MODE_PREDICT);
 			_UpDateCandidateWindowPosition(pic);

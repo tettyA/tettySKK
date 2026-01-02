@@ -248,6 +248,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 
 		if (m_isRegiteringNewWord) {
 			if (m_RegCurrentShowCandidateIndex == 0) {
+				//ˆÓ}“I‚É_Output‚É‚µ‚Ä‚¢‚È‚¢
 				__InsertText(pic, (m_RegKey).c_str(), FALSE);
 				m_RegCurrentCandidates.clear();
 				m_RegCurrentShowCandidateIndex = 0;
@@ -273,7 +274,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		}
 		else {
 			if (m_CurrentShowCandidateIndex == 0) {
-				__InsertText(pic, m_currentInputKana.c_str(), FALSE);
+				_Output(pic, m_currentInputKana.c_str(), FALSE);
 				__FinishCandidateWindowShow();
 				return S_OK;
 			}
@@ -557,9 +558,9 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				(
 					(
 						(newkana == L"‚Á" && g_CurrentKanaMode == KanaMode::Hiragana) ||
-						(newkana == L"ƒb" && g_CurrentKanaMode == KanaMode::Katakana) ||
-						(newkana == L"‚ñ" && g_CurrentKanaMode == KanaMode::Hiragana) ||
-						(newkana == L"ƒ“" && g_CurrentKanaMode == KanaMode::Katakana)
+						(newkana == L"ƒb" && g_CurrentKanaMode == KanaMode::Katakana) 
+					//	(newkana == L"‚ñ" && g_CurrentKanaMode == KanaMode::Hiragana) ||
+						//(newkana == L"ƒ“" && g_CurrentKanaMode == KanaMode::Katakana
 					) &&
 					m_currentInputKana.length() - m_Gokan.length() >= 1
 				 )
