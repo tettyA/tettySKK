@@ -42,6 +42,8 @@ CSkkIme::CSkkIme()
 	m_pLangBarItemButton = new CLangBarItemButton(this, GUID_LBI_INPUTMODE);
 	m_isRegiteringNewWord = FALSE;
 
+	m_atomInptAttribute = TF_INVALID_GUIDATOM;
+
 	{
 		WCHAR wdir[MAX_PATH];
 		SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, wdir);
@@ -137,7 +139,11 @@ STDAPI CSkkIme::Activate(ITfThreadMgr* ptim, TfClientId tid) {
 		return E_FAIL;
 	}
 	
-	
+	CComPtr<ITfCategoryMgr> pCategoryMgr;
+	if (SUCCEEDED(pCategoryMgr.CoCreateInstance(CLSID_TF_CategoryMgr))) {
+		pCategoryMgr->RegisterGUID(GUID_Skk_DisplayAttirbute_Input, &m_atomInptAttribute);
+	}
+
 	m_SKKDictionaly.LoadDictionaryFromFile(SKK_DICTIONARY_FILEPATH, SKK_USER_DICTIONARY_FILEPATH);
 	//m_SKKDictionaly.LoadUserDictionaryFromFile(SKK_USER_DICTIONARY_FILEPATH);
 
@@ -146,6 +152,8 @@ STDAPI CSkkIme::Activate(ITfThreadMgr* ptim, TfClientId tid) {
 	if (m_pLangBarItemButton) {
 		m_pLangBarItemButton->_Init();
 	}
+
+
 
 	__UpdateInputMode();
 	return S_OK;

@@ -78,8 +78,16 @@ HRESULT CSkkIme::_SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCooki
 		return hr;
 	}
 
+	if (m_atomInptAttribute != TF_INVALID_GUIDATOM) {
+		VARIANT var;
+		var.vt = VT_I4;
+		var.lVal = (LONG)m_atomInptAttribute;
 
-	TfGuidAtom gatom = TF_INVALID_GUIDATOM;
+		hr = pProperty->SetValue(ec, pRange, &var);
+	}
+	
+
+	/*TfGuidAtom gatom = TF_INVALID_GUIDATOM;
 	CComPtr<ITfCategoryMgr> pCategoryMgr;
 	if (SUCCEEDED(pCategoryMgr.CoCreateInstance(CLSID_TF_CategoryMgr))) {
 		pCategoryMgr->RegisterGUID(GUID_Skk_DisplayAttirbute_Input, &gatom);
@@ -90,9 +98,9 @@ HRESULT CSkkIme::_SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCooki
 		var.lVal = (LONG)gatom;
 
 		pProperty->SetValue(ec, pRange, &var);
-	}
+	}*/
 
-	return S_OK;
+	return hr;
 }
 
 //実際にテキストの編集を行う
