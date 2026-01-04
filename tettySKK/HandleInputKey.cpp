@@ -322,11 +322,24 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 			//	__DEBUGOUTPUT(L"next:" + nextChar);
 				if (m_RomajiToKanaTranslator.Translate(key, newxtKana)) {
 					nextinsert = newxtKana;
-					std::wstring tmp;
-					_GetCompositionString(tmp);
-					tmp += nextinsert;
-					_Output(pic, tmp, TRUE);
-					_CommitComposition(pic);
+					
+					// Shiftが押されていたら変換モードを開始
+					if (_IsShiftKeyPressed()) {
+						if (_pComposition) {
+							_CommitAndStartComposition(pic, nextinsert);
+						}
+						_ChangeCurrentMode(SKKMode::Henkan);
+						m_currentInputKana = newxtKana;
+
+						//FIX: 変換モードに入ったときに，候補予測ウィンドウが出ない問題の対策
+					}
+					else {
+						std::wstring tmp;
+						_GetCompositionString(tmp);
+						tmp += nextinsert;
+						_Output(pic, tmp, TRUE);
+						_CommitComposition(pic);
+					}
 
 					return S_OK;
 				}
