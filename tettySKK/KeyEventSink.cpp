@@ -496,11 +496,11 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					
 				}
 #endif
-				g_isAbleOutput = false;
+				g_isAbleOutput = true;
 
 				for (int i = 0; i < output.length(); i++) {
 					BOOL tmppfEaten = FALSE;
-					g_isAbleOutput = i == output.length() - 1;
+					//g_isAbleOutput = i == output.length() - 1;
 					HRESULT ret = ExecuteOnKeyDown(pic, output[i], lParam, &tmppfEaten);
 					
 					if (FAILED(ret)) {

@@ -64,16 +64,19 @@ bool Q_ELF_Translater::TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output)
                 return false;
                 break;
             case VK_RETURN:
+            case VK_OEM_MINUS:
                 ResetKmpState();
                 {
                     INPUT input = { 0 };
                     input.type = INPUT_KEYBOARD;
-                    input.ki.wVk = VK_RETURN;
+                    input.ki.wVk = selectedkmp.to;
                     SendInput(1, &input, sizeof(INPUT));
                 }
                 return false;
+            
+
             default:
-                output = selectedkmp.to;
+                output = std::wstring(1, (WCHAR)selectedkmp.to);
                 return true;
                 break;
             }
@@ -91,7 +94,10 @@ bool Q_ELF_Translater::TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output)
                 }
             }
             else {
-                DSendCnt = 0;
+                if ((GetKeyState(VK_LSHIFT) & 0xf0000000) || (GetKeyState(VK_RSHIFT) & 0xf0000000)
+                    || (GetKeyState(VK_SHIFT) & 0xf0000000)) {
+                    kmp.is_key_pushed.shift = true;
+                }
 
                 DsendElements Send2nd = DsendElements{ selectedkmp.dir,selectedkmp.to,selectedkmp.tootherdir };
 
@@ -99,36 +105,36 @@ bool Q_ELF_Translater::TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output)
                     if (Send1st.dir == KMP::Dir::None || Send2nd.dir == KMP::Dir::None) {
                         output = std::wstring(1, WCHAR(Send1st.dir1.dirkc));
                         if (kmp.is_key_pushed.sokuon) {
-                            output += std::wstring(1, WCHAR(Send1st.dir1.dirkc));
-                            kmp.is_key_pushed.sokuon = false;
+                            output += std::wstring(1, WCHAR(Send1st.dir1.dirkc));                     
                         }
                     }
                     else if (Send1st.dir != Send2nd.dir) {//濁音
                         output = std::wstring(1, WCHAR(Send1st.dir1.samedirkc));
                         if (kmp.is_key_pushed.sokuon) {
                             output += std::wstring(1, WCHAR(Send1st.dir1.samedirkc));
-                            kmp.is_key_pushed.sokuon = false;
                         }
                     }
                     else if (Send1st.dir == Send2nd.dir) {//清音
                         output = std::wstring(1, WCHAR(Send1st.otherdirkc));
                         if (kmp.is_key_pushed.sokuon) {
                             output += std::wstring(1, WCHAR(Send1st.otherdirkc));
-                            kmp.is_key_pushed.sokuon = false;
                         }
                     }
 
                     
                     if (kmp.is_key_pushed.youon) {
                         output += L"Y";
-                        kmp.is_key_pushed.youon = false;
                     }
 
                     //shift の処理は，呼出側が行う。
                 }
 
                 output += WCHAR(selectedkmp.secboin);
-               
+
+                DSendCnt = 0;
+                kmp.is_key_pushed.sokuon = false;
+                kmp.is_key_pushed.youon = false;
+
                 return true;
             }
         }
