@@ -7,6 +7,8 @@
 
 namespace fs = std::filesystem;
 
+bool no_installDir = false;
+
 void PutSep() {
     std::cout << "-----------------------------------------" << std::endl;
 
@@ -151,19 +153,22 @@ void skkInstall() {
             }
         }
 
-        Log("SKK-JISYO.L を " + dictPath.string() + " にインストールします。時間がかかる場合があります。");
+        if (!no_installDir) {
+
+            Log("SKK-JISYO.L を " + dictPath.string() + " にインストールします。時間がかかる場合があります。");
 
 
 
-        if (DownloadDict(dictUrl, dictPath)) {
-            Log("辞書のダウンロードに成功しました。");
+            if (DownloadDict(dictUrl, dictPath)) {
+                Log("辞書のダウンロードに成功しました。");
 
-        }
-        else {
-            LogError("辞書のダウンロードに失敗しました。");
+            }
+            else {
+                LogError("辞書のダウンロードに失敗しました。");
 
-            WaitEnter();
-            return;
+                WaitEnter();
+                return;
+            }
         }
 
 
@@ -307,12 +312,15 @@ int main()
         return 0;
     }
 
-    Log("インストールを希望する場合は，i を，アンインストール希望する場合は， u を入力してください。");
+    Log("インストールを希望する場合は，i を，アンインストール希望する場合は， u を入力してください。iiを入力すると辞書インストールなしでIMEを登録します。");
 
     {
         std::string ho;
         std::cin >> ho;
-        if (ho == "i") {
+        if (ho == "i" || ho=="ii") {
+            if (ho == "ii") {
+                no_installDir = true;
+            }
             skkInstall();
         }
         else if (ho == "u") {

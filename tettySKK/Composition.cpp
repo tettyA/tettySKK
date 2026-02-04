@@ -88,19 +88,6 @@ HRESULT CSkkIme::_SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCooki
 	}
 	
 
-	/*TfGuidAtom gatom = TF_INVALID_GUIDATOM;
-	CComPtr<ITfCategoryMgr> pCategoryMgr;
-	if (SUCCEEDED(pCategoryMgr.CoCreateInstance(CLSID_TF_CategoryMgr))) {
-		pCategoryMgr->RegisterGUID(GUID_Skk_DisplayAttirbute_Input, &gatom);
-	}
-	if (gatom != TF_INVALID_GUIDATOM) {
-		VARIANT var;
-		var.vt = VT_I4;
-		var.lVal = (LONG)gatom;
-
-		pProperty->SetValue(ec, pRange, &var);
-	}*/
-
 	return hr;
 }
 
@@ -143,31 +130,33 @@ HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHA
 			return hr;
 		}
 
-		if (FAILED(_SetInputDisplayAttributeInfo(pContext, ec, pRange))) {
-			return hr;
+		if (!isDetermined) {
+
+			if (FAILED(_SetInputDisplayAttributeInfo(pContext, ec, pRange))) {
+				return hr;
+			}
+
+			CComPtr<ITfContextComposition> pContextComposition;
+			if (FAILED(pContext->QueryInterface(IID_PPV_ARGS(&pContextComposition))) || (pContextComposition == nullptr)) {
+				return hr;
+			}
+
+			CComPtr<ITfComposition> pComposition;
+			if (FAILED(pContextComposition->StartComposition(
+				ec,
+				pRange,
+				this,
+				&pComposition
+			)) || pComposition == nullptr) {
+				return hr;
+			}
+
+
+
+
+			_pComposition = pComposition;
+
 		}
-
-		CComPtr<ITfContextComposition> pContextComposition;
-		if (FAILED(pContext->QueryInterface(IID_PPV_ARGS(&pContextComposition))) || (pContextComposition == nullptr)) {
-			return hr;
-		}
-
-		CComPtr<ITfComposition> pComposition;
-		if (FAILED(pContextComposition->StartComposition(
-			ec,
-			pRange,
-			this,
-			&pComposition
-		)) || pComposition == nullptr) {
-			return hr;
-		}
-
-
-		
-
-		_pComposition = pComposition;
-
-
 		pRange->Collapse(ec, TF_ANCHOR_END);
 
 		TF_SELECTION sel = { 0 };

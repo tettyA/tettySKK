@@ -36,6 +36,7 @@ bool Q_ELF_Translater::TranslateQWERTYtoQ_ELF(WCHAR key, std::wstring& output)
             {
             case ex_smalltu:
                 kmp.is_key_pushed.sokuon = true;
+              //  output = L"XTU";
                 return false;
                 break;
             case ex_nn:

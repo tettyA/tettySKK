@@ -612,7 +612,10 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		}
 		else {
 			//変換に達していない場合は，バッファをそのまま表示
-			_Output(pic, m_RomajiToKanaTranslator.GetBuffer(), FALSE);
+			std::wstring buf = m_RomajiToKanaTranslator.GetBuffer();
+			if (!buf.empty()) {
+				_Output(pic, buf, FALSE);
+			}
 		}
 		return S_OK;
 	}
