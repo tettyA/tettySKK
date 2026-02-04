@@ -81,12 +81,14 @@ private:
 
 	//ñÒë©Ç≥ÇÍÇƒÇ¢ÇÈãLçÜÇ…Ç¬Ç¢ÇƒèàóùÇ∑ÇÈ (l Ç∆Ç©ÅCCtrl + JÇ∆Ç©)
 	HRESULT ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten);
+	HRESULT ExecuteOnModeChangeKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten);
 	HRESULT ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten);
 
 	HRESULT _HandleRegSpaceKey(ITfContext* pic, WCHAR key);
 	HRESULT _HandleSpaceKey(ITfContext* pic, WCHAR key);
 	HRESULT _HandleCharKey(ITfContext* pic, WCHAR key);
-	
+	HRESULT _HandleKana(ITfContext* pic, std::wstring kanas, std::wstring& fromajis);
+
 	void _AddToTextonScreenAndUpdateCurrentInputKana(WCHAR key,std::wstring& textonScreen, std::wstring& baseKana, std::wstring& newkana,std::wstring&prevRomaji,size_t &prevRomajilen ,std::wstring& finalText);
 	void _AddToTextonScreenAndUpdateCurrentInputKana(WCHAR key,std::wstring& textOnscreen,std::wstring& finalText);
 	

@@ -88,7 +88,6 @@ HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 
 HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 {
-
 	if (m_CurrentCandidates.empty())
 	{
 		std::wstring compositionString;
@@ -181,124 +180,6 @@ HRESULT CSkkIme::_HandleSpaceKey(ITfContext* pic, WCHAR key)
 HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 {
 
-	if (key == L'q') {
-		if (_pComposition && m_currentInputKana.length() > 0 && !m_isRegiteringNewWord) {
-			_ConvertToKatakana(m_currentInputKana);
-			_Output(pic, m_currentInputKana, TRUE);
-			_CommitComposition(pic);
-		}
-		else if (m_isRegiteringNewWord && m_RegInputUndetermined.length() > 0) {
-			_ConvertToKatakana(m_RegInputUndetermined);
-			_Output(pic, m_RegInputUndetermined, TRUE);
-			_CommitComposition(pic);
-		}
-		else {
-			_ChangeCurrenKanaMode(KanaMode::Katakana);
-		}
-		return S_OK;
-	}
-	else if (key == L'l') {
-		if (g_currentMode == SKKMode::Henkan &&
-			(
-				(m_isRegiteringNewWord && m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX)
-				||
-				(!m_isRegiteringNewWord && m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX)
-				)) {
-			//pass(SDFJKLで選んでいる段階なので)
-		}
-		else {
-			//TODO: 処理の共通化 
-			if (m_isRegiteringNewWord) {
-				m_RegCurrentCandidates.clear();
-				m_RegCurrentShowCandidateIndex = 0;
-				m_RegInputDetermined += m_RegInputUndetermined;
-				m_RegInputUndetermined = L"";
-
-				m_isExplictingConversionMode = false;
-
-				m_RomajiToKanaTranslator.Reset();
-
-				m_Gokan = L"";
-				m_OkuriganaFirstChar = L'\0';
-				SKKCandidates tempCanddates = { { m_RegInputDetermined,m_RegKey }, { L"",L"" } };
-				m_pCandidateWindow->SetCandidates(tempCanddates, 0, CANDIDATEWINDOW_MODE_REGWORD);
-				_UpDateCandidateWindowPosition(pic);
-			}
-			else
-			{
-				if (m_pCandidateWindow->IsWindowExists()) {
-					m_pCandidateWindow->HideWindow();
-				}
-
-				m_CurrentCandidates.clear();
-				m_CurrentShowCandidateIndex = 0;
-
-				m_Gokan = L"";
-				m_OkuriganaFirstChar = L'\0';
-			}
-
-			_ChangeCurrentMode(SKKMode::Hankaku);
-			return S_OK;
-		}
-	}
-	else if (key == L'x' && g_currentMode == SKKMode::Henkan) {
-
-		//前の候補
-		//TODO:  処理の共通化
-
-		if (m_isRegiteringNewWord) {
-			if (m_RegCurrentShowCandidateIndex == 0) {
-				//意図的に_Outputにしていない
-				__InsertText(pic, (m_RegKey).c_str(), FALSE);
-				m_RegCurrentCandidates.clear();
-				m_RegCurrentShowCandidateIndex = 0;
-
-				return S_OK;
-			}
-			//std::wstring additionalStr = L"";
-			std::wstring compositionString;
-			_GetCompositionString(compositionString);
-			//送り仮名付きのとき
-			//TODO Reg語幹を追加した時，書き直す。
-		//	if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
-			//	//書k or 書く  -> k or く
-				//additionalStr = compositionString.substr(compositionString.length() - 1);
-		//	}
-			
-			m_RegCurrentShowCandidateIndex = max(0, (int)m_RegCurrentShowCandidateIndex - 1);
-			
-			__InsertTextMakeCandidateWindow(pic,
-				(m_RegCurrentCandidates[m_RegCurrentShowCandidateIndex]_Candidate ).c_str(),
-				(m_RegKey).c_str()
-			);
-		}
-		else {
-			if (m_CurrentShowCandidateIndex == 0) {
-				_Output(pic, m_currentInputKana.c_str(), FALSE);
-				__FinishCandidateWindowShow();
-				return S_OK;
-			}
-			std::wstring additionalStr = L"";
-			std::wstring compositionString;
-			_GetCompositionString(compositionString);
-			//送り仮名付きのとき
-			if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
-				//書k or 書く  -> k or く
-				additionalStr = m_currentInputKana.substr(m_Gokan.length());
-			}
-			m_CurrentShowCandidateIndex = max(0, (int)m_CurrentShowCandidateIndex - 1);
-
-			__InsertTextMakeCandidateWindow(pic,
-				(m_CurrentCandidates[m_CurrentShowCandidateIndex]_Candidate + additionalStr).c_str(),
-				(m_currentInputKana).c_str()
-			);
-		}
-		return S_OK;
-	}
-	else if (key == VK_OEM_PLUS + ToSmallAlphabet) {
-		_Output(pic, SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR, TRUE);
-		return S_OK;
-	}
 	// 工廠(変換中) + n(新規) => 工廠(確定) + n(変換中)  (暗黙確定)
 	if (!m_isRegiteringNewWord && !m_CurrentCandidates.empty() && m_isExplictingConversionMode) {
 		if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
@@ -619,6 +500,168 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 		}
 		return S_OK;
 	}
+
+	return S_OK;
+}
+
+HRESULT CSkkIme::_HandleKana(ITfContext* pic, std::wstring kanas, std::wstring& fromajis) {
+	for (int i = 0; i < kanas.length(); i++) {
+		//_HandleCharの内容をかな向きにしていく。
+		WCHAR kana = kanas[i];
+
+		// ========================================
+		// 1. 暗黙確定の処理（変換候補表示中に新しい文字が入力された場合）
+		// ========================================
+	// 工廠(変換中) + n(新規) => 工廠(確定) + n(変換中)  (暗黙確定)
+		if (!m_isRegiteringNewWord && !m_CurrentCandidates.empty() && m_isExplictingConversionMode) {
+			if (m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+				//TODO: ASDFJKL を打ち込む時に，それ以外のものが打ち込まれたらCandidates[0]で確定	
+			}
+			else {
+				{
+					//現在の候補を変換履歴に追加。
+					std::wstring searchKey = m_currentInputKana;
+					if (m_OkuriganaFirstChar != L'\0') {
+						searchKey = m_Gokan + m_OkuriganaFirstChar;
+					}
+					m_SKKDictionaly.AddHistoryCandidate(searchKey, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
+				}
+
+				std::wstring nextinsert(1, kana);
+
+				// Shiftが押されていたら変換モードを開始
+				if (_IsShiftKeyPressed()) {
+					if (_pComposition) {
+						_CommitAndStartComposition(pic, nextinsert);
+					}
+					_ChangeCurrentMode(SKKMode::Henkan);
+					m_currentInputKana = nextinsert;
+
+					//FIX: 変換モードに入ったときに，候補予測ウィンドウが出ない問題の対策
+				}
+				else {
+					std::wstring tmp;
+					_GetCompositionString(tmp);
+					tmp += nextinsert;
+					_Output(pic, tmp, TRUE);
+					_CommitComposition(pic);
+				}
+
+				continue;
+
+			}
+		}
+
+		//新語登録中で候補がある場合
+		if (m_isRegiteringNewWord && !m_RegCurrentCandidates.empty()) {
+			if (m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
+				//TODO: ASDFJKL を打ち込む時に，それ以外のものが打ち込まれたらCandidates[0]で確定	
+			}
+			else {
+				_CommitComposition(pic);
+			}
+		}
+
+		bool isShift = _IsShiftKeyPressed();
+		// ========================================
+		// 2. 変換モード開始の判定（確定モードでShift押下時）
+		// ========================================
+		if (isShift && g_currentMode == SKKMode::Kakutei) {
+
+			if (_pComposition) {
+				if (m_pCandidateWindow->IsWindowExists()) {
+					m_pCandidateWindow->HideWindow();
+				}
+
+				m_CurrentCandidates.clear();
+				m_CurrentShowCandidateIndex = 0;
+				m_Gokan = L"";
+				m_OkuriganaFirstChar = L'\0';
+			}
+
+			_ChangeCurrentMode(SKKMode::Henkan);
+
+			// ↑↑ 以上で_CommitComposition が終了 ↑↑
+
+			isShift = false;
+		}
+
+
+		// ========================================
+		// 3. 変換モードでの処理
+		// ========================================
+		//FIX: 書k (no shift) の場合，書 で検索する。 つまり，変換中のローマ字がシフトが押されずに確定された場合は，削除する。
+		//変換中
+		if (g_currentMode == SKKMode::Henkan) {
+			//ASDFJKL で選ぶ段階
+			//TODO: 別枠で処理をする。
+			//まず未確定変換文字列画面の文字を取得 ex: しm
+			std::wstring textonScreen = L"";
+			_GetCompositionString(textonScreen);
+
+			//新しいかなを追加
+			std::wstring finalText = textonScreen + kana;
+			// mcurrentInputKanaの更新
+			if (m_isRegiteringNewWord) {
+				m_RegInputUndetermined += kana;
+			}
+			else {
+				m_currentInputKana += kana;
+			}
+
+			_Output(pic, finalText, FALSE);
+
+			//送り仮名の指定。
+			if (!textonScreen.empty() && (isShift = m_q_elftranslater.Get_kmp_is_key_pushed_shift())) {
+				// 語幹が未設定で、確定済みかながあれば送り仮名モード開始
+				if (m_currentInputKana.length() >= 2 && m_Gokan.empty() && m_OkuriganaFirstChar == L'\0') {
+					// 語幹 = 最後の1文字を除いた部分
+					m_Gokan = m_currentInputKana.substr(0, m_currentInputKana.length() - 1);
+					// 送り仮名の最初の文字（かなベースだが，ローマ字に変換してその一文字目を使用。）
+
+					m_OkuriganaFirstChar = fromajis[i];
+				}
+			}
+
+			//送り仮名が1文字以上指定された場合，確定処理  
+			if (m_OkuriganaFirstChar != L'\0' && !m_Gokan.empty() &&
+				m_currentInputKana.length() - m_Gokan.length() >= 1) {
+				//"っ" が入力される時は一回待つ
+				if (!(
+					(kana == L'っ' && g_CurrentKanaMode == KanaMode::Hiragana) ||
+					(kana == L'ッ' && g_CurrentKanaMode == KanaMode::Katakana))
+					) {
+
+					if (m_isRegiteringNewWord) {
+						if (m_RegCurrentCandidates.empty()) {
+							_HandleRegSpaceKey(pic, VK_SPACE);
+						}
+					}
+					else {
+						if (m_CurrentCandidates.empty()) {
+							_HandleSpaceKey(pic, VK_SPACE);
+						}
+					}
+				}
+				continue;
+			}
+
+			//変換履歴からの予測変換候補表示
+			_SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandidateWindowFromHistory(pic);
+			continue;
+		}
+
+		// ========================================
+		// 4. 確定モードでの直接出力
+		// ========================================
+		if (g_currentMode == SKKMode::Kakutei) {
+			_Output(pic, std::wstring(1, kana), TRUE);
+			continue;
+		}
+	}
+
+	// Shiftフラグをリセット
+	m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
 
 	return S_OK;
 }

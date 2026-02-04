@@ -60,13 +60,6 @@ public:
 			}
 		}
 
-		/*if (key == VK_OEM_COMMA + ToSmallAlphabet || key == VK_OEM_PERIOD + ToSmallAlphabet || key == VK_OEM_MINUS + ToSmallAlphabet) {
-			//記号は即変換
-			output = m_buffer;
-			output += m_RomajiToKana[std::wstring(1, (wchar_t)(key-(ToSmallAlphabet)))][mode == KanaMode::Hiragana ? TrR2K_INDEX_HIRAGANA : TrR2K_INDEX_KATAKANA];
-			m_buffer.clear();
-			return true;
-		}*/
 		{
 			auto it = m_KigouToJpnKigou.find((int)key);
 			if ((!__isAlphabet(key)) && (it != m_KigouToJpnKigou.end())) {
@@ -90,6 +83,63 @@ public:
 		//shaなどはこの前ので出るのでOK
 		if (m_buffer.size() >= 3) {
 			output = m_buffer;
+			m_buffer.clear();
+			return true;
+		}
+		return false;
+	}
+
+
+	//true: 変換成功  false: 変換に達していない 
+	__declspec(noinline) bool Translate(WCHAR key, std::wstring& output,WCHAR& fromaji) {
+		output.clear();
+
+		if (m_buffer.size() == 1) {
+			//促音処理
+			if (key == m_buffer[0]) {
+				if (key != L'n') {
+					output = (g_CurrentKanaMode == KanaMode::Hiragana ? L'っ' : L'ッ');
+					fromaji = m_buffer[0];
+					return true;
+				}
+			}
+			//撥音の処理
+			if (m_buffer[0] == L'n' && (key != L'n' && key != L'a' && key != 'i' && key != 'u' && key != 'e' && key != 'o' && key != 'y')) {
+				output = (g_CurrentKanaMode == KanaMode::Hiragana ? L'ん' : L'ン');
+				fromaji = L'n';
+
+				m_buffer.clear();
+				m_buffer += key;
+				return true;
+			}
+		}
+
+		{
+			auto it = m_KigouToJpnKigou.find((int)key);
+			if ((!__isAlphabet(key)) && (it != m_KigouToJpnKigou.end())) {
+				output = m_buffer;
+				output += it->second[key];
+				fromaji = L' ';//TODOなんとかする。約物の処理。
+				m_buffer.clear();
+				return true;
+			}
+		}
+
+		m_buffer += key;
+		auto it = m_RomajiToKana.find(m_buffer);
+		if (it != m_RomajiToKana.end()) {
+			output = (*it).second[g_CurrentKanaMode == KanaMode::Hiragana ? TrR2K_INDEX_HIRAGANA : TrR2K_INDEX_KATAKANA];
+			fromaji = m_buffer[0];
+			m_buffer.clear();
+			return true;
+		}
+
+
+
+		//shaなどはこの前ので出るのでOK
+		if (m_buffer.size() >= 3) {
+			output = m_buffer;
+			fromaji = m_buffer[0];
 			m_buffer.clear();
 			return true;
 		}

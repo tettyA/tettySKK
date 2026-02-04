@@ -250,7 +250,7 @@ void Q_ELF_Translater::LoadKmpFileFromFile(std::wstring& path)
                 telm.secboin =ids[seplfs[1]];
             }
 
-            if (ids[sepl[0]] == ids[sepl[2]])continue;
+//            if (ids[sepl[0]] == ids[sepl[2]])continue;
 
             kmp.KMPs[ids[sepl[0]]] = telm;
         }

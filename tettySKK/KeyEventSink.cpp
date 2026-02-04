@@ -349,16 +349,139 @@ HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM 
 	//return 
 }
 
+//wParamは大文字で渡す。
+HRESULT CSkkIme::ExecuteOnModeChangeKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten)
+{
+	WCHAR key = (WCHAR)wParam;
+	if (key == L'Q') {
+		if (_pComposition && m_currentInputKana.length() > 0 && !m_isRegiteringNewWord) {
+			_ConvertToKatakana(m_currentInputKana);
+			_Output(pic, m_currentInputKana, TRUE);
+			_CommitComposition(pic);
+		}
+		else if (m_isRegiteringNewWord && m_RegInputUndetermined.length() > 0) {
+			_ConvertToKatakana(m_RegInputUndetermined);
+			_Output(pic, m_RegInputUndetermined, TRUE);
+			_CommitComposition(pic);
+		}
+		else {
+			_ChangeCurrenKanaMode(KanaMode::Katakana);
+		}
+		return S_OK;
+	}
+	else if (key == L'L') {
+		if (g_currentMode == SKKMode::Henkan &&
+			(
+				(m_isRegiteringNewWord && m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX)
+				||
+				(!m_isRegiteringNewWord && m_CurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX)
+				)) {
+			//pass(SDFJKLで選んでいる段階なので)
+		}
+		else {
+			//TODO: 処理の共通化 
+			if (m_isRegiteringNewWord) {
+				m_RegCurrentCandidates.clear();
+				m_RegCurrentShowCandidateIndex = 0;
+				m_RegInputDetermined += m_RegInputUndetermined;
+				m_RegInputUndetermined = L"";
+
+				m_isExplictingConversionMode = false;
+
+				m_RomajiToKanaTranslator.Reset();
+
+				m_Gokan = L"";
+				m_OkuriganaFirstChar = L'\0';
+				SKKCandidates tempCanddates = { { m_RegInputDetermined,m_RegKey }, { L"",L"" } };
+				m_pCandidateWindow->SetCandidates(tempCanddates, 0, CANDIDATEWINDOW_MODE_REGWORD);
+				_UpDateCandidateWindowPosition(pic);
+			}
+			else
+			{
+				if (m_pCandidateWindow->IsWindowExists()) {
+					m_pCandidateWindow->HideWindow();
+				}
+
+				m_CurrentCandidates.clear();
+				m_CurrentShowCandidateIndex = 0;
+
+				m_Gokan = L"";
+				m_OkuriganaFirstChar = L'\0';
+			}
+
+			_ChangeCurrentMode(SKKMode::Hankaku);
+			return S_OK;
+		}
+	}
+	else if (key == L'X' && g_currentMode == SKKMode::Henkan) {
+
+		//前の候補
+		//TODO:  処理の共通化
+
+		if (m_isRegiteringNewWord) {
+			if (m_RegCurrentShowCandidateIndex == 0) {
+				//意図的に_Outputにしていない
+				__InsertText(pic, (m_RegKey).c_str(), FALSE);
+				m_RegCurrentCandidates.clear();
+				m_RegCurrentShowCandidateIndex = 0;
+
+				return S_OK;
+			}
+			//std::wstring additionalStr = L"";
+			std::wstring compositionString;
+			_GetCompositionString(compositionString);
+			//送り仮名付きのとき
+			//TODO Reg語幹を追加した時，書き直す。
+		//	if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+			//	//書k or 書く  -> k or く
+				//additionalStr = compositionString.substr(compositionString.length() - 1);
+		//	}
+
+			m_RegCurrentShowCandidateIndex = max(0, (int)m_RegCurrentShowCandidateIndex - 1);
+
+			__InsertTextMakeCandidateWindow(pic,
+				(m_RegCurrentCandidates[m_RegCurrentShowCandidateIndex]_Candidate).c_str(),
+				(m_RegKey).c_str()
+			);
+		}
+		else {
+			if (m_CurrentShowCandidateIndex == 0) {
+				_Output(pic, m_currentInputKana.c_str(), FALSE);
+				__FinishCandidateWindowShow();
+				return S_OK;
+			}
+			std::wstring additionalStr = L"";
+			std::wstring compositionString;
+			_GetCompositionString(compositionString);
+			//送り仮名付きのとき
+			if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
+				//書k or 書く  -> k or く
+				additionalStr = m_currentInputKana.substr(m_Gokan.length());
+			}
+			m_CurrentShowCandidateIndex = max(0, (int)m_CurrentShowCandidateIndex - 1);
+
+			__InsertTextMakeCandidateWindow(pic,
+				(m_CurrentCandidates[m_CurrentShowCandidateIndex]_Candidate + additionalStr).c_str(),
+				(m_currentInputKana).c_str()
+			);
+		}
+		return S_OK;
+	}
+	//VK_OEM_PLUS は ";"(セミコロン)キー
+	else if (key == VK_OEM_PLUS) {
+		_Output(pic, SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_STR, TRUE);
+		return S_OK;
+	}
+
+	return E_NOTIMPL;
+}
+
 HRESULT CSkkIme::ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* pfEaten)
 {
 	*pfEaten = FALSE;
 
 	WCHAR key = (WCHAR)wParam;
 
-
-//	if (SUCCEEDED(ExecuteOnSpecialKeyDown(pic, wParam, lParam, pfEaten))) {
-	//	return S_OK;
-	//}
 	
 	if (_IsKeyEaten(wParam))
 	{
@@ -478,6 +601,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		) {
 		m_q_elftranslater.ResetKmpState();
 		//ASDFJKLで候補を選ぶ時は特別に処理する。
+		//TODO:処理を別に分ける
 		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 	}
 	else {
@@ -492,26 +616,38 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					tmpcmpstr.pop_back();
 
 					_Output(pic, tmpcmpstr, FALSE);
-
-					
 				}
 #endif
 				g_isAbleOutput = true;
-
-				for (int i = 0; i < output.length(); i++) {
+				std::wstring newkana;
+				
+				if (output.length() == 1) {
 					BOOL tmppfEaten = FALSE;
-					//g_isAbleOutput = i == output.length() - 1;
-					HRESULT ret = ExecuteOnKeyDown(pic, output[i], lParam, &tmppfEaten);
-					
-					if (FAILED(ret)) {
+					//QやL，Xなどの制御キーの可能性があるもの(Send系)は一旦ExecuteOnModeChangeKeyDownに通す。
+					//もし，そうでなかったらそれは次のforで処理。
+					if (SUCCEEDED(ExecuteOnModeChangeKeyDown(pic, output[0], lParam, &tmppfEaten))) {
 						m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
-						return ret;
-					}
-					else {
-						*pfEaten = *pfEaten || tmppfEaten;
+						return S_OK;
 					}
 				}
-				m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
+
+				m_RomajiToKanaTranslator.Reset();
+				std::wstring outputkana;
+				//ある平仮名の最初のローマ字を格納する文字列。例えば，outputkana=L"かんぱいっさ"の場合，kanafirstromaji=L"knpiss"となる。
+				std::wstring kanafirstromaji;
+				for (int i = 0; i < output.length(); i++) {
+					std::wstring newkana;
+					WCHAR fromaji;
+					if (m_RomajiToKanaTranslator.Translate(output[i]+ToSmallAlphabet, newkana,fromaji)) {
+						outputkana += newkana;
+						kanafirstromaji += fromaji;
+					}
+				}
+				if (!outputkana.empty()) {
+					//確定モードもしくは変換モードの時に呼び出される。
+					*pfEaten = TRUE;
+					_HandleKana(pic, outputkana, kanafirstromaji);
+				}
 				return S_OK;
 			}
 			else {
@@ -522,9 +658,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 				//tmpcmpstr += L"|" + tmpcmpstr + L"||";
 
 				if (tmpcmpstr.length() > 0 && tmpcmpstr.back() >= L'─' && tmpcmpstr.back() <= L'╋') {
-				//	__DEBUGOUTPUT(tmpcmpstr);
 					tmpcmpstr.pop_back();
-				//	__DEBUGOUTPUT(tmpcmpstr);
 				}
 				auto tmp = m_q_elftranslater.GetDSendCnt();
 				auto tmp2 = m_q_elftranslater.GetkeyState();
@@ -551,8 +685,8 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 					nowstate = BOX_CHARS[mask];
 				}
-				//__DEBUGOUTPUT(tmpcmpstr+L"1234567890");
 				_Output(pic, tmpcmpstr+nowstate, FALSE);
+				
 #endif
 				return S_OK;
 			}
