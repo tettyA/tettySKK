@@ -601,7 +601,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		) {
 		m_q_elftranslater.ResetKmpState();
 		//ASDFJKLで候補を選ぶ時は特別に処理する。
-		//TODO:処理を別に分ける
+		//TODO:処理を別に分ける(つまり，ExecuteOnKeyDownから独立させる。)
 		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 	}
 	else {
@@ -627,6 +627,8 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					//もし，そうでなかったらそれは次のforで処理。
 					if (SUCCEEDED(ExecuteOnModeChangeKeyDown(pic, output[0], lParam, &tmppfEaten))) {
 						m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
+						//S_OKということは確実に何かが処理されたのでTRUEでOK。
+						*pfEaten = TRUE;
 						return S_OK;
 					}
 				}

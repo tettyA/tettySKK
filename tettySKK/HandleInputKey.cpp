@@ -505,6 +505,18 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 }
 
 HRESULT CSkkIme::_HandleKana(ITfContext* pic, std::wstring kanas, std::wstring& fromajis) {
+	// ========================================
+    // 確定モードの場合は一括出力
+    // ========================================
+	if (g_currentMode == SKKMode::Kakutei && !_IsShiftKeyPressed()) {
+		// Shiftが押されていない確定モードでは、すべての文字を一度に出力
+		_Output(pic, kanas, TRUE);
+		return S_OK;
+	}
+	
+	// ========================================
+	// それ以外（変換モード、Shift押下時など）は1文字ずつ処理
+	// ========================================
 	for (int i = 0; i < kanas.length(); i++) {
 		//_HandleCharの内容をかな向きにしていく。
 		WCHAR kana = kanas[i];
@@ -603,10 +615,10 @@ HRESULT CSkkIme::_HandleKana(ITfContext* pic, std::wstring kanas, std::wstring& 
 			std::wstring finalText = textonScreen + kana;
 			// mcurrentInputKanaの更新
 			if (m_isRegiteringNewWord) {
-				m_RegInputUndetermined += kana;
+				m_RegInputUndetermined = textonScreen + kana;
 			}
 			else {
-				m_currentInputKana += kana;
+				m_currentInputKana = textonScreen + kana;
 			}
 
 			_Output(pic, finalText, FALSE);
