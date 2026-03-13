@@ -204,3 +204,57 @@ private:
 	CComPtr<ITfRange> _pRange;
 	RECT* _pRECT;
 };
+
+// caret(挿入位置)の座標取得用 EditSession
+class CGetCaretPosEditSession : public CEditSessionBase
+{
+public:
+	CGetCaretPosEditSession(ITfContext* pContext, RECT* pRECT) {
+		_pContext = pContext;
+		_pRECT = pRECT;
+	}
+
+	~CGetCaretPosEditSession() {
+		_pContext.Release();
+		_pRECT = nullptr;
+	}
+
+	STDMETHODIMP DoEditSession(TfEditCookie ec) override {
+		if (_pRECT == nullptr) {
+			return E_INVALIDARG;
+		}
+
+		CComPtr<ITfRange> pRange;
+		CComPtr<ITfInsertAtSelection> pInsertAtSelection;
+
+		if (SUCCEEDED(_pContext->QueryInterface(IID_PPV_ARGS(&pInsertAtSelection))) && pInsertAtSelection) {
+			// 文書を変更せず、挿入位置に対応する range だけ取得
+			pInsertAtSelection->InsertTextAtSelection(ec, TF_IAS_QUERYONLY, L"", 0, &pRange);
+		}
+
+		if (!pRange) {
+			TF_SELECTION sel{};
+			ULONG fetched = 0;
+			if (SUCCEEDED(_pContext->GetSelection(ec, TF_DEFAULT_SELECTION, 1, &sel, &fetched)) &&
+				fetched == 1 && sel.range) {
+				pRange.Attach(sel.range); // 所有権移動
+			}
+		}
+
+		if (!pRange) {
+			return E_FAIL;
+		}
+
+		CComPtr<ITfContextView> pContextView;
+		if (FAILED(_pContext->GetActiveView(&pContextView)) || !pContextView) {
+			return E_FAIL;
+		}
+
+		BOOL fClipped = FALSE;
+		return pContextView->GetTextExt(ec, pRange, _pRECT, &fClipped);
+	}
+
+private:
+	CComPtr<ITfContext> _pContext;
+	RECT* _pRECT;
+};

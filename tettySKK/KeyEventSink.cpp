@@ -6,6 +6,8 @@
 #include "CCandidateWindow.h"
 #include <utility>
 
+
+#define MEANMILISEC_SHOWSTATE (120)
 #define __DEBUGOUTPUT(dbgstr) __InsertText(pic, (L"["+(dbgstr)+L"]").c_str(), TRUE)
 
 bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
@@ -590,6 +592,9 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 	}
 
 	if (g_currentMode == SKKMode::Hankaku) {
+#ifdef KMP_SHOWTRANSINFO
+		_HideQElfTransState();
+#endif
 		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
 	}
 	else if (g_currentMode == SKKMode::Henkan &&
@@ -600,6 +605,9 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		)
 		) {
 		m_q_elftranslater.ResetKmpState();
+#ifdef KMP_SHOWTRANSINFO
+		_HideQElfTransState();
+#endif
 		//ASDFJKLで候補を選ぶ時は特別に処理する。
 		//TODO:処理を別に分ける(つまり，ExecuteOnKeyDownから独立させる。)
 		return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
@@ -609,14 +617,8 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 		if (m_q_elftranslater.isNeedExecuteTranslate((WCHAR)wParam)) {
 			if (m_q_elftranslater.TranslateQWERTYtoQ_ELF((WCHAR)wParam, output)) {
 #ifdef KMP_SHOWTRANSINFO
-				
-				std::wstring tmpcmpstr;
-				_GetCompositionString(tmpcmpstr);
-				if (tmpcmpstr.length() > 0 && tmpcmpstr.back() >= L'─' && tmpcmpstr.back() <= L'╋') {
-					tmpcmpstr.pop_back();
-
-					_Output(pic, tmpcmpstr, FALSE);
-				}
+				// 変換成立したら状態表示は消す
+				_HideQElfTransState();
 #endif
 				g_isAbleOutput = true;
 				std::wstring newkana;
@@ -655,13 +657,6 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 			else {
 				*pfEaten = TRUE;
 #ifdef KMP_SHOWTRANSINFO
-				std::wstring tmpcmpstr;
-				_GetCompositionString(tmpcmpstr);
-				//tmpcmpstr += L"|" + tmpcmpstr + L"||";
-
-				if (tmpcmpstr.length() > 0 && tmpcmpstr.back() >= L'─' && tmpcmpstr.back() <= L'╋') {
-					tmpcmpstr.pop_back();
-				}
 				auto tmp = m_q_elftranslater.GetDSendCnt();
 				auto tmp2 = m_q_elftranslater.GetkeyState();
 
@@ -670,7 +665,7 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 					auto tmp3 = m_q_elftranslater.GetSend1stDir();
 					int mask = 0;
 					int dirmask = (tmp3 == KMP::Dir::L ? BIT_LEFT : tmp3 == KMP::Dir::R ? BIT_RIGHT : BIT_LEFT | BIT_RIGHT);
-					
+
 					mask = (BIT_UP | dirmask);
 					nowstate = L"";
 
@@ -687,19 +682,15 @@ STDAPI CSkkIme::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam, BOOL* p
 
 					nowstate = BOX_CHARS[mask];
 				}
-				_Output(pic, tmpcmpstr+nowstate, FALSE);
-				
+				// composition文字列を触らず、専用StateWindowだけ更新
+				_ShowQElfTransState(pic, nowstate);
 #endif
 				return S_OK;
 			}
 		}
 		else {
 #ifdef KMP_SHOWTRANSINFO
-			std::wstring tmpcmpstr;
-			_GetCompositionString(tmpcmpstr);
-			if (tmpcmpstr.length() > 0 && tmpcmpstr.back() >= L'─' && tmpcmpstr.back() <= L'╋') {
-				tmpcmpstr.pop_back();
-			}
+			_HideQElfTransState();
 #endif
 			m_q_elftranslater.Set_kmp_is_key_pushed_shift(false);
 			return ExecuteOnKeyDown(pic, wParam, lParam, pfEaten);
@@ -789,19 +780,18 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 	if (m_isRegiteringNewWord)return;
 
 	m_isRegiteringNewWord = TRUE;
-	m_RegInputDetermined = L"";
-	m_RegInputUndetermined = L"";
-	m_RegKey = regKey;
+	m_RegInputDetermined = L"";        //確定済みの文字列
+	m_RegInputUndetermined = L"";      //未確定の文字列
+	m_RegKey = regKey;                //登録するキー
 
-	g_currentMode = SKKMode::Kakutei;
+	g_currentMode = SKKMode::Kakutei; //モードは確定
 
-	m_RegCurrentShowCandidateIndex = 0;
-	m_RegCurrentCandidates.clear();
+	m_RegCurrentShowCandidateIndex = 0;  //現候補インデックス
+	m_RegCurrentCandidates.clear();    //候補リストクリア
 
-	//__InsertText(pic, (std::to_wstring(m_CurrentShowCandidateIndex)).c_str(), FALSE);
-	//__InsertText(pic, L"", FALSE);
 
-	SKKCandidates regKeyCandidate = { {L"",regKey},{L"",L""}};
+	//候補ウィンドウに設定
+	SKKCandidates regKeyCandidate = { {L"",regKey},{L"",L""}};   //空の内容と，登録するキーをセット
 	m_pCandidateWindow->SetCandidates(regKeyCandidate, 0, CANDIDATEWINDOW_MODE_REGWORD);
 	_UpDateCandidateWindowPosition(pic);
 }
@@ -852,9 +842,6 @@ void CSkkIme::_SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandi
 	}
 }
 
-
-
-
 void CSkkIme::__InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _multiIntsertText,const WCHAR* _singleInsertText)
 {
 	if (m_CurrentShowCandidateIndex < BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) {
@@ -872,4 +859,58 @@ void CSkkIme::__InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _mult
 			_UpDateCandidateWindowPosition(pic);
 		}
 	}
+}
+
+void CSkkIme::_UpDateStateWindowPosition(ITfContext* pic)
+{
+	if (pic == nullptr || m_pStateWindow == nullptr || !m_pStateWindow->IsWindowExists()) {
+		return;
+	}
+
+	RECT rc = { 0 };
+	HRESULT hr = E_FAIL;
+
+	if (_pComposition) {
+		CComPtr<ITfRange> pRange;
+		if (SUCCEEDED(_pComposition->GetRange(&pRange)) && pRange) {
+			CGetCandidateWindowPosEditSession* pSession = new CGetCandidateWindowPosEditSession(pic, pRange, &rc);
+			pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READ, &hr);
+			pSession->Release();
+		}
+	}
+	else {
+		CGetCaretPosEditSession* pSession = new CGetCaretPosEditSession(pic, &rc);
+		pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READ, &hr);
+		pSession->Release();
+	}
+
+	if (SUCCEEDED(hr)) {
+		// まずは120msでやる
+		m_pStateWindow->ShowBeforeCaret(rc.left, rc.top, MEANMILISEC_SHOWSTATE);
+	}
+}
+
+void CSkkIme::_ShowQElfTransState(ITfContext* pic, const std::wstring& stateMark)
+{
+#ifdef KMP_SHOWTRANSINFO
+	if (m_pStateWindow == nullptr) return;
+
+	if (stateMark.empty()) {
+		_HideQElfTransState();
+		return;
+	}
+
+	// 文字列は呼び出し側で完成させる
+	m_pStateWindow->SetText( stateMark);
+	_UpDateStateWindowPosition(pic);
+#endif
+}
+
+void CSkkIme::_HideQElfTransState()
+{
+#ifdef KMP_SHOWTRANSINFO
+	if (m_pStateWindow) {
+		m_pStateWindow->HideWindow();
+	}
+#endif
 }

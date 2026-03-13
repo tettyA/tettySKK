@@ -8,6 +8,7 @@
 #include "CLangBarItemButton.h"
 #include "Q_ELF_Translater.h"
 #include "Global.h"
+#include "CStateWindow.h"
 
 
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.h
@@ -119,6 +120,11 @@ private:
 	void _EndCandidateWindow();
 
 	
+	CStateWindow* m_pStateWindow;
+	void _UpDateStateWindowPosition(ITfContext* pic);
+	void _ShowQElfTransState(ITfContext* pic, const std::wstring& stateMark);
+	void _HideQElfTransState();
+private:
 	void _ChangeCurrentMode(const SKKMode mode) {
 		g_currentMode = mode;
 		__UpdateInputMode();
@@ -154,8 +160,8 @@ private:
 	void _SearchMostHighestPriorityCandidateWordAndVisualizePredictiveCandidateWindowFromHistory(ITfContext* pic);
 
 	Q_ELF_Translater m_q_elftranslater;
-
-	
 };
+
+
 
 

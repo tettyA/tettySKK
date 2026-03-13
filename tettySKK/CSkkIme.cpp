@@ -26,6 +26,7 @@ CSkkIme::CSkkIme()
 	m_isExplictingConversionMode = false;
 
 	m_pCandidateWindow = new CCandidateWindow(g_hModule);
+	m_pStateWindow = new CStateWindow(g_hModule);
 
 	g_currentMode = SKKMode::Hankaku;
 	g_CurrentKanaMode = KanaMode::Hiragana;
@@ -74,6 +75,11 @@ CSkkIme::~CSkkIme()
 	{
 		delete m_pCandidateWindow;
 		m_pCandidateWindow = nullptr;
+	}
+	if (m_pStateWindow)
+	{
+		delete m_pStateWindow;
+		m_pStateWindow = nullptr;
 	}
 	DllRelease();
 }
@@ -199,6 +205,9 @@ void CSkkIme::_EndCandidateWindow()
 {
 	if (m_pCandidateWindow) {
 		m_pCandidateWindow->HideWindow();
+	}
+	if (m_pStateWindow) {
+		m_pStateWindow->HideWindow();
 	}
 }
 

@@ -238,39 +238,27 @@ void CSkkIme::_CommitComposition(ITfContext* pic)
 	if (m_isRegiteringNewWord) {
 		_CommitRegComposition(pic);
 		return;
-
 	}
+
 	if (_pComposition) {
-		CTerminateCompositionEditSession* pSession = new CTerminateCompositionEditSession(_pComposition,pic);
+		CTerminateCompositionEditSession* pSession = new CTerminateCompositionEditSession(_pComposition, pic);
 		HRESULT hr;
 		pic->RequestEditSession(_clientId, pSession, TF_ES_SYNC | TF_ES_READWRITE, &hr);
 		pSession->Release();
 
-
 		_pComposition.Release();
 		_pComposition = nullptr;
-
 	}
+
 	__FinishCandidateWindowShow();
+	_HideQElfTransState(); // ’Ç‰Á
 
-	//if (m_pCandidateWindow->IsWindowExists() ) {
-	//	m_pCandidateWindow->HideWindow();
-	//}
-
-	//if (m_isRegiteringNewWord) {
-	//	m_RegCurrentCandidates.clear();
-	//	m_RegCurrentShowCandidateIndex = 0;
-	//	}
-	//m_CurrentCandidates.clear();
-	//m_CurrentShowCandidateIndex = 0;
 	m_RomajiToKanaTranslator.Reset();
 	m_isExplictingConversionMode = false;
 	_ChangeCurrentMode(SKKMode::Kakutei);
 
 	m_Gokan = L"";
 	m_OkuriganaFirstChar = L'\0';
-
-	return;
 }
 
 void CSkkIme::_CommitAndStartComposition(ITfContext* pic,std::wstring nextinsert)

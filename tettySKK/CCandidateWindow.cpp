@@ -168,9 +168,10 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 ///	y += 12;
 	if (m_Mode == CANDIDATEWINDOW_MODE_SINGLE) {
 		__PaintSingleMode(hdc, x, y, strsize);
-		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2+5, strsize.cy + 2, SWP_NOACTIVATE /*| SWP_NOZORDER*/ | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2+5,strsize.cy + 2, SWP_NOACTIVATE /*| SWP_NOZORDER*/ | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	}
 	else if (m_Mode == CANDIDATEWINDOW_MODE_MULTIPLE) {
+		
 		__PaintMultipleMode(hdc, x, y, strsize);
 		SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, strsize.cx + 2+5, strsize.cy + 2, SWP_NOACTIVATE /*| SWP_NOZORDER */| SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
 	}

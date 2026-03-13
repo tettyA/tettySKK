@@ -179,6 +179,7 @@ notepad.exe</Command>
     <ClInclude Include="CInsertTextEditSession.h" />
     <ClInclude Include="CLangBarItemButton.h" />
     <ClInclude Include="CSkkIme.h" />
+    <ClInclude Include="CStateWindow.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="KigouToKanaTransTable.h" />
@@ -199,6 +200,7 @@ notepad.exe</Command>
     <ClCompile Include="Compartment.cpp" />
     <ClCompile Include="Composition.cpp" />
     <ClCompile Include="CSkkIme.cpp" />
+    <ClCompile Include="CStateWindow.cpp" />
     <ClCompile Include="DisplayAttributeProvider.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="HandleInputKey.cpp" />
