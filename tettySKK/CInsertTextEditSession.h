@@ -32,7 +32,7 @@ private:
 	CComPtr<CSkkIme> _pIme;
 	CComPtr<ITfContext> _pContext;
 	std::wstring _text;
-
+	
 	//Šm’è‚µ‚½‚©”Û‚©?
 	BOOL _isDetermined;
 };

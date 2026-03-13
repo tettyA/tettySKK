@@ -94,35 +94,45 @@ HRESULT CSkkIme::_SetInputDisplayAttributeInfo(ITfContext* pContext, TfEditCooki
 //実際にテキストの編集を行う
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/Composition.cpp#L78
 HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHAR* text,BOOL isDetermined) {
-	HRESULT hr=E_FAIL;
-	if (_pComposition) {
-		CComPtr<ITfRange> pRange;
-		if (SUCCEEDED(_pComposition->GetRange(&pRange))) {
-			pRange->SetText(ec, 0, text, (ULONG)wcslen(text));
+	HRESULT hr = E_FAIL;
+	OutputDebugStringW((L"[tettySKK] _DoInsertText START: text=" + std::wstring(text) +
+		L", isDetermined=" + std::to_wstring(isDetermined) +
+		L", hasComposition=" + std::to_wstring(_pComposition != nullptr) + L"\n").c_str());
 
+	if (_pComposition) {
+		OutputDebugStringW(L"[tettySKK] Branch: existing composition\n");
+		CComPtr<ITfRange> pRange;
+		if (SUCCEEDED(_pComposition->GetRange(&pRange)) && pRange) {
+			pRange->SetText(ec, 0, text, (ULONG)wcslen(text));
 			_SetInputDisplayAttributeInfo(pContext, ec, pRange);
 
-			//カーソルを末尾に移動
 			pRange->Collapse(ec, TF_ANCHOR_END);
 			TF_SELECTION sel = { 0 };
 			sel.range = pRange;
 			sel.style.ase = TF_AE_NONE;
 			pContext->SetSelection(ec, 1, &sel);
 		}
-
 	}
 	else {
-		CComPtr<ITfInsertAtSelection> pInsertAtSelection;
+		OutputDebugStringW(L"[tettySKK] Branch: new composition\n");
 
+		CComPtr<ITfInsertAtSelection> pInsertAtSelection;
 		if (FAILED(pContext->QueryInterface(IID_PPV_ARGS(&pInsertAtSelection))) || (pInsertAtSelection == nullptr))
 		{
 			return hr;
 		}
 
 		CComPtr<ITfRange> pRange;
+		DWORD insertFlags = 0;
+
+		// 未確定入力では、TSF既定composition自動生成を抑止してから StartComposition する
+		if (!isDetermined) {
+			insertFlags |= TF_IAS_NO_DEFAULT_COMPOSITION;
+		}
+
 		if (FAILED(pInsertAtSelection->InsertTextAtSelection(
 			ec,
-			0,
+			insertFlags,
 			text,
 			(ULONG)wcslen(text),
 			&pRange
@@ -131,44 +141,37 @@ HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHA
 		}
 
 		if (!isDetermined) {
-
-			if (FAILED(_SetInputDisplayAttributeInfo(pContext, ec, pRange))) {
-				return hr;
-			}
-
 			CComPtr<ITfContextComposition> pContextComposition;
 			if (FAILED(pContext->QueryInterface(IID_PPV_ARGS(&pContextComposition))) || (pContextComposition == nullptr)) {
+				OutputDebugStringW(L"[tettySKK] Failed to get ITfContextComposition\n");
 				return hr;
 			}
 
 			CComPtr<ITfComposition> pComposition;
-			if (FAILED(pContextComposition->StartComposition(
-				ec,
-				pRange,
-				this,
-				&pComposition
-			)) || pComposition == nullptr) {
+			HRESULT hrStart = pContextComposition->StartComposition(ec, pRange, this, &pComposition);
+			OutputDebugStringW((L"[tettySKK] StartComposition hr=" + std::to_wstring(hrStart) +
+				L", pComposition=" + std::to_wstring(pComposition != nullptr) + L"\n").c_str());
+
+			if (FAILED(hrStart) || pComposition == nullptr) {
+				// ここで失敗した場合は、ホストがcomposition開始を拒否している可能性が高い
 				return hr;
 			}
 
-
-
-
 			_pComposition = pComposition;
 
+			_SetInputDisplayAttributeInfo(pContext, ec, pRange);
 		}
+
 		pRange->Collapse(ec, TF_ANCHOR_END);
 
 		TF_SELECTION sel = { 0 };
 		sel.range = pRange;
 		sel.style.ase = TF_AE_NONE;
 		sel.style.fInterimChar = FALSE;
-
 		pContext->SetSelection(ec, 1, &sel);
 	}
 
 	if (isDetermined && _pComposition) {
-
 		CComPtr<ITfRange> pRange;
 		if (SUCCEEDED(_pComposition->GetRange(&pRange)) && pRange) {
 			CComPtr<ITfProperty> pProp;
@@ -177,17 +180,17 @@ HRESULT CSkkIme::_DoInsertText(TfEditCookie ec, ITfContext* pContext, const WCHA
 			}
 		}
 
-
-
 		_pComposition->EndComposition(ec);
-
 		_pComposition.Release();
 		_pComposition = nullptr;
 	}
+
+	OutputDebugStringW(L"[tettySKK] _DoInsertText END\n");
 	return S_OK;
 }
 
 STDMETHODIMP CSkkIme::OnCompositionTerminated(TfEditCookie ecWrite, ITfComposition* pComposition) {
+	OutputDebugStringW(L"[tettySKK] OnCompositionTerminated called!\n");
 	if (pComposition && this->_pComposition == pComposition) {
 		_pComposition.Release();
 		_pComposition = nullptr;
