@@ -81,6 +81,12 @@ namespace SKKSetting
             InitializeComponent();
             InitializeOptionLowControl();
             initializeRomajiToKanaSettings();
+
+            // 既存
+            button11.Click += button11_Click;
+
+            // 追加: 有効な保存ボタン(button8)にも同じ処理を割り当て
+            button8.Click += button11_Click;
         }
         struct OptionSetting
         {
@@ -415,30 +421,63 @@ namespace SKKSetting
             WritePrivateProfileString(ColorSettingsIni, FontSettingFontSizeIniKeyval, TranslateFontSizeTocHeight(sankoutextcol.Font.Size, sankoutextcol.Font.FontFamily.Name).ToString(), IniFilePath);
         }
 
+        private readonly string RomajiKanaCsvPath =
+    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "romaji_kana_table.csv");
+
         public void initializeRomajiToKanaSettings()
         {
-            romajiToKanaSettings=new List<RomajiToKanaSetting>();
-//TODO: ここに本当の値を直に載せる。
+            romajiToKanaSettings = new List<RomajiToKanaSetting>();
+            listViewhiraganatrans.Items.Clear();
 
-            using (StreamReader sr = new StreamReader(@"hogehoge", Encoding.GetEncoding("shift_jis")))
+            if (!File.Exists(RomajiKanaCsvPath))
+            {
+                File.WriteAllText(RomajiKanaCsvPath, "", Encoding.GetEncoding("shift_jis"));
+                return;
+            }
+
+            using (StreamReader sr = new StreamReader(RomajiKanaCsvPath, Encoding.GetEncoding("shift_jis")))
             {
                 while (!sr.EndOfStream)
                 {
                     string line = sr.ReadLine();
-                    line=line.Replace(" ", "").Replace("\t", "");
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+
                     string[] parts = line.Split(',');
-                    if (parts.Length>=3)
-                    {
-                        RomajiToKanaSetting setting = new RomajiToKanaSetting();
-                        setting.Romaji=parts[0];
-                        setting.HiraKana=parts[1];
-                        setting.KataKana=parts[2];
-                        romajiToKanaSettings.Add(setting);
-                        ListViewItem lvi = new ListViewItem(new string[] { parts[0], parts[1], parts[2] });
-                        listViewhiraganatrans.Items.Add(lvi);
-                    }
+                    if (parts.Length < 3) continue;
+
+                    RomajiToKanaSetting setting = new RomajiToKanaSetting();
+                    setting.Romaji = parts[0].Trim();
+                    setting.HiraKana = parts[1].Trim();
+                    setting.KataKana = parts[2].Trim();
+                    romajiToKanaSettings.Add(setting);
+
+                    ListViewItem lvi = new ListViewItem(new string[] {
+                setting.Romaji, setting.HiraKana, setting.KataKana
+            });
+                    listViewhiraganatrans.Items.Add(lvi);
                 }
             }
+        }
+
+        private void SaveRomajiToKanaSettings()
+        {
+            using (StreamWriter sw = new StreamWriter(RomajiKanaCsvPath, false, Encoding.GetEncoding("shift_jis")))
+            {
+                foreach (ListViewItem item in listViewhiraganatrans.Items)
+                {
+                    string romaji = item.SubItems[0].Text.Trim();
+                    string hira = item.SubItems[1].Text.Trim();
+                    string kata = item.SubItems[2].Text.Trim();
+                    sw.WriteLine($"{romaji},{hira},{kata}");
+                }
+            }
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            SaveRomajiToKanaSettings();
+            MessageBox.Show("ローマ字変換テーブルを保存しました。", "SKKSetting",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void listViewhiraganatrans_SelectedIndexChanged(object sender, EventArgs e)
@@ -459,17 +498,26 @@ namespace SKKSetting
 
         private void button9_Click(object sender, EventArgs e)
         {
-            if (listViewhiraganatrans.SelectedItems.Count==0) return;
-            listViewhiraganatrans.Items.Add(
-                new ListViewItem(
-                    new string[]
-                    {
-                        textBoxromaji.Text,
-                        textBoxhiragana.Text,
-                        textBoxkatakana.Text
-                    }
-                )
-            );
+            string romaji = textBoxromaji.Text.Trim();
+            string hiragana = textBoxhiragana.Text.Trim();
+            string katakana = textBoxkatakana.Text.Trim();
+
+            if (string.IsNullOrEmpty(romaji) ||
+                string.IsNullOrEmpty(hiragana) ||
+                string.IsNullOrEmpty(katakana))
+            {
+                MessageBox.Show("ローマ字・ひらがな・カタカナを入力してください。", "入力不足",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var item = new ListViewItem(new string[] { romaji, hiragana, katakana });
+            listViewhiraganatrans.Items.Add(item);
+
+            // 追加直後に見えるようにする
+            item.Selected = true;
+            item.Focused = true;
+            item.EnsureVisible();
         }
 
         private void button10_Click(object sender, EventArgs e)
