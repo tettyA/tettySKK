@@ -43,7 +43,8 @@ bool CSkkIme::_IsKeyEaten(WPARAM wParam) {
 bool CSkkIme::_IsKeyEatenTest(WPARAM wParam)
 {
 	WCHAR key = (WCHAR)wParam;
-	if (m_isRegiteringNewWord && (key == VK_RETURN || key == VK_BACK)) {
+    if (m_isRegiteringNewWord &&
+		(key == VK_RETURN || key == VK_BACK || key == VK_LEFT || key == VK_RIGHT || key == VK_HOME || key == VK_END)) {
 		return true;
 	}
 	return false;
@@ -53,6 +54,45 @@ HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM 
 {
 	*pfEaten = FALSE;
 	WCHAR key = (WCHAR)wParam;
+
+    if (m_isRegiteringNewWord &&
+		(key == VK_LEFT || key == VK_RIGHT || key == VK_HOME || key == VK_END)) {
+		*pfEaten = TRUE;
+
+      _SyncRegInputByCursor();
+		if (!m_RegInputUndetermined.empty()) {
+			m_RegInputText.insert(m_RegCursorPos, m_RegInputUndetermined);
+			m_RegCursorPos += m_RegInputUndetermined.length();
+			m_RegInputUndetermined.clear();
+			_SyncRegInputByCursor();
+		}
+
+		switch (key) {
+		case VK_LEFT:
+            if (m_RegCursorPos > 0) {
+				m_RegCursorPos--;
+			}
+			break;
+		case VK_RIGHT:
+          if (m_RegCursorPos < m_RegInputText.length()) {
+				m_RegCursorPos++;
+			}
+			break;
+		case VK_HOME:
+            m_RegCursorPos = 0;
+			break;
+		case VK_END:
+          m_RegCursorPos = m_RegInputText.length();
+			break;
+		default:
+			break;
+		}
+
+       _SyncRegInputByCursor();
+		m_RomajiToKanaTranslator.Reset();
+		__InsertNewRegWord(pic, m_RegInputUndetermined, FALSE);
+		return S_OK;
+	}
 
 	if ((!__isAlphabet(key)) && m_RomajiToKanaTranslator.GetBuffer() == L"n" && g_currentMode != SKKMode::Hankaku) {
 		//撥音が残っており，かつ，ローマ字入力以外のキーが押された場合は，撥音を確定する
@@ -153,7 +193,6 @@ HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM 
 	//確定処理
 	else if (key == VK_RETURN) {
 		if (m_isRegiteringNewWord) {
-			//TODO: 実装
 			*pfEaten = TRUE;
 			if (!m_RegInputUndetermined.empty()) {
 				//未確定文字列の確定
@@ -161,12 +200,18 @@ HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM 
 				return S_OK;
 			}
 			else if (m_RegInputDetermined.empty()) {
+              if (_TryResumeParentRegiterNewWord(pic, L"")) {
+					return S_OK;
+				}
+
 				//文字列がないときは，キャンセル扱いにする
 				//候補がある時は，最後の候補ウィンドウを，なければ表示しない
 				if (m_CurrentCandidates.size() > 0 && m_CurrentShowCandidateIndex > 0) {
 					m_CurrentShowCandidateIndex--;
 
 					m_isRegiteringNewWord = FALSE;
+                 m_RegInputText = L"";
+					m_RegCursorPos = 0;
 					m_RegInputDetermined = L"";
 					m_RegInputUndetermined = L"";
 					m_RegKey = L"";
@@ -202,8 +247,9 @@ HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM 
 					//regの方ではなく，通常のcomposition文字列を取得したいので，一旦FALSEにする。
 					m_isRegiteringNewWord = FALSE;
 					_GetCompositionString(tempStr);
-					if (std::isalpha(m_RegKey.back())) {
-						//送り仮名がある(あった)場合は，送りがなもOutputする。
+                    const bool hasOkurigana = (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0');
+					if (hasOkurigana && !tempStr.empty()) {
+						//送り仮名がある場合は末尾のみ出力する。
 						tempStr = tempStr.back();
 					}
 					else {
@@ -213,16 +259,21 @@ HRESULT CSkkIme::ExecuteOnSpecialKeyDown(ITfContext* pic, WPARAM wParam, LPARAM 
 				}
 
 
+                const std::wstring registeredWord = m_RegInputDetermined.substr(0, m_RegInputDetermined.find(SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_CHAR));
+				const std::wstring outputWord = registeredWord + tempStr;
+
+				m_SKKDictionaly.AddCandidate(m_RegKey, m_RegInputDetermined);
+				m_SKKDictionaly.SaveDictionaryToUserFile(SKK_USER_DICTIONARY_FILEPATH);
+
+				if (_TryResumeParentRegiterNewWord(pic, outputWord)) {
+					return S_OK;
+				}
+
 				//新しい単語の登録確定
 				_CommitComposition(pic);
 
 				m_isRegiteringNewWord = FALSE;
-
-				_Output(pic, (m_RegInputDetermined.substr(0, m_RegInputDetermined.find(SKK_CANDIDOTATES_ANNOTATION_SEPARATOR_CHAR)) + tempStr).c_str(), TRUE);
-
-
-				m_SKKDictionaly.AddCandidate(m_RegKey, m_RegInputDetermined);
-				m_SKKDictionaly.SaveDictionaryToUserFile(SKK_USER_DICTIONARY_FILEPATH);
+				_Output(pic, outputWord, TRUE);
 
 
 				_EndRegiterNewWord();
@@ -385,8 +436,8 @@ HRESULT CSkkIme::ExecuteOnModeChangeKeyDown(ITfContext* pic, WPARAM wParam, LPAR
 			if (m_isRegiteringNewWord) {
 				m_RegCurrentCandidates.clear();
 				m_RegCurrentShowCandidateIndex = 0;
-				m_RegInputDetermined += m_RegInputUndetermined;
-				m_RegInputUndetermined = L"";
+             m_RegCursorPos = m_RegInputText.length();
+				_SyncRegInputByCursor();
 
 				m_isExplictingConversionMode = false;
 
@@ -394,7 +445,11 @@ HRESULT CSkkIme::ExecuteOnModeChangeKeyDown(ITfContext* pic, WPARAM wParam, LPAR
 
 				m_Gokan = L"";
 				m_OkuriganaFirstChar = L'\0';
-				SKKCandidates tempCanddates = { { m_RegInputDetermined,m_RegKey }, { L"",L"" } };
+              const std::wstring suffixText = m_RegInputText.substr(m_RegCursorPos);
+               SKKCandidates tempCanddates = {
+					{ m_RegInputDetermined,_BuildRegiterNewWordTraceText() + L" /カーソル:" + std::to_wstring(m_RegCursorPos) + L"/" + std::to_wstring(m_RegInputText.length()) },
+                 { L"",suffixText }
+				};
 				m_pCandidateWindow->SetCandidates(tempCanddates, 0, CANDIDATEWINDOW_MODE_REGWORD);
 				_UpDateCandidateWindowPosition(pic);
 			}
@@ -507,19 +562,29 @@ HRESULT CSkkIme::ExecuteOnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam,
 		}
 		if (key == VK_BACK) {
 			*pfEaten = TRUE;
-			//	if (m_currentMode == SKKMode::Henkan) {
-					//変換中のとき
-			if (m_RegInputUndetermined.length() > 0) {
+         bool isRomajiBufferDeleted = false;
+			if (m_RomajiToKanaTranslator.GetBuffer().length() > 0) {
+				m_RomajiToKanaTranslator.PopBackBuffer();
+				isRomajiBufferDeleted = true;
+			}
+           if (isRomajiBufferDeleted) {
+				__InsertNewRegWord(pic, m_RomajiToKanaTranslator.GetBuffer(), FALSE);
+				return S_OK;
+			}
+
+			if (!m_RegInputUndetermined.empty()) {
 				m_RegInputUndetermined.pop_back();
 				__InsertNewRegWord(pic, m_RegInputUndetermined, FALSE);
+				return S_OK;
 			}
-			else {
-				//未確定文字列が空なら確定文字列を削る
-				if (m_RegInputDetermined.length() > 0) {
-					m_RegInputDetermined.pop_back();
-					__InsertNewRegWord(pic, L"", FALSE);
-				}
+
+			_SyncRegInputByCursor();
+			if (m_RegCursorPos > 0 && !m_RegInputText.empty()) {
+				m_RegInputText.erase(m_RegCursorPos - 1, 1);
+				m_RegCursorPos--;
 			}
+			_SyncRegInputByCursor();
+			__InsertNewRegWord(pic, L"", FALSE);
 
 			//	m_RomajiToKanaTranslator.Reset();
 			return S_OK;
@@ -775,14 +840,36 @@ bool CSkkIme::_IsCtrlKeyPressed()
 	return ((GetKeyState(VK_CONTROL) & 0x8000) != 0);
 }
 
+void CSkkIme::_SyncRegInputByCursor()
+{
+	if (m_RegCursorPos > m_RegInputText.length()) {
+		m_RegCursorPos = m_RegInputText.length();
+	}
+	m_RegInputDetermined = m_RegInputText.substr(0, m_RegCursorPos);
+}
+
 void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 {
-	if (m_isRegiteringNewWord)return;
+   if (m_isRegiteringNewWord) {
+		m_RegiterNewWordContextStack.push_back({
+			m_RegKey,
+           m_RegInputText,
+			m_RegCursorPos,
+            m_RegInputUndetermined,
+			m_Gokan,
+			m_OkuriganaFirstChar,
+			m_RegCurrentCandidates,
+			m_RegCurrentShowCandidateIndex
+			});
+	}
 
 	m_isRegiteringNewWord = TRUE;
-	m_RegInputDetermined = L"";        //確定済みの文字列
-	m_RegInputUndetermined = L"";      //未確定の文字列
+   m_RegInputText = L"";
+	m_RegCursorPos = 0;
+	m_RegInputDetermined = L"";
+	m_RegInputUndetermined = L"";
 	m_RegKey = regKey;                //登録するキー
+	m_RegCurrentSearchKey = L"";
 
 	g_currentMode = SKKMode::Kakutei; //モードは確定
 
@@ -790,10 +877,85 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 	m_RegCurrentCandidates.clear();    //候補リストクリア
 
 
-	//候補ウィンドウに設定
-	SKKCandidates regKeyCandidate = { {L"",regKey},{L"",L""}};   //空の内容と，登録するキーをセット
+    //候補ウィンドウに設定
+	SKKCandidates regKeyCandidate = {
+		{L"", _BuildRegiterNewWordTraceText() + L" /カーソル:" + std::to_wstring(m_RegCursorPos) + L"/" + std::to_wstring(m_RegInputText.length())},
+		{L"",L""}
+	};   //空の内容と，登録するキーをセット
 	m_pCandidateWindow->SetCandidates(regKeyCandidate, 0, CANDIDATEWINDOW_MODE_REGWORD);
 	_UpDateCandidateWindowPosition(pic);
+}
+
+std::wstring CSkkIme::_BuildRegiterNewWordTraceText() const
+{
+	std::wstring traceText = L"経路:";
+	bool isFirst = true;
+
+	for (const auto& context : m_RegiterNewWordContextStack) {
+		if (context.RegKey.empty()) {
+			continue;
+		}
+		if (!isFirst) {
+			traceText += L"→";
+		}
+		traceText += context.RegKey;
+		isFirst = false;
+	}
+
+	if (!m_RegKey.empty()) {
+		if (!isFirst) {
+			traceText += L"→";
+		}
+		traceText += m_RegKey;
+		isFirst = false;
+	}
+
+	if (isFirst) {
+		traceText += L"(なし)";
+	}
+
+	return traceText;
+}
+
+bool CSkkIme::_TryResumeParentRegiterNewWord(ITfContext* pic, const std::wstring& committedWord)
+{
+	if (m_RegiterNewWordContextStack.empty()) {
+		return false;
+	}
+
+	const auto parentContext = m_RegiterNewWordContextStack.back();
+	m_RegiterNewWordContextStack.pop_back();
+
+	m_isRegiteringNewWord = TRUE;
+	m_RegKey = parentContext.RegKey;
+    m_RegCurrentSearchKey = L"";
+	m_Gokan = parentContext.Gokan;
+	m_OkuriganaFirstChar = parentContext.OkuriganaFirstChar;
+	m_RegCurrentCandidates.clear();
+	m_RegCurrentShowCandidateIndex = 0;
+
+	m_RomajiToKanaTranslator.Reset();
+	_ChangeCurrentMode(SKKMode::Kakutei);
+
+   m_RegInputText = parentContext.RegInputText;
+	m_RegCursorPos = parentContext.RegCursorPos;
+    m_RegInputUndetermined = parentContext.RegInputPreview;
+	_SyncRegInputByCursor();
+
+	if (!committedWord.empty()) {
+		__InsertNewRegWord(pic, committedWord, TRUE);
+	}
+	else {
+        const std::wstring suffixText = m_RegInputText.substr(m_RegCursorPos);
+     SKKCandidates tempCandidate = {
+			{m_RegInputDetermined,_BuildRegiterNewWordTraceText() + L" /カーソル:" + std::to_wstring(m_RegCursorPos) + L"/" + std::to_wstring(m_RegInputText.length())},
+            {m_RegInputUndetermined,suffixText}
+		};
+		m_pCandidateWindow->SetCandidates(tempCandidate, 0, CANDIDATEWINDOW_MODE_REGWORD);
+		_UpDateCandidateWindowPosition(pic);
+	}
+
+	return true;
 }
 
 void CSkkIme::__FinishCandidateWindowShow()
@@ -810,10 +972,14 @@ void CSkkIme::__FinishCandidateWindowShow()
 void CSkkIme::_EndRegiterNewWord()
 {
 	m_isRegiteringNewWord = FALSE;
+ m_RegInputText = L"";
+	m_RegCursorPos = 0;
 	m_RegInputDetermined = L"";
 	m_RegInputUndetermined = L"";
 	m_RegKey = L"";
+ m_RegCurrentSearchKey = L"";
 	m_RegCurrentCandidates.clear();
+   m_RegiterNewWordContextStack.clear();
 	m_pCandidateWindow->MustHideWindow();
 }
 

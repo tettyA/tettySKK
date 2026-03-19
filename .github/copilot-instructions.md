@@ -15,3 +15,4 @@
 - Prioritize displaying detailed information about the Q-ELF input state (multiple statuses) in the CStateWindow.
 - Simplify the state display without increasing character count, using symbols for clarity (e.g., Shift=Åü, Youon=Åû, Mode=J). Ensure that a legend explaining each symbol is provided to prioritize clarity for the user.
 - Format the state display as labeled indicators: `Shift:Å†/Åü`, `Youon:Å†/Å°`, `Sokuon:Å†/Å°`, `Mode:JÇ–Å©1`.
+- Implement registration editing logic to be index-based, utilizing a dedicated cursor index. Insertion and deletion must operate at the cursor position rather than treating text after the cursor as undetermined.

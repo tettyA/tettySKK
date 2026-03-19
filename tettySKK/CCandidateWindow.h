@@ -39,7 +39,7 @@ private:
 	SKKCandidates m_Candidates;
 	//size_t m_CurrentIndex;
 	size_t m_CurrentPageIndex;
-	BOOL m_Mode; // 0: single, 1: multiple
+  int m_Mode;
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void _OnPaint(HDC hdc);
 	void __PaintSingleMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize);

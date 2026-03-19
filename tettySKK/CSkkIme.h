@@ -9,6 +9,7 @@
 #include "Q_ELF_Translater.h"
 #include "Global.h"
 #include "CStateWindow.h"
+#include <vector>
 
 
 //ref https://github.com/nathancorvussolis/corvusskk/blob/2904b3ad7ba80e66e717aef6805164c74fcec71d/imcrvtip/TextService.h
@@ -145,10 +146,28 @@ private:
 	
 	BOOL m_isRegiteringNewWord;
 	void _BgnRegiterNewWord(ITfContext* pic,std::wstring regKey);
+	bool _TryResumeParentRegiterNewWord(ITfContext* pic, const std::wstring& committedWord);
+	std::wstring _BuildRegiterNewWordTraceText() const;
+	void _SyncRegInputByCursor();
+
+	struct RegiterNewWordContext {
+		std::wstring RegKey;
+        std::wstring RegInputText;
+		size_t RegCursorPos;
+     std::wstring RegInputPreview;
+		std::wstring Gokan;
+		WCHAR OkuriganaFirstChar;
+		SKKCandidates RegCurrentCandidates;
+		size_t RegCurrentShowCandidateIndex;
+	};
+	std::vector<RegiterNewWordContext> m_RegiterNewWordContextStack;
 
 	std::wstring m_RegKey;
+  std::wstring m_RegInputText;
+	size_t m_RegCursorPos;
 	std::wstring m_RegInputDetermined;
 	std::wstring m_RegInputUndetermined;
+	std::wstring m_RegCurrentSearchKey;
 
 	std::wstring m_currentInputKana;
 	void __InsertTextMakeCandidateWindow(ITfContext* pic,const WCHAR* _multiIntsertText,const WCHAR* _singleInsertText);

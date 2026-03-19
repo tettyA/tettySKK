@@ -42,6 +42,11 @@ CSkkIme::CSkkIme()
 	
 	m_pLangBarItemButton = new CLangBarItemButton(this, GUID_LBI_INPUTMODE);
 	m_isRegiteringNewWord = FALSE;
+	m_RegInputText = L"";
+	m_RegCursorPos = 0;
+	m_RegInputDetermined = L"";
+	m_RegInputUndetermined = L"";
+	m_RegCurrentSearchKey = L"";
 
 	m_atomInptAttribute = TF_INVALID_GUIDATOM;
 

@@ -23,11 +23,11 @@ HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 					//送り仮名付きのとき
 					searchStr = m_Gokan + m_OkuriganaFirstChar;
 				}
+               m_RegCurrentSearchKey = searchStr;
 				m_SKKDictionaly.GetCandidates(searchStr, m_RegCurrentCandidates);
 			}
 			if (m_RegCurrentCandidates.size() == 0) {
-				//TODO: 新しい語の登録
-				//_BgnRegiterNewWord(pic, m_currentInputKana);
+                _BgnRegiterNewWord(pic, m_RegCurrentSearchKey.empty() ? compositionString : m_RegCurrentSearchKey);
 			}
 			else {
 
@@ -62,16 +62,16 @@ HRESULT CSkkIme::_HandleRegSpaceKey(ITfContext* pic, WCHAR key)
 			additionalStr = compositionString.substr(compositionString.length() - 1);
 		}
 
-		m_RegCurrentShowCandidateIndex++;
-		if ((int)m_RegCurrentShowCandidateIndex >=(int)( (int)m_RegCurrentCandidates.size() - 2) ||
+       m_RegCurrentShowCandidateIndex++;
+		if (m_RegCurrentShowCandidateIndex >= m_RegCurrentCandidates.size() ||
 			(m_RegCurrentShowCandidateIndex >= BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX &&
 				(BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX +
 					(m_RegCurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) *
 					NUM_SHOW_CANDIDATE_MULTIPLE)
-				>= (int)((int)m_RegCurrentCandidates.size() - 2))
+				>= m_RegCurrentCandidates.size())
 			) {
-			m_RegCurrentShowCandidateIndex = 0;//とりあえず最初に戻す
-			//return S_OK;
+         _BgnRegiterNewWord(pic, m_RegCurrentSearchKey.empty() ? compositionString : m_RegCurrentSearchKey);
+			return S_OK;
 		}
 
 		__InsertTextMakeCandidateWindow(pic,
@@ -615,10 +615,7 @@ HRESULT CSkkIme::_HandleKana(ITfContext* pic, std::wstring kanas, std::wstring& 
 			//新しいかなを追加
 			std::wstring finalText = textonScreen + kana;
 			// mcurrentInputKanaの更新
-			if (m_isRegiteringNewWord) {
-				m_RegInputUndetermined = textonScreen + kana;
-			}
-			else {
+            if (!m_isRegiteringNewWord) {
 				m_currentInputKana = textonScreen + kana;
 			}
 

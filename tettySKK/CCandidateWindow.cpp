@@ -14,7 +14,7 @@ CCandidateWindow::CCandidateWindow(HINSTANCE hInstance)
 	m_CurrentPageIndex = CANDIDATEWINDOW_MODE_SINGLE;
 	m_Mode = 0;
 	constexpr LPCWSTR windowClsName = TEXT("SKK_Candidates_Window");
-	WNDCLASS winc;
+  WNDCLASS winc{};
 	winc.style = CS_HREDRAW | CS_VREDRAW;	       //ウィンドウの基本スタイル
 	winc.lpfnWndProc = WndProc;                    //ウィンドウプロシージャ
 	winc.cbClsExtra = 0;                           //クラス構造体追加領域予約
@@ -26,7 +26,7 @@ CCandidateWindow::CCandidateWindow(HINSTANCE hInstance)
 	winc.lpszMenuName = NULL;                      //クラスメニュー
 	winc.lpszClassName = windowClsName;            //クラス名
 
-	if (!RegisterClass(&winc)) {
+    if (!RegisterClass(&winc) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS) {
 		return;
 	}
 
@@ -37,6 +37,9 @@ CCandidateWindow::CCandidateWindow(HINSTANCE hInstance)
 		0, 0, 200, 300,
 		NULL, NULL,
 		hInstance, NULL);
+	if (!m_hWnd) {
+		return;
+	}
 
 	SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
 }
@@ -161,8 +164,7 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 	SelectObject(hdc, hFont);
 	SetBkMode(hdc, TRANSPARENT);
 
-	int y = 0, x = 5;
-	int maxx = 0;
+   int y = 0, x = 5;
 	SIZE strsize;
 	//TextOut(hdc, x, y, WSTR_AND_WLEN(L"Debug:" + std::to_wstring(m_Mode)));
 ///	y += 12;
@@ -177,6 +179,10 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 	}
 	else if ((m_Mode & CANDIDATEWINDOW_MODE_REGWORD) > 0) {
 		//登録語モード
+		if (m_Candidates.size() < 2) {
+			SetWindowPos(m_hWnd, HWND_TOPMOST, 0, 0, 80, CANDIDATES_WINDOW_FONT_HSIZE + 2, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOREPOSITION | SWP_SHOWWINDOW);
+			return;
+		}
 
 		SetTextColor(hdc, CANDIDATES_WINDOW_ANNOTATIONTEXTCOLOR_RGB);
 		TextOut(hdc, x, y, WSTR_AND_WLEN(std::wstring(L"登録:   ")));
@@ -194,10 +200,18 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 			x += strsize.cx;
 		}
 
+		const int cursorX = x;
+
 		if (!m_Candidates[clen - 1]_Candidate.empty()) {
 			SetTextColor(hdc, CANDIDATES_WINDOW_UNDETERMINEDTEXTCOLOR_RGB);
 			TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[clen - 1]_Candidate));
 			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(m_Candidates[clen - 1]_Candidate), &strsize);
+			x += strsize.cx;
+		}
+		if (!m_Candidates[clen - 1]_Annotation.empty()) {
+			SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
+			TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[clen - 1]_Annotation));
+			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(m_Candidates[clen - 1]_Annotation), &strsize);
 			x += strsize.cx;
 		}
 
@@ -208,6 +222,13 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 			GetTextExtentPoint32(hdc, WSTR_AND_WLEN(annotationText), &strsize);
 			x += strsize.cx;
 		}
+
+		HPEN hCursorPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+		HPEN hOldPen = (HPEN)SelectObject(hdc, hCursorPen);
+		MoveToEx(hdc, cursorX, y, NULL);
+		LineTo(hdc, cursorX, y + strsize.cy);
+		SelectObject(hdc, hOldPen);
+		DeleteObject(hCursorPen);
 		y += strsize.cy;
 
 		SetBkMode(hdc, OPAQUE);
@@ -241,11 +262,15 @@ void CCandidateWindow::_OnPaint(HDC hdc)
 
 void CCandidateWindow::__PaintSingleMode(HDC hdc, int _bgnx, int _bgny, SIZE& _rectsize)
 {
-	if (m_CurrentPageIndex >= m_Candidates.size())return;
+   if (m_CurrentPageIndex >= m_Candidates.size()) {
+		_rectsize.cx = _bgnx;
+		_rectsize.cy = 0;
+		return;
+	}
 
 	int x = _bgnx;
 	int y = _bgny;
-	SIZE strsize;
+   SIZE strsize{ 0, CANDIDATES_WINDOW_FONT_HSIZE };
 	SetTextColor(hdc, CANDIDATES_WINDOW_TEXTCOLOR_RGB);
 	
 	TextOut(hdc, x, y, WSTR_AND_WLEN(m_Candidates[m_CurrentPageIndex]_Candidate));
@@ -270,7 +295,7 @@ void CCandidateWindow::__PaintMultipleMode(HDC hdc, int _bgnx, int _bgny, SIZE& 
 	int x = _bgnx;
 	int y = _bgny;
 	int maxx = 0;
-	SIZE strsize;
+   SIZE strsize{ 0, CANDIDATES_WINDOW_FONT_HSIZE };
 	for (size_t i = 0; i < NUM_SHOW_CANDIDATE_MULTIPLE; ++i) {
 		size_t candidateIndex = BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentPageIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + i;
 		if (candidateIndex >= m_Candidates.size()- (m_Mode & CANDIDATEWINDOW_MODE_REGWORD ? 2 : 0)) {
@@ -329,7 +354,7 @@ void CCandidateWindow::__PaintPredictMode(HDC hdc, int _bgnx, int _bgny, SIZE& _
 {
 	int x = _bgnx;
 	int y = _bgny;
-	SIZE strsize;
+   SIZE strsize{ 0, CANDIDATES_WINDOW_FONT_HSIZE };
 
 	SetTextColor(hdc, CANDIDATES_WINDOW_PREDICTTEXTCOLOR_RGB);
 	std::wstring predictPrefix = L"予測:";
@@ -338,9 +363,8 @@ void CCandidateWindow::__PaintPredictMode(HDC hdc, int _bgnx, int _bgny, SIZE& _
 	x += strsize.cx;
 
 
-	_rectsize.cx = x;
-	_rectsize.cy = strsize.cy;
-
-
-	__PaintSingleMode(hdc, _rectsize.cx, _bgny, _rectsize);
+   SIZE singleRect{};
+	__PaintSingleMode(hdc, x, _bgny, singleRect);
+	_rectsize.cx = singleRect.cx;
+	_rectsize.cy = max(strsize.cy, singleRect.cy);
 }
