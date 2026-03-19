@@ -63,6 +63,7 @@ MAKETRANSTABLE(mo, も, モ),
 /* や行 */
 MAKETRANSTABLE(ya, や, ヤ),
 MAKETRANSTABLE(yu, ゆ, ユ),
+MAKETRANSTABLE(ye, いぇ, イェ),
 MAKETRANSTABLE(yo, よ, ヨ),
 
 /* ら行 */
@@ -132,6 +133,8 @@ MAKETRANSTABLE(sha, しゃ, シャ), /* ヘボン式 */
 MAKETRANSTABLE(sya, しゃ, シャ), /* 訓令式 */
 MAKETRANSTABLE(shu, しゅ, シュ),
 MAKETRANSTABLE(syu, しゅ, シュ),
+MAKETRANSTABLE(she, しぇ, シェ),
+MAKETRANSTABLE(sye, しぇ, シェ),
 MAKETRANSTABLE(sho, しょ, ショ),
 MAKETRANSTABLE(syo, しょ, ショ),
 
@@ -142,6 +145,9 @@ MAKETRANSTABLE(cya, ちゃ, チャ), /* IME拡張 */
 MAKETRANSTABLE(chu, ちゅ, チュ),
 MAKETRANSTABLE(tyu, ちゅ, チュ),
 MAKETRANSTABLE(cyu, ちゅ, チュ),
+MAKETRANSTABLE(cye, ちぇ, チェ),
+MAKETRANSTABLE(che, ちぇ, チェ),
+MAKETRANSTABLE(tye, ちぇ, チェ),
 MAKETRANSTABLE(cho, ちょ, チョ),
 MAKETRANSTABLE(tyo, ちょ, チョ),
 MAKETRANSTABLE(cyo, ちょ, チョ),
@@ -154,11 +160,13 @@ MAKETRANSTABLE(nyo, にょ, ニョ),
 /* ひゃ行 */
 MAKETRANSTABLE(hya, ひゃ, ヒャ),
 MAKETRANSTABLE(hyu, ひゅ, ヒュ),
+MAKETRANSTABLE(hye, ひぇ, ヒェ),
 MAKETRANSTABLE(hyo, ひょ, ヒョ),
 
 /* みゃ行 */
 MAKETRANSTABLE(mya, みゃ, ミャ),
 MAKETRANSTABLE(myu, みゅ, ミュ),
+MAKETRANSTABLE(mye, みぇ, ミェ),
 MAKETRANSTABLE(myo, みょ, ミョ),
 
 /* りゃ行 */
@@ -178,6 +186,9 @@ MAKETRANSTABLE(zya, じゃ, ジャ), /* 訓令式 */
 MAKETRANSTABLE(ju, じゅ, ジュ),
 MAKETRANSTABLE(jyu, じゅ, ジュ),
 MAKETRANSTABLE(zyu, じゅ, ジュ),
+MAKETRANSTABLE(zye, じぇ ジェ),
+MAKETRANSTABLE(je, じぇ ジェ),
+MAKETRANSTABLE(jye, じぇ ジェ),
 MAKETRANSTABLE(jo, じょ, ジョ),
 MAKETRANSTABLE(jyo, じょ, ジョ),
 MAKETRANSTABLE(zyo, じょ, ジョ),
@@ -241,14 +252,16 @@ MAKETRANSTABLE(lke, ヶ, ヶ),
 MAKETRANSTABLE(ye, いぇ, イェ),
 
 /* うぁ行 (wha/wa variants) */
-MAKETRANSTABLE(wha, うぁ, ウァ),
-MAKETRANSTABLE(wi, うぃ, ウィ), /* 古典的ローマ字・拡張 */
-MAKETRANSTABLE(whi, うぃ, ウィ),
-MAKETRANSTABLE(we, うぇ, ウェ), /* 古典的ローマ字・拡張 */
-MAKETRANSTABLE(whe, うぇ, ウェ),
-MAKETRANSTABLE(who, うぉ, ウォ),
+MAKETRANSTABLE(wya, うぁ, ウァ),
+MAKETRANSTABLE(wi, ゐ, ヰ), 
+MAKETRANSTABLE(wyi, うぃ, ウィ),
+MAKETRANSTABLE(we, ゑ, ヱ), 
+MAKETRANSTABLE(wye, うぇ, ウェ),
+MAKETRANSTABLE(wyo, うぉ, ウォ),
 
+#ifdef trans_USE_smallW
 /* くぁ行 (kwa/qwa) */
+
 MAKETRANSTABLE(kwa, くぁ, クァ),
 MAKETRANSTABLE(qwa, くぁ, クァ),
 MAKETRANSTABLE(kwi, くぃ, クィ),
@@ -264,24 +277,26 @@ MAKETRANSTABLE(gwi, ぐぃ, グィ),
 MAKETRANSTABLE(gwe, ぐぇ, グェ),
 MAKETRANSTABLE(gwo, ぐぉ, グォ),
 
-/* つぁ行 (tsa/tsu~) */
-MAKETRANSTABLE(tsa, つぁ, ツァ),
-MAKETRANSTABLE(tsi, つぃ, ツィ),
-MAKETRANSTABLE(tse, つぇ, ツェ),
-MAKETRANSTABLE(tso, つぉ, ツォ),
+#endif
 
-/* ちぇ行 (che usually maps to ちぇ, she to しぇ) */
-MAKETRANSTABLE(che, ちぇ, チェ),
-MAKETRANSTABLE(she, しぇ, シェ),
-MAKETRANSTABLE(je, じぇ, ジェ),
+MAKETRANSTABLE(ca, つぁ, ツァ),
+MAKETRANSTABLE(ci, つぃ, ツィ),
+MAKETRANSTABLE(ce, つぇ, ツェ),
+MAKETRANSTABLE(co, つぉ, ツォ),
+
+MAKETRANSTABLE(cye, ちぇ, チェ),
 
 /* てぃ・とぅ・でぃ・どぅ (ti/tu/di/du extended) */
 MAKETRANSTABLE(thi, てぃ, ティ),
+MAKETRANSTABLE(tyi, てぃ, ティ),
 MAKETRANSTABLE(thu, とぅ, トゥ),
-MAKETRANSTABLE(tyu, てゅ, テュ), /* ※てゅ */
+MAKETRANSTABLE(tyu, とぅ, トゥ),//
+//MAKETRANSTABLE(tyu, てゅ, テュ), /* ※てゅ */
 MAKETRANSTABLE(dhi, でぃ, ディ),
+MAKETRANSTABLE(dyi, でぃ, ディ),
 MAKETRANSTABLE(dhu, どぅ, ドゥ),
-MAKETRANSTABLE(dyu, でゅ, デュ), /* ※でゅ */
+MAKETRANSTABLE(dyu, どぅ, ドゥ),
+//MAKETRANSTABLE(dye, でゅ, デュ), /* ※でゅ */
 
 /* ふぁ行 (fa/fi/fe/fo/fyu) */
 MAKETRANSTABLE(fa, ふぁ, ファ),
@@ -297,6 +312,4 @@ MAKETRANSTABLE(ve, う゛ぇ, ヴェ),
 MAKETRANSTABLE(vo, う゛ぉ, ヴォ),
 MAKETRANSTABLE(vyu, う゛ゅ, ヴュ),
 
-/* ひぇ */
-MAKETRANSTABLE(hye, ひぇ, ヒェ),
 
