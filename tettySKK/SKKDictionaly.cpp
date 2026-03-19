@@ -208,7 +208,16 @@ void CSKKDictionaly::GetPredictionCandidate(std::wstring& prefix, SKKCandidate& 
 //TODO: user辞書が変更されるので，保存をするか考える。
 void CSKKDictionaly::AddHistoryCandidate(const std::wstring& yomi, const SKKCandidate& candidate)
 {
+
+	if (yomi.empty() || candidate.first.empty()) {
+		return;
+	}
+
+	std::wstring normalizedYomi = yomi;
+	_ConvertToHiragana(normalizedYomi);
+
 	//重複排除
+	
 	for (auto it = m_history.begin(); it != m_history.end(); ++it) {
 		if ((*it) == yomi ) {
 			m_history.erase(it);
@@ -238,6 +247,8 @@ void CSKKDictionaly::AddHistoryCandidate(const std::wstring& yomi, const SKKCand
 			break;
 		}
 	}
+
+	SaveDictionaryToUserFile(SKK_USER_DICTIONARY_FILEPATH);
 }
 
 BOOL CSKKDictionaly::_LoadDictionaryFromFile(const std::wstring& filepath, SKKDictionary& _dict)

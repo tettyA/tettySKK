@@ -306,12 +306,13 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 				[[fallthrough]];
 			case  SKK_CHOOSE_CANDIDATES_SMLSTR[0]:
 			{
-				if (BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt
+               size_t selectedCandidateIndex = BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt;
+				if (selectedCandidateIndex
 					>= m_CurrentCandidates.size()
 					) {
 					return S_OK;
 				}
-				std::wstring baseword = m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]_Candidate;
+               std::wstring baseword = m_CurrentCandidates[selectedCandidateIndex]_Candidate;
 				std::wstring additionalStr = L"";
 
 				if (!m_Gokan.empty() && m_OkuriganaFirstChar != L'\0') {
@@ -324,7 +325,7 @@ HRESULT CSkkIme::_HandleCharKey(ITfContext* pic, WCHAR key)
 					if (m_OkuriganaFirstChar != L'\0') {
 						searchKey = m_Gokan + m_OkuriganaFirstChar;
 					}
-					m_SKKDictionaly.AddHistoryCandidate(searchKey, m_CurrentCandidates[m_CurrentShowCandidateIndex]);
+                 m_SKKDictionaly.AddHistoryCandidate(searchKey, m_CurrentCandidates[selectedCandidateIndex]);
 				}
 				//m_SKKDictionaly.AddHistoryCandidate(m_currentInputKana, m_CurrentCandidates[BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX + (m_CurrentShowCandidateIndex - BEGIN_SHOW_CANDIDATE_MULTIPLE_INDEX) * NUM_SHOW_CANDIDATE_MULTIPLE + cnt]);
 
