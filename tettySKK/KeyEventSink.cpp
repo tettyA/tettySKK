@@ -447,7 +447,7 @@ HRESULT CSkkIme::ExecuteOnModeChangeKeyDown(ITfContext* pic, WPARAM wParam, LPAR
 				m_OkuriganaFirstChar = L'\0';
               const std::wstring suffixText = m_RegInputText.substr(m_RegCursorPos);
                SKKCandidates tempCanddates = {
-					{ m_RegInputDetermined,_BuildRegiterNewWordTraceText() + L" /カーソル:" + std::to_wstring(m_RegCursorPos) + L"/" + std::to_wstring(m_RegInputText.length()) },
+					{ m_RegInputDetermined,_BuildRegiterNewWordTraceText()},
                  { L"",suffixText }
 				};
 				m_pCandidateWindow->SetCandidates(tempCanddates, 0, CANDIDATEWINDOW_MODE_REGWORD);
@@ -879,7 +879,7 @@ void CSkkIme::_BgnRegiterNewWord(ITfContext* pic, std::wstring regKey)
 
     //候補ウィンドウに設定
 	SKKCandidates regKeyCandidate = {
-		{L"", _BuildRegiterNewWordTraceText() + L" /カーソル:" + std::to_wstring(m_RegCursorPos) + L"/" + std::to_wstring(m_RegInputText.length())},
+		{L"", _BuildRegiterNewWordTraceText() },
 		{L"",L""}
 	};   //空の内容と，登録するキーをセット
 	m_pCandidateWindow->SetCandidates(regKeyCandidate, 0, CANDIDATEWINDOW_MODE_REGWORD);
@@ -948,7 +948,7 @@ bool CSkkIme::_TryResumeParentRegiterNewWord(ITfContext* pic, const std::wstring
 	else {
         const std::wstring suffixText = m_RegInputText.substr(m_RegCursorPos);
      SKKCandidates tempCandidate = {
-			{m_RegInputDetermined,_BuildRegiterNewWordTraceText() + L" /カーソル:" + std::to_wstring(m_RegCursorPos) + L"/" + std::to_wstring(m_RegInputText.length())},
+			{m_RegInputDetermined,_BuildRegiterNewWordTraceText() },
             {m_RegInputUndetermined,suffixText}
 		};
 		m_pCandidateWindow->SetCandidates(tempCandidate, 0, CANDIDATEWINDOW_MODE_REGWORD);

@@ -38,7 +38,7 @@ void CSkkIme::__InsertNewRegWord(ITfContext* pic, const std::wstring& text, BOOL
 	if (m_pCandidateWindow->IsWindowExists()) {
      const std::wstring suffixText = m_RegInputText.substr(m_RegCursorPos);
         SKKCandidates tempCandidate = {
-			{m_RegInputDetermined, _BuildRegiterNewWordTraceText() + L" /ƒJ[ƒ\ƒ‹:" + std::to_wstring(m_RegCursorPos) + L"/" + std::to_wstring(m_RegInputText.length())},
+			{m_RegInputDetermined, _BuildRegiterNewWordTraceText() },
            {m_RegInputUndetermined, suffixText}
 		};
 		if (m_RegCurrentCandidates.size() > 0) {

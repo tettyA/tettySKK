@@ -75,8 +75,8 @@ MAKETRANSTABLE(ro, ろ, ロ),
 
 /* わ行 */
 MAKETRANSTABLE(wa, わ, ワ),
-MAKETRANSTABLE(wyi, ゐ,	ヰ),
-MAKETRANSTABLE(wye, ゑ, ヱ),
+MAKETRANSTABLE(wyi,うぃ,ウィ),
+MAKETRANSTABLE(wye,うぇ, ウェ),
 MAKETRANSTABLE(wo, を, ヲ),
 MAKETRANSTABLE(nn, ん, ン),
 MAKETRANSTABLE(xn, ん, ン), /* 特殊 */
@@ -253,10 +253,10 @@ MAKETRANSTABLE(ye, いぇ, イェ),
 
 /* うぁ行 (wha/wa variants) */
 MAKETRANSTABLE(wya, うぁ, ウァ),
-MAKETRANSTABLE(wi, ゐ, ヰ), 
-MAKETRANSTABLE(wyi, うぃ, ウィ),
-MAKETRANSTABLE(we, ゑ, ヱ), 
-MAKETRANSTABLE(wye, うぇ, ウェ),
+MAKETRANSTABLE(wyi, ゐ, ヰ), 
+MAKETRANSTABLE(wi, うぃ, ウィ),
+MAKETRANSTABLE(wye, ゑ, ヱ), 
+MAKETRANSTABLE(we, うぇ, ウェ),
 MAKETRANSTABLE(wyo, うぉ, ウォ),
 
 #ifdef trans_USE_smallW
